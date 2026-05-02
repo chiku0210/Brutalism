@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIELLESS.COM — Design Specification Rev 1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --void: #060608;
+    --surface: #0E0E10;
+    --surface2: #161618;
+    --grid: #1A1A1C;
+    --border: #2E2E31;
+    --border2: #3A3A3D;
+    --brass: #C8A96E;
+    --brass-dim: #8A7249;
+    --brass-bright: #E2C48A;
+    --signal: #39FF14;
+    --hot: #FF4D1A;
+    --ice: #A8C8E8;
+    --dust: #E8E2D5;
+    --muted: #606068;
+    --muted2: #404044;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --serif: 'Crimson Pro', serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--dust);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 36px 100px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6,6,8,0.96);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 36px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .topbar-logo { font-family: var(--mono); font-size: 11px; color: var(--brass); letter-spacing: 0.15em; }
+  .topbar-nav { display: flex; gap: 32px; align-items: center; }
+  .topbar-nav a {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .topbar-nav a:hover { color: var(--dust); }
+  .topbar-nav .cta {
+    border: 1px solid var(--brass-dim); color: var(--brass);
+    padding: 4px 12px; transition: border-color 0.15s, color 0.15s;
+  }
+  .topbar-nav .cta:hover { border-color: var(--brass-bright); color: var(--brass-bright); }
+
+  /* ── DOCUMENT HEADER ── */
+  .doc-header { padding: 56px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 56px; }
+  .doc-rev { font-size: 10px; color: var(--brass); letter-spacing: 0.15em; margin-bottom: 10px; }
+  .doc-title { font-family: var(--display); font-size: 52px; letter-spacing: 0.05em; color: var(--dust); line-height: 1; }
+  .doc-sub { font-family: var(--serif); font-size: 16px; font-style: italic; color: var(--muted); margin-top: 12px; }
+
+  /* ── SECTIONS ── */
+  .spec-section { margin-bottom: 72px; }
+  .section-label {
+    font-size: 10px; color: var(--brass); letter-spacing: 0.15em;
+    text-transform: uppercase; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title { font-family: var(--display); font-size: 40px; letter-spacing: 0.04em; color: var(--dust); margin-bottom: 24px; }
+  .section-intro { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); line-height: 1.8; margin-bottom: 28px; max-width: 680px; }
+
+  /* ── PHILOSOPHY PRINCIPLES ── */
+  .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .principle {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 16px 20px; border-left: 2px solid var(--brass);
+  }
+  .principle-text { font-size: 12px; color: var(--dust); line-height: 1.7; }
+
+  /* ── DESIGN SYSTEM ── */
+  .ds-block { background: var(--surface); border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; }
+  .ds-label { font-size: 9px; color: var(--brass); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; }
+  .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .color-swatch { border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .swatch-fill { height: 40px; }
+  .swatch-info { background: var(--surface2); padding: 8px 10px; }
+  .swatch-token { font-size: 9px; color: var(--brass); letter-spacing: 0.08em; }
+  .swatch-hex { font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .swatch-use { font-size: 8px; color: var(--muted2); margin-top: 2px; line-height: 1.4; }
+
+  .type-table, .scale-table { width: 100%; border-collapse: collapse; }
+  .type-table th, .scale-table th {
+    font-size: 9px; color: var(--brass); letter-spacing: 0.1em; text-align: left;
+    padding: 8px 12px; border-bottom: 1px solid var(--border); text-transform: uppercase;
+  }
+  .type-table td, .scale-table td {
+    padding: 10px 12px; border-bottom: 1px solid var(--grid);
+    font-size: 11px; color: var(--muted); vertical-align: top;
+  }
+  .type-table td:first-child, .scale-table td:first-child { color: var(--dust); }
+  .mono-tag {
+    font-family: var(--mono); font-size: 10px; color: var(--brass);
+    background: rgba(200,169,110,0.08); border: 1px solid var(--brass-dim);
+    padding: 1px 6px; border-radius: 2px; white-space: nowrap;
+  }
+  .font-preview { font-family: var(--display); font-size: 28px; letter-spacing: 0.04em; color: var(--dust); }
+  .font-preview-mono { font-family: var(--mono); font-size: 13px; color: var(--dust); margin-top: 4px; }
+  .font-preview-serif { font-family: var(--serif); font-size: 17px; font-style: italic; color: var(--dust); margin-top: 4px; }
+
+  .spacing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .spacing-item { background: var(--surface2); padding: 14px; }
+  .spacing-value { font-size: 20px; color: var(--dust); font-family: var(--display); letter-spacing: 0.05em; }
+  .spacing-desc { font-size: 9px; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; }
+
+  /* ── SCREENS / MOCKUPS ── */
+  .screen-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+  .screen-chrome {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .chrome-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .chrome-url {
+    font-family: var(--mono); font-size: 10px; color: var(--muted2);
+    margin-left: 10px; letter-spacing: 0.05em;
+  }
+  .screen-body { background: var(--void); padding: 40px 40px; }
+
+  /* ── HERO MOCKUP ── */
+  .hero-nav-mock {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 52px;
+  }
+  .hero-nav-logo { font-family: var(--mono); font-size: 11px; color: var(--brass); letter-spacing: 0.15em; }
+  .hero-nav-links { display: flex; gap: 28px; align-items: center; }
+  .hero-nav-link { font-family: var(--mono); font-size: 10px; color: var(--muted2); letter-spacing: 0.1em; }
+  .hero-nav-cta { border: 1px solid var(--brass-dim); color: var(--brass); padding: 4px 12px; font-size: 10px; font-family: var(--mono); letter-spacing: 0.1em; }
+  .hero-terminal { font-family: var(--mono); margin-bottom: 36px; }
+  .term-line { font-size: 11px; color: var(--muted2); line-height: 2; }
+  .term-line.ok { color: var(--signal); }
+  .hero-headline { font-family: var(--display); font-size: 62px; letter-spacing: 0.04em; color: var(--dust); line-height: 0.95; margin-bottom: 20px; }
+  .hero-headline .accent { color: var(--brass); }
+  .hero-sub { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); max-width: 400px; line-height: 1.8; margin-bottom: 36px; }
+  .hero-cta {
+    display: inline-block; border: 1px solid var(--brass-dim);
+    padding: 12px 28px; cursor: pointer;
+  }
+  .hero-cta-text { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--brass); }
+  .hero-ticker {
+    position: absolute; right: 40px; top: 100px;
+    display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
+  }
+  .ticker-item { font-family: var(--mono); font-size: 9px; color: var(--border2); letter-spacing: 0.15em; }
+  .hero-inner { position: relative; }
+
+  /* ── ENGINE CARDS ── */
+  .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .engine-card {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 20px; transition: border-color 0.15s;
+  }
+  .engine-card:hover { border-color: var(--brass); }
+  .card-counter { font-family: var(--mono); font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 4px; }
+  .card-title { font-family: var(--display); font-size: 26px; letter-spacing: 0.06em; color: var(--dust); margin-bottom: 14px; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .badge {
+    font-family: var(--mono); font-size: 9px; padding: 3px 8px;
+    border: 1px solid; letter-spacing: 0.06em; white-space: nowrap;
+  }
+  .badge-live { color: var(--signal); border-color: #1a4a1a; background: rgba(57,255,20,0.06); }
+  .badge-hot { color: var(--hot); border-color: #4a1a10; background: rgba(255,77,26,0.06); }
+  .badge-ice { color: var(--ice); border-color: #1a2a3a; background: rgba(168,200,232,0.06); }
+  .badge-muted { color: var(--muted2); border-color: var(--border); background: transparent; }
+  .card-visual { margin-bottom: 14px; }
+  .card-desc { font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+  .card-tags { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .tag {
+    font-family: var(--mono); font-size: 9px; color: var(--muted2);
+    border: 1px solid var(--border); padding: 2px 7px;
+  }
+  .tag-arrow { font-size: 9px; color: var(--brass); }
+  .card-watermark { font-family: var(--mono); font-size: 9px; color: var(--border2); letter-spacing: 0.1em; margin-top: 8px; }
+
+  /* waveform */
+  .waveform { display: flex; align-items: flex-end; gap: 3px; height: 28px; margin-bottom: 4px; }
+  .waveform-bar { width: 3px; background: var(--brass); border-radius: 1px; opacity: 0.7; }
+  /* progress bars */
+  .metric-bar { margin-bottom: 8px; }
+  .metric-label { font-size: 9px; color: var(--muted2); letter-spacing: 0.08em; margin-bottom: 4px; }
+  .bar-track { height: 4px; background: var(--surface2); border: 1px solid var(--border); }
+  .bar-fill-brass { height: 100%; background: var(--brass); }
+  .bar-fill-muted { height: 100%; background: var(--muted2); }
+  /* fan-out */
+  .fanout { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 4px 0; }
+  .fanout-workers { display: flex; flex-direction: column; gap: 5px; }
+  .fanout-node-src { width: 12px; height: 12px; background: var(--brass); border-radius: 50%; }
+  .fanout-node-w { width: 8px; height: 8px; border: 1px solid var(--brass); }
+  .fanout-node-agg { width: 10px; height: 10px; background: var(--muted2); border-radius: 50%; }
+  .fanout-line { display: flex; flex-direction: column; gap: 5px; }
+  .fanout-tick { height: 1px; width: 22px; background: var(--border2); }
+  .fanout-arrow { font-size: 9px; color: var(--muted2); }
+
+  /* migration arrow */
+  .migration { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+  .mig-from { text-align: center; }
+  .mig-to { text-align: center; }
+  .mig-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; }
+  .mig-label.dead { color: var(--muted2); }
+  .mig-label.live { color: var(--dust); }
+  .mig-sub { font-family: var(--mono); font-size: 8px; color: var(--border2); margin-top: 2px; }
+  .mig-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+  .mig-line { height: 1px; background: var(--brass); width: 100%; }
+  .mig-arrowhead { font-size: 9px; color: var(--brass); align-self: flex-end; }
+  .mig-confirm { font-family: var(--mono); font-size: 8px; color: var(--signal); margin-top: 2px; letter-spacing: 0.08em; }
+
+  /* pipeline */
+  .pipeline { display: flex; align-items: center; gap: 5px; }
+  .pipe-node { font-family: var(--mono); font-size: 9px; color: var(--muted2); border: 1px solid var(--border); padding: 2px 7px; }
+  .pipe-arrow { font-size: 9px; color: var(--brass); }
+
+  /* badge row */
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+  /* full-width card */
+  .engine-card-full {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 20px; transition: border-color 0.15s;
+    grid-column: 1 / -1;
+  }
+  .engine-card-full:hover { border-color: var(--brass); }
+  .wci-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+  /* ── EXPANDED CARD NOTES ── */
+  .interaction-note {
+    background: var(--surface); border-left: 2px solid var(--brass-dim);
+    padding: 16px 20px; margin-top: 12px;
+  }
+  .interaction-note-label { font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 8px; }
+  .interaction-note-body { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .interaction-note-body code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+  .bullet-list { list-style: none; padding: 0; }
+  .bullet-list li { font-size: 11px; color: var(--muted); line-height: 1.8; padding-left: 14px; position: relative; }
+  .bullet-list li::before { content: '▸'; position: absolute; left: 0; color: var(--brass); font-size: 8px; top: 3px; }
+
+  /* ── ANALOG PANELS ── */
+  .analog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .analog-panel { background: var(--surface); padding: 20px; }
+  .analog-panel.audiophile { border-top: 2px solid var(--brass); }
+  .analog-panel.lens { border-top: 2px solid var(--border); }
+  .analog-panel.diesel { border-top: 2px solid var(--hot); }
+  .analog-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; margin-bottom: 12px; }
+  .analog-label.audiophile { color: var(--brass); }
+  .analog-label.lens { color: var(--muted2); }
+  .analog-label.diesel { color: var(--hot); }
+  .analog-visual { margin-bottom: 14px; }
+  .analog-desc { font-family: var(--serif); font-size: 13px; font-style: italic; color: var(--muted); line-height: 1.6; }
+  .analog-hint { font-family: var(--mono); font-size: 8px; color: var(--border2); margin-top: 10px; letter-spacing: 0.1em; }
+
+  /* eq bars */
+  .eq-bars { display: flex; align-items: flex-end; gap: 4px; height: 40px; }
+  .eq-bar { width: 7px; background: var(--brass); border-radius: 1px; }
+
+  /* aperture */
+  .aperture-wrap { width: 52px; height: 52px; position: relative; }
+  .aperture-outer { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; }
+  .aperture-mid { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--muted2); display: flex; align-items: center; justify-content: center; }
+  .aperture-inner { width: 10px; height: 10px; border-radius: 50%; background: var(--void); border: 1px solid var(--border); }
+
+  /* rpm */
+  .rpm-wrap { margin-bottom: 6px; }
+  .rpm-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .rpm-zero { font-size: 8px; color: var(--border2); }
+  .rpm-max { font-size: 8px; color: var(--hot); }
+  .rpm-track { height: 5px; background: var(--surface2); border: 1px solid var(--border); }
+  .rpm-fill { height: 100%; background: var(--hot); width: 65%; opacity: 0.85; }
+
+  /* philosophy strip */
+  .philosophy-strip {
+    border: 1px solid var(--grid); padding: 20px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--surface);
+  }
+  .philosophy-quote { font-family: var(--serif); font-size: 18px; font-style: italic; color: var(--dust); }
+  .philosophy-tag { font-family: var(--mono); font-size: 9px; color: var(--border2); text-align: right; letter-spacing: 0.1em; }
+
+  /* ── TIMELINE ── */
+  .timeline { border-left: 1px solid var(--border); padding-left: 28px; margin-left: 10px; }
+  .timeline-entry { position: relative; margin-bottom: 28px; }
+  .timeline-dot {
+    position: absolute; left: -34px; top: 5px;
+    width: 9px; height: 9px; border-radius: 50%;
+  }
+  .timeline-dot.active { background: var(--brass); }
+  .timeline-dot.past { background: var(--muted2); }
+  .timeline-dot.old { background: var(--border2); }
+  .timeline-ts { font-size: 9px; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .timeline-ts.active { color: var(--brass); }
+  .timeline-ts.past { color: var(--muted2); }
+  .timeline-ts.old { color: var(--border); }
+  .timeline-title { font-family: var(--display); font-size: 20px; letter-spacing: 0.05em; color: var(--dust); margin-bottom: 6px; }
+  .timeline-desc { font-size: 10px; color: var(--muted); line-height: 1.7; }
+
+  /* stack snapshot */
+  .stack-snap { border: 1px solid var(--grid); padding: 16px 18px; background: var(--surface); margin-top: 20px; }
+  .stack-cmd { font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; margin-bottom: 10px; }
+  .stack-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .stack-tag { font-family: var(--mono); font-size: 9px; padding: 3px 9px; border: 1px solid; }
+  .stack-tag.normal { color: var(--dust); border-color: var(--border); }
+  .stack-tag.ai { color: var(--brass); border-color: var(--brass-dim); }
+
+  /* ── INTERACTIONS TABLE ── */
+  .interactions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .interact-card { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; }
+  .interact-title { font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 10px; }
+  .interact-body { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .interact-body code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+
+  .sound-table { width: 100%; border-collapse: collapse; }
+  .sound-table th {
+    font-size: 9px; color: var(--brass); letter-spacing: 0.1em; text-align: left;
+    padding: 8px 12px; border-bottom: 1px solid var(--border); text-transform: uppercase;
+  }
+  .sound-table td {
+    padding: 9px 12px; border-bottom: 1px solid var(--grid);
+    font-size: 11px; color: var(--muted); vertical-align: middle;
+  }
+  .sound-table td:first-child { color: var(--dust); }
+
+  /* ── ARCHITECTURE ── */
+  .arch-block { background: var(--surface); border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; }
+  .arch-code {
+    font-family: var(--mono); font-size: 11px; line-height: 2;
+    background: var(--void); padding: 18px 20px; border: 1px solid var(--grid);
+    border-radius: 4px; overflow-x: auto; white-space: pre;
+  }
+  .arch-code .hl { color: var(--brass); }
+  .arch-code .dim { color: var(--muted2); }
+  .arch-code .norm { color: var(--dust); }
+  .arch-code .comment { color: var(--border2); }
+
+  .order-list { list-style: none; padding: 0; }
+  .order-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--grid); font-size: 11px; color: var(--muted); line-height: 1.7;
+  }
+  .order-num { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; min-width: 20px; margin-top: 2px; }
+  .order-item code { font-family: var(--mono); color: var(--dust); font-size: 10px; }
+  .order-item span { color: var(--muted); }
+
+  /* ── FOOTER ── */
+  .spec-footer {
+    border-top: 1px solid var(--border); margin-top: 80px; padding-top: 32px;
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center;
+  }
+  .footer-left { font-size: 10px; color: var(--brass); letter-spacing: 0.1em; }
+  .footer-center { font-size: 10px; color: var(--border2); letter-spacing: 0.08em; text-align: center; }
+  .footer-right { display: flex; justify-content: flex-end; gap: 14px; }
+  .footer-icon { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-quote { font-family: var(--serif); font-size: 13px; font-style: italic; color: var(--muted2); text-align: center; margin-top: 20px; }
+
+  /* ── FOOTER MOCKUP ── */
+  .footer-mock { background: var(--void); padding: 24px 28px; border-top: 1px solid var(--border); }
+  .footer-mock-grid {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  }
+  .footer-mock-sig { font-size: 10px; color: var(--brass); letter-spacing: 0.1em; }
+  .footer-mock-build { font-size: 9px; color: var(--border2); letter-spacing: 0.08em; }
+  .footer-mock-icons { display: flex; gap: 14px; }
+  .footer-mock-icon { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-mock-quote { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); text-align: center; border-top: 1px solid var(--grid); padding-top: 14px; }
+
+  /* ── MOBILE TABLE ── */
+  .mobile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mobile-card { background: var(--surface); border: 1px solid var(--border); padding: 16px; }
+  .mobile-context { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; margin-bottom: 8px; }
+  .mobile-rule { font-size: 11px; color: var(--muted); line-height: 1.8; }
+
+  /* ── UTILITY ── */
+  .rule { border: none; border-top: 1px solid var(--border); margin: 0 0 56px; }
+  .code-inline {
+    font-family: var(--mono); font-size: 10px; color: var(--brass);
+    background: rgba(200,169,110,0.08); border: 1px solid var(--brass-dim);
+    padding: 1px 5px; border-radius: 2px;
+  }
+  strong { color: var(--dust); font-weight: 500; }
+  em { font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+  @media (max-width: 768px) {
+    .page-wrap { padding: 0 20px 80px; }
+    .topbar { padding: 12px 20px; }
+    .hero-headline { font-size: 40px; }
+    .engine-grid { grid-template-columns: 1fr; }
+    .analog-grid { grid-template-columns: 1fr; }
+    .wci-inner { grid-template-columns: 1fr; }
+    .interactions-grid { grid-template-columns: 1fr; }
+    .mobile-grid { grid-template-columns: 1fr; }
+    .spec-footer { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<nav class="topbar">
+  <div class="topbar-logo">N/A — SPEC</div>
+  <div class="topbar-nav">
+    <a href="#design-system">SYSTEM</a>
+    <a href="#hero">HERO</a>
+    <a href="#engine">ENGINE</a>
+    <a href="#analog">ANALOG</a>
+    <a href="#blueprint">BLUEPRINT</a>
+    <a href="#interactions">MICRO</a>
+    <a href="#architecture">ARCH</a>
+    <a href="https://nielless.com" class="cta">LIVE SITE →</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- DOCUMENT HEADER -->
+  <header class="doc-header">
+    <div class="doc-rev">DESIGN SPECIFICATION — REV 1.0</div>
+    <div class="doc-title">NIELLESS.COM</div>
+    <div class="doc-sub">Modern Brutalism × Mechanical Elegance — Full-Stack Portfolio for Nielless Acharya</div>
+  </header>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 00 — DESIGN PHILOSOPHY -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="section-label">[00] DESIGN PHILOSOPHY</div>
+    <p class="section-intro">The site operates as a system boot sequence, not a greeting. The visitor doesn't scroll through a portfolio — they <em>initiate</em> one. Every interaction should feel like turning a physical dial or pressing a mechanical key: deliberate, weighted, with consequence.</p>
+    <div class="principles">
+      <div class="principle"><div class="principle-text">Order. Logic. Amor Fati. These are not decorative taglines — they are the structural constraints the entire design system is derived from.</div></div>
+      <div class="principle"><div class="principle-text">No smiling headshots. No "Hi, I'm a developer." The visitor earns the content by initiating the compile sequence.</div></div>
+      <div class="principle"><div class="principle-text">Negative space is structural, not decorative. Silence between elements carries weight — like the space between notes in Hindustani classical.</div></div>
+      <div class="principle"><div class="principle-text">Sound is an opt-in layer, not background noise. Muted by default. Activated by the curious. Rewarding to the audiophile.</div></div>
+      <div class="principle"><div class="principle-text">The system either holds under production load, or it gets rebuilt until it does. This applies to the portfolio itself.</div></div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 01 — DESIGN SYSTEM -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="design-system">
+    <div class="section-label">[01] DESIGN SYSTEM</div>
+    <div class="section-title">TOKENS, TYPE & GRID</div>
+
+    <!-- Color Tokens -->
+    <div class="ds-block">
+      <div class="ds-label">COLOR TOKENS</div>
+      <div class="color-grid">
+        <div class="color-swatch"><div class="swatch-fill" style="background:#060608;border-bottom:1px solid #2E2E31"></div><div class="swatch-info"><div class="swatch-token">--void</div><div class="swatch-hex">#060608</div><div class="swatch-use">Page background, deepest surfaces</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#0E0E10"></div><div class="swatch-info"><div class="swatch-token">--surface</div><div class="swatch-hex">#0E0E10</div><div class="swatch-use">Card backgrounds, panels</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#161618"></div><div class="swatch-info"><div class="swatch-token">--surface2</div><div class="swatch-hex">#161618</div><div class="swatch-use">Nested containers, code blocks</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#2E2E31"></div><div class="swatch-info"><div class="swatch-token">--border</div><div class="swatch-hex">#2E2E31</div><div class="swatch-use">Card borders (default)</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#C8A96E"></div><div class="swatch-info"><div class="swatch-token">--brass</div><div class="swatch-hex">#C8A96E</div><div class="swatch-use">Primary accent — active, CTA, labels</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#8A7249"></div><div class="swatch-info"><div class="swatch-token">--brass-dim</div><div class="swatch-hex">#8A7249</div><div class="swatch-use">Brass borders, secondary brass</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#E2C48A"></div><div class="swatch-info"><div class="swatch-token">--brass-bright</div><div class="swatch-hex">#E2C48A</div><div class="swatch-use">Brass hover state</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#39FF14"></div><div class="swatch-info"><div class="swatch-token">--signal</div><div class="swatch-hex">#39FF14</div><div class="swatch-use">Live / active status — use sparingly</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#FF4D1A"></div><div class="swatch-info"><div class="swatch-token">--hot</div><div class="swatch-hex">#FF4D1A</div><div class="swatch-use">Regulated / warning tags</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#A8C8E8"></div><div class="swatch-info"><div class="swatch-token">--ice</div><div class="swatch-hex">#A8C8E8</div><div class="swatch-use">Cloud / AWS tags</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#E8E2D5"></div><div class="swatch-info"><div class="swatch-token">--dust</div><div class="swatch-hex">#E8E2D5</div><div class="swatch-use">Primary text — warm white, not pure</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#606068"></div><div class="swatch-info"><div class="swatch-token">--muted</div><div class="swatch-hex">#606068</div><div class="swatch-use">Secondary text, descriptions</div></div></div>
+      </div>
+      <div style="margin-top:16px;font-size:10px;color:var(--brass);border-left:2px solid var(--brass-dim);padding:10px 14px;background:rgba(200,169,110,0.05)">
+        RULE: <span style="color:var(--muted)">--brass is load-bearing. Active nav states, section counters, CTA borders, one accent per card. Overusing it kills it.</span>
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <div class="ds-block">
+      <div class="ds-label">TYPOGRAPHY SYSTEM — THREE FONTS, THREE ROLES</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">DISPLAY</div>
+          <div class="font-preview">ORDER.</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">Bebas Neue — all headings, hero text, project titles. Brutalist. Industrial. Zero warmth. Letter-spacing 0.04–0.06em.</div>
+        </div>
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">MONO</div>
+          <div class="font-preview-mono">nielless@nielless.com:~$ ignite</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">JetBrains Mono — all UI labels, nav items, tech tags, terminal blocks. The "voice" of the system.</div>
+        </div>
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">SERIF</div>
+          <div class="font-preview-serif">"The obstacle is the way."</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">Crimson Pro italic — philosophy asides, Analog Soul. Soft contrast against the cold grid. The "soul."</div>
+        </div>
+      </div>
+      <table class="scale-table">
+        <thead>
+          <tr><th>Role</th><th>Font</th><th>Size</th><th>Weight</th><th>Usage</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Hero</td><td>Bebas Neue</td><td>58–72px</td><td>400</td><td style="color:var(--muted2)">"ORDER. LOGIC. AMOR FATI."</td></tr>
+          <tr><td>Section title</td><td>Bebas Neue</td><td>40px</td><td>400</td><td style="color:var(--muted2)">Section headers</td></tr>
+          <tr><td>Project title</td><td>Bebas Neue</td><td>26px</td><td>400</td><td style="color:var(--muted2)">Schematic card titles</td></tr>
+          <tr><td>Section label</td><td>JetBrains Mono</td><td>10px</td><td>500</td><td style="color:var(--muted2)">[02] THE ENGINE, counters</td></tr>
+          <tr><td>UI label</td><td>JetBrains Mono</td><td>9–10px</td><td>400</td><td style="color:var(--muted2)">Tech tags, timestamps, badges</td></tr>
+          <tr><td>Terminal</td><td>JetBrains Mono</td><td>13px</td><td>400</td><td style="color:var(--muted2)">Boot text, code blocks</td></tr>
+          <tr><td>Body prose</td><td>Crimson Pro italic</td><td>15–17px</td><td>400</td><td style="color:var(--muted2)">Philosophy, analog descriptions</td></tr>
+          <tr><td>Pull quote</td><td>Crimson Pro italic</td><td>18px</td><td>400</td><td style="color:var(--muted2)">Philosophy strip, footer line</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Spacing -->
+    <div class="ds-block">
+      <div class="ds-label">SPACING & GRID</div>
+      <div class="spacing-grid">
+        <div class="spacing-item"><div class="spacing-value">8PX</div><div class="spacing-desc">BASE UNIT — all spacing derived</div></div>
+        <div class="spacing-item"><div class="spacing-value">36PX</div><div class="spacing-desc">PAGE PADDING — horizontal</div></div>
+        <div class="spacing-item"><div class="spacing-value">80PX</div><div class="spacing-desc">SECTION GAP — vertical rhythm</div></div>
+        <div class="spacing-item"><div class="spacing-value">20PX</div><div class="spacing-desc">CARD PADDING — internal</div></div>
+        <div class="spacing-item"><div class="spacing-value">2-COL</div><div class="spacing-desc">ENGINE GRID — project cards</div></div>
+        <div class="spacing-item"><div class="spacing-value">3-COL</div><div class="spacing-desc">ANALOG GRID — personality panels</div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 02 — HERO -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="hero">
+    <div class="section-label">[02] HERO — THE BOOT SEQUENCE</div>
+    <div class="section-title">NO GREETING. THE PAGE BOOTS.</div>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com</span>
+      </div>
+      <div class="screen-body" style="min-height:420px">
+        <!-- Nav -->
+        <div class="hero-nav-mock">
+          <div class="hero-nav-logo">N/A</div>
+          <div class="hero-nav-links">
+            <span class="hero-nav-link">ENGINE</span>
+            <span class="hero-nav-link">ANALOG</span>
+            <span class="hero-nav-link">BLUEPRINT</span>
+            <span class="hero-nav-cta">[CONTACT]</span>
+          </div>
+        </div>
+        <!-- Content -->
+        <div class="hero-inner">
+          <div class="hero-terminal">
+            <div class="term-line">[BOOT] nielless.com — v4.0.0-production</div>
+            <div class="term-line">▸ Loading systems...</div>
+            <div class="term-line ok">▸ All systems nominal.</div>
+          </div>
+          <div class="hero-headline">ORDER.<br>LOGIC.<br><span class="accent">AMOR FATI.</span></div>
+          <div class="hero-sub">Full-Stack Engineer. AI-native builder. Backend-first. Systems that hold under load — or are rebuilt until they do.</div>
+          <div class="hero-cta"><span class="hero-cta-text">[ COMPILE → ]</span></div>
+          <div class="hero-ticker">
+            <div class="ticker-item">NODE.JS</div>
+            <div class="ticker-item">POSTGRESQL</div>
+            <div class="ticker-item">TYPESCRIPT</div>
+            <div class="ticker-item">AWS</div>
+            <div class="ticker-item">NEXT.JS</div>
+            <div class="ticker-item">LLM AGENTS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note">
+      <div class="interaction-note-label">ANIMATION SEQUENCE</div>
+      <ul class="bullet-list">
+        <li><strong>0ms</strong> — Page is void black. Nothing visible.</li>
+        <li><strong>200ms</strong> — Terminal lines type one by one (30ms/char typewriter). <code>#39FF14</code> for "All systems nominal."</li>
+        <li><strong>800ms</strong> — "ORDER." fades + slides up 12px into position.</li>
+        <li><strong>950ms / 1100ms</strong> — "LOGIC." then "AMOR FATI." follow with stagger.</li>
+        <li><strong>1300ms</strong> — Subtext fades in (Crimson Pro italic).</li>
+        <li><strong>1500ms</strong> — <code>[ COMPILE → ]</code> button fades in with brass border pulse.</li>
+        <li><strong>Ongoing</strong> — Right-side tech tickers scroll upward on a slow seamless loop.</li>
+      </ul>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">THE COMPILE INTERACTION</div>
+      <div class="interaction-note-body">On hover: border transitions <code>--brass-dim → --brass-bright</code> (120ms ease) + mechanical click via Web Audio API (80ms sine at 180Hz — solenoid feel). On click: fullscreen brass-line horizontal wipe (180ms) → scroll lock releases → rest of page reveals. This is the single gate between the visitor and the content.</div>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">NAVIGATION</div>
+      <ul class="bullet-list">
+        <li>Sticky top nav. Left: <code>N/A</code> in brass mono (10px, 0.15em tracking). Right: <code>ENGINE  ANALOG  BLUEPRINT</code> in muted mono + <code>[CONTACT]</code> with brass border.</li>
+        <li>On scroll: nav background transitions from transparent → <code>rgba(6,6,8,0.92)</code> with 1px bottom border.</li>
+        <li><strong>Left-edge vertical nav</strong> (fixed, desktop only): 4 short tick marks — one per section. Active tick lit in brass with a slow 2s pulse. No labels. Purely positional.</li>
+        <li><strong>Sound toggle:</strong> monoline SVG speaker icon in nav. Muted by default. One click activates all hover sounds globally.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 03 — ENGINE -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="engine">
+    <div class="section-label">[03] THE ENGINE — SYSTEM SCHEMATICS</div>
+    <div class="section-title">PROJECTS AS BLUEPRINTS</div>
+    <p class="section-intro">Projects are not portfolio cards. They are system schematics — blueprints of what was built, why, and how it runs. Each card has a unique data visualization that tells its story before a single word is read.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com/#engine</span>
+      </div>
+      <div class="screen-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[02] THE ENGINE</div>
+            <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">SYSTEM SCHEMATICS</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--border2);text-align:right;line-height:1.8">5 SYSTEMS<br>PRODUCTION GRADE</div>
+        </div>
+
+        <div class="engine-grid">
+
+          <!-- ORION -->
+          <div class="engine-card">
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_001</div><div class="card-title">ORION</div></div>
+              <div style="width:28px;height:28px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center">
+                <div style="width:8px;height:8px;background:var(--brass);border-radius:50%"></div>
+              </div>
+            </div>
+            <div class="card-visual">
+              <div class="waveform">
+                <div class="waveform-bar" style="height:8px"></div>
+                <div class="waveform-bar" style="height:16px"></div>
+                <div class="waveform-bar" style="height:24px"></div>
+                <div class="waveform-bar" style="height:28px;opacity:1"></div>
+                <div class="waveform-bar" style="height:20px"></div>
+                <div class="waveform-bar" style="height:14px"></div>
+                <div class="waveform-bar" style="height:22px"></div>
+                <div class="waveform-bar" style="height:18px"></div>
+                <div class="waveform-bar" style="height:10px"></div>
+                <div class="waveform-bar" style="height:16px"></div>
+                <div class="waveform-bar" style="height:26px;opacity:1"></div>
+                <div class="waveform-bar" style="height:12px"></div>
+              </div>
+            </div>
+            <div class="card-desc">Voice-native AI assistant.<br>End-to-end agent orchestration layer.</div>
+            <div class="card-tags">
+              <span class="tag">WHISPER</span><span class="tag-arrow">→</span>
+              <span class="tag">GROQ</span><span class="tag-arrow">→</span>
+              <span class="tag">TTS</span>
+            </div>
+            <div class="badge-row"><span class="badge badge-muted">REACT NATIVE</span><span class="badge badge-muted">NODE.JS</span><span class="badge badge-muted">POSTGRESQL</span></div>
+          </div>
+
+          <!-- REPWISE -->
+          <div class="engine-card">
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_002</div><div class="card-title">REPWISE</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-visual">
+              <div class="metric-bar">
+                <div class="metric-label">80% PR AUTOMATION · 0 MANUAL CODE</div>
+                <div class="bar-track"><div class="bar-fill-brass" style="width:80%"></div></div>
+              </div>
+              <div class="metric-bar" style="margin-top:8px">
+                <div class="metric-label">AGENTIC SDLC COVERAGE</div>
+                <div class="bar-track"><div class="bar-fill-muted" style="width:95%"></div></div>
+              </div>
+            </div>
+            <div class="card-desc">AI-architected workout logger.<br>Agentic SDLC from schema → deploy.</div>
+            <div class="card-tags">
+              <span class="tag">NEXT.JS</span><span class="tag-arrow">+</span>
+              <span class="tag">SUPABASE</span><span class="tag-arrow">+</span>
+              <span class="tag">VERCEL</span>
+            </div>
+            <div class="badge-row"><span class="badge badge-muted">TYPESCRIPT</span><span class="badge badge-muted">TAILWIND</span></div>
+          </div>
+
+          <!-- AGENTIC SYSTEMS -->
+          <div class="engine-card">
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_003</div><div class="card-title">AGENTIC SYS.</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-visual" style="padding:8px 0">
+              <div class="fanout">
+                <div class="fanout-node-src"></div>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;align-items:center;gap:4px"><div class="fanout-tick"></div><div class="fanout-node-w"></div></div>
+                  <div style="display:flex;align-items:center;gap:4px"><div class="fanout-tick"></div><div class="fanout-node-w"></div></div>
+                  <div style="display:flex;align-items:center;gap:4px"><div class="fanout-tick"></div><div class="fanout-node-w"></div></div>
+                </div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin:0 4px">→</div>
+                <div class="fanout-node-agg"></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--border2);margin-top:6px">PROMISE.ALL FAN-OUT / FAN-IN</div>
+            </div>
+            <div class="card-desc">Multi-agent Node.js orchestration.<br>Handoff + parallel execution patterns.</div>
+            <div class="card-tags">
+              <span class="tag">NODE.JS</span><span class="tag-arrow">+</span>
+              <span class="tag">TYPESCRIPT</span><span class="tag-arrow">+</span>
+              <span class="tag">GROQ</span>
+            </div>
+          </div>
+
+          <!-- UHC -->
+          <div class="engine-card">
+            <div class="card-header">
+              <div><div class="card-counter">PRODUCTION_001</div><div class="card-title">UHC</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-visual">
+              <div class="metric-bar">
+                <div class="metric-label">100K+ SESSIONS / MONTH</div>
+                <div class="bar-track"><div class="bar-fill-brass" style="width:75%"></div></div>
+              </div>
+              <div class="metric-bar" style="margin-top:8px">
+                <div class="metric-label">95%+ UNIT TEST COVERAGE</div>
+                <div class="bar-track"><div class="bar-fill-muted" style="width:95%"></div></div>
+              </div>
+            </div>
+            <div class="card-desc">E-commerce store from greenfield. Canary<br>pipeline. LSA/HSA payment integrations.</div>
+            <div class="card-tags">
+              <span class="tag">NEXT.JS</span><span class="tag-arrow">→</span>
+              <span class="tag">REDUX</span><span class="tag-arrow">→</span>
+              <span class="tag">AWS</span><span class="tag-arrow">→</span>
+              <span class="tag">GH ACTIONS</span>
+            </div>
+            <div class="badge-row">
+              <span class="badge badge-ice">NEXT.JS</span>
+              <span class="badge badge-muted">COPILOT</span>
+            </div>
+            <div class="card-watermark">@PUBLICIS</div>
+          </div>
+
+        </div>
+
+        <!-- WCI — full width -->
+        <div class="engine-card-full">
+          <div class="wci-inner">
+            <div>
+              <div class="card-counter">PRODUCTION_002</div>
+              <div class="card-title">WCI — CARBON TRADING</div>
+              <div class="card-desc" style="margin-top:8px">Legacy Python/DynamoDB → Node.js/PostgreSQL. Carbon<br>Emissions Cap-and-Trade allocation APIs. 10% annual<br>corporate carbon cap reduction enforced via PostgreSQL transactions.</div>
+              <div class="badge-row" style="margin-top:12px">
+                <span class="badge badge-hot">REGULATED</span>
+                <span class="badge badge-muted">ZERO DOWNTIME</span>
+                <span class="badge badge-ice">AWS</span>
+              </div>
+              <div class="card-tags" style="margin-top:10px">
+                <span class="tag">NODE.JS</span><span class="tag-arrow">→</span>
+                <span class="tag">POSTGRESQL</span><span class="tag-arrow">+</span>
+                <span class="tag">PYTHON</span><span class="tag-arrow">+</span>
+                <span class="tag">AWS RDS</span>
+              </div>
+              <div class="card-watermark">@PUBLICIS</div>
+            </div>
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:14px">MIGRATION SCHEMATIC</div>
+              <div class="migration">
+                <div class="mig-from">
+                  <div class="mig-label dead">PYTHON</div>
+                  <div class="mig-label dead">DYNAMODB</div>
+                  <div class="mig-sub">LEGACY</div>
+                </div>
+                <div class="mig-arrow">
+                  <div style="font-family:var(--mono);font-size:9px;color:var(--brass);letter-spacing:0.08em;margin-bottom:4px">RE-ARCH</div>
+                  <div class="mig-line"></div>
+                  <div class="mig-arrowhead">▶</div>
+                  <div class="mig-confirm">100% CONSISTENCY</div>
+                </div>
+                <div class="mig-to">
+                  <div class="mig-label live">NODE.JS</div>
+                  <div class="mig-label live">POSTGRESQL</div>
+                  <div class="mig-sub" style="color:var(--signal)">PRODUCTION</div>
+                </div>
+              </div>
+              <div style="margin-top:16px;font-family:var(--mono);font-size:9px;color:var(--muted2);line-height:2">
+                3 MICROSERVICES MIGRATED<br>
+                PRIVILEGE MGMT + USERS + ACTION LOGGING<br>
+                ZERO-DOWNTIME CUTOVER<br>
+                STRICT AUDIT COMPLIANCE
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="interaction-note" style="margin-top:14px">
+      <div class="interaction-note-label">CARD STATES</div>
+      <ul class="bullet-list">
+        <li><strong>Default:</strong> border <code>#2E2E31</code>, background <code>#0E0E10</code>.</li>
+        <li><strong>Hover:</strong> border transitions to <code>--brass</code> (120ms ease), background lifts to <code>#111113</code>. Mechanical click sound fires on click.</li>
+        <li><strong>Expanded (click):</strong> card expands to full-width modal showing architecture diagram (SVG), tech stack table, 3–4 decision bullet points, and external links. Close via <code>[ × ]</code> top right — same click sound.</li>
+        <li><strong>WCI layout:</strong> sits full-width (spanning both grid columns) at the bottom, giving the migration arrow diagram horizontal room and visually separating the two production entries from personal projects above.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 04 — ANALOG SOUL -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="analog">
+    <div class="section-label">[04] THE ANALOG SOUL</div>
+    <div class="section-title">GROUNDED IN THE PHYSICAL</div>
+    <p class="section-intro">A stark contrast to the digital engineering side. The aesthetic deliberately shifts — warmer, slower. Crimson Pro italic takes over from JetBrains Mono. This section exists to prove there is a human behind the system.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com/#analog</span>
+      </div>
+      <div class="screen-body">
+        <div style="margin-bottom:28px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[03] THE ANALOG SOUL</div>
+          <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust);line-height:1">GROUNDED<br>IN THE PHYSICAL</div>
+        </div>
+        <div class="analog-grid">
+
+          <!-- Audiophile -->
+          <div class="analog-panel audiophile">
+            <div class="analog-label audiophile">AUDIOPHILE</div>
+            <div class="analog-visual">
+              <div class="eq-bars">
+                <div class="eq-bar" style="height:14px;opacity:0.4"></div>
+                <div class="eq-bar" style="height:22px;opacity:0.6"></div>
+                <div class="eq-bar" style="height:32px"></div>
+                <div class="eq-bar" style="height:40px"></div>
+                <div class="eq-bar" style="height:34px;opacity:0.9"></div>
+                <div class="eq-bar" style="height:24px;opacity:0.7"></div>
+                <div class="eq-bar" style="height:16px;opacity:0.5"></div>
+                <div class="eq-bar" style="height:20px;opacity:0.6"></div>
+              </div>
+            </div>
+            <div class="analog-desc">Guitar · Ukulele<br>Keyboard · Bina No. 8<br>Hindustani Classical</div>
+            <div class="analog-hint">HOVER → PLAY RAAG BHAIRAV</div>
+          </div>
+
+          <!-- Lens -->
+          <div class="analog-panel lens">
+            <div class="analog-label lens">THE LENS</div>
+            <div class="analog-visual">
+              <div class="aperture-outer">
+                <div class="aperture-mid">
+                  <div class="aperture-inner"></div>
+                </div>
+              </div>
+            </div>
+            <div class="analog-desc">Optical truth<br>over simulation.<br>DSLR. Raw.</div>
+            <div class="analog-hint">HOVER → SHUTTER CLICK</div>
+          </div>
+
+          <!-- Diesel -->
+          <div class="analog-panel diesel">
+            <div class="analog-label diesel">DIESEL SOUL</div>
+            <div class="analog-visual">
+              <div class="rpm-wrap">
+                <div class="rpm-header">
+                  <span class="rpm-zero">0</span>
+                  <span class="rpm-max">4500 RPM</span>
+                </div>
+                <div class="rpm-track"><div class="rpm-fill"></div></div>
+              </div>
+            </div>
+            <div class="analog-desc">Ford EcoSport.<br>Mechanical grunt.<br>The honest machine.</div>
+            <div class="analog-hint">HOVER → ENGINE IDLE</div>
+          </div>
+
+        </div>
+
+        <!-- Philosophy strip -->
+        <div class="philosophy-strip">
+          <div class="philosophy-quote">"Memento Mori. The system will halt. Build well."</div>
+          <div class="philosophy-tag">STOIC<br>FRAMEWORK</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note" style="margin-top:14px">
+      <div class="interaction-note-label">SOUND DESIGN — ANALOG EASTER EGGS</div>
+      <ul class="bullet-list">
+        <li><strong>Audiophile panel hover:</strong> 300ms harmonium-like tone — Raag Bhairav Sa. Web Audio oscillator bank with harmonics shaping it toward a reed instrument timbre. EQ bars animate on hover (staggered height oscillation, 600ms loop).</li>
+        <li><strong>Lens panel hover:</strong> 60ms shutter click — layered 90Hz low thud + 3kHz high transient. Two oscillators, instant attack, exponential decay. The visitor hears a DSLR.</li>
+        <li><strong>Diesel panel hover:</strong> 200ms low-frequency engine idle — 20–60Hz sine with slow tremolo. Physical resonance. Should be felt as much as heard on a decent speaker or headphones.</li>
+        <li>All three fire only if the global sound toggle in the nav is active. The micro-labels <code>HOVER → PLAY RAAG BHAIRAV</code> are set in <code>#2E2E31</code> — barely visible. This is the easter egg. The audiophile will find it.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 05 — BLUEPRINT -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="blueprint">
+    <div class="section-label">[05] THE BLUEPRINT — DEPLOYMENT HISTORY</div>
+    <div class="section-title">SYSTEM LOG</div>
+    <p class="section-intro">A timeline styled as a deployment history — a git log of a career. Clean, vertical, no decoration beyond the branch line and indicator dots. Timestamps read like commit timestamps. Titles read like deployment tags.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com/#blueprint</span>
+      </div>
+      <div class="screen-body">
+        <div style="margin-bottom:32px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[04] THE BLUEPRINT</div>
+          <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">DEPLOYMENT HISTORY</div>
+        </div>
+
+        <div class="timeline">
+
+          <div class="timeline-entry">
+            <div class="timeline-dot active"></div>
+            <div class="timeline-ts active">NOW → ACTIVE</div>
+            <div class="timeline-title">PRODUCT ENGINEERING MODE</div>
+            <div class="timeline-desc">Building AI-native systems with full ownership. Exiting the consultancy model. Targeting international remote roles at product companies — systems that are owned, not delivered.</div>
+          </div>
+
+          <div class="timeline-entry">
+            <div class="timeline-dot past"></div>
+            <div class="timeline-ts past">JUL 2022 → PRESENT</div>
+            <div class="timeline-title">PUBLICIS SAPIENT — 4 YOE</div>
+            <div class="timeline-desc">Full-Stack Software Engineer. Node.js/PostgreSQL backend. UHC e-commerce at 100K+ monthly sessions. WCI carbon cap-and-trade regulatory APIs. Canary deployment pipeline. Zero-downtime DB migration from Python/DynamoDB → Node.js/PostgreSQL.</div>
+          </div>
+
+          <div class="timeline-entry">
+            <div class="timeline-dot past"></div>
+            <div class="timeline-ts past">FEB 2022 → JUN 2022</div>
+            <div class="timeline-title">PAYPAL INDIA — INTERN</div>
+            <div class="timeline-desc">Rapid Emerging Markets Team. Built the Interoperability Dashboard using Node.js, REST APIs, and React — enabling real-time visualization of merchant transaction failures. First exposure to production-scale distributed payments infrastructure.</div>
+          </div>
+
+          <div class="timeline-entry">
+            <div class="timeline-dot old"></div>
+            <div class="timeline-ts old">2018 → 2022</div>
+            <div class="timeline-title">BITS PILANI — B.E. CS</div>
+            <div class="timeline-desc">Hyderabad Campus. CGPA 7.44. Computer Science. The foundation.</div>
+          </div>
+
+        </div>
+
+        <div class="stack-snap">
+          <div class="stack-cmd">$ current --stack</div>
+          <div class="stack-tags">
+            <span class="stack-tag normal">NODE.JS</span>
+            <span class="stack-tag normal">TYPESCRIPT</span>
+            <span class="stack-tag normal">POSTGRESQL</span>
+            <span class="stack-tag normal">NEXT.JS</span>
+            <span class="stack-tag ai">[LLM AGENTS]</span>
+            <span class="stack-tag ai">[AGENTIC SDLC]</span>
+            <span class="stack-tag normal">AWS</span>
+            <span class="stack-tag normal">DOCKER</span>
+            <span class="stack-tag normal">PYTHON</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 06 — MICRO-DETAILS -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="interactions">
+    <div class="section-label">[06] MICRO-DETAILS & INTERACTIONS</div>
+    <div class="section-title">THE FEEL OF THE MACHINE</div>
+
+    <div class="interactions-grid">
+      <div class="interact-card">
+        <div class="interact-title">CUSTOM CURSOR</div>
+        <div class="interact-body">
+          Default: 12×12 brass ring, no fill, 1px stroke in <code>--brass-dim</code>.<br><br>
+          On interactive hover: ring fills to <code>--brass</code> solid (120ms).<br>
+          On click: brief scale burst 1.0 → 1.4 → 1.0 (120ms).<br>
+          Over text: collapses to 2px I-beam in brass.<br>
+          On void background: ring strokes down to <code>#2E2E31</code>.<br><br>
+          The cursor is the most tactile signal in the entire interface. Every state change should feel deliberate.
+        </div>
+      </div>
+      <div class="interact-card">
+        <div class="interact-title">PAGE TRANSITIONS</div>
+        <div class="interact-body">
+          Section nav click: a brass <code>1px</code> horizontal line sweeps left→right across the full viewport in 180ms, then content fades in. Not a standard opacity fade — closer to a film projector gate wipe.<br><br>
+          Scroll-triggered reveals: panels slide up 16px + fade from 0→1 opacity over 300ms (Framer Motion <code>useInView</code>).<br><br>
+          Parallax: max 20px vertical shift on hero text layers only.
+        </div>
+      </div>
+      <div class="interact-card">
+        <div class="interact-title">LEFT-EDGE TICK NAV</div>
+        <div class="interact-body">
+          Fixed to the left edge of the viewport (desktop only). Four short tick marks — one per section: Hero, Engine, Analog, Blueprint.<br><br>
+          Active tick: lit in brass with a slow 2s pulse animation. Inactive ticks: <code>#2E2E31</code>. No labels. No section names. Purely positional — like the mark on an analog dial.
+        </div>
+      </div>
+      <div class="interact-card">
+        <div class="interact-title">FOOTER</div>
+        <div class="interact-body">
+          6-cell minimal grid. Left: <code>N/A :: nielless.com</code> in 10px brass mono. Center: build timestamp in <code>#2E2E31</code>. Right: GitHub + LinkedIn as monoline SVG icons in <code>--muted</code>.<br><br>
+          Bottom edge: one-liner in Crimson Pro italic, 13px, <code>--muted</code>:<br>
+          <em>"Build until it holds."</em>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sound Table -->
+    <div class="arch-block" style="margin-top:14px">
+      <div class="ds-label">SOUND DESIGN — WEB AUDIO API (NO LIBRARIES)</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted2);margin-bottom:14px">All sounds muted by default. Activated globally via the speaker icon toggle in the nav.</div>
+      <table class="sound-table">
+        <thead>
+          <tr><th>Trigger</th><th>Sound</th><th>Web Audio Technique</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Button hover (COMPILE)</td><td style="color:var(--brass)">Solenoid click</td><td>80ms sine oscillator at 180Hz, fast exponential decay</td></tr>
+          <tr><td>Card click (Engine)</td><td style="color:var(--brass)">Mechanical thud</td><td>60ms layered sine: 120Hz body + 800Hz transient attack</td></tr>
+          <tr><td>Lens panel hover</td><td style="color:var(--brass)">DSLR shutter</td><td>60ms: 90Hz low thud + 3kHz high transient, both instant attack</td></tr>
+          <tr><td>Audiophile panel hover</td><td style="color:var(--brass)">Raag Bhairav Sa</td><td>300ms oscillator bank — fundamental + harmonics 2–5, shaped to reed timbre</td></tr>
+          <tr><td>Diesel panel hover</td><td style="color:var(--brass)">Engine idle</td><td>200ms: 20–60Hz sine with slow tremolo LFO (4Hz modulation depth)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 07 — ARCHITECTURE -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="architecture">
+    <div class="section-label">[07] NEXT.JS BUILD ARCHITECTURE</div>
+    <div class="section-title">THE STACK & FILE STRUCTURE</div>
+
+    <div class="arch-block">
+      <div class="ds-label">TECH STACK</div>
+      <div class="arch-code"><span class="hl">Framework:</span>   <span class="norm">Next.js 14 (App Router)</span>
+<span class="hl">Language:</span>    <span class="norm">TypeScript (strict mode)</span>
+<span class="hl">Animation:</span>   <span class="norm">Framer Motion (useInView, motion.div)</span>
+<span class="hl">Sound:</span>       <span class="norm">Web Audio API — raw oscillators, no library</span>
+<span class="hl">Styling:</span>     <span class="norm">CSS Custom Properties + CSS Modules</span>
+<span class="hl">Fonts:</span>       <span class="norm">Self-hosted WOFF2 (Google Fonts subset)</span>
+<span class="hl">Deploy:</span>      <span class="norm">Vercel</span>
+<span class="hl">Performance:</span> <span class="norm">Target Lighthouse 95+ across all metrics</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">FILE STRUCTURE</div>
+      <div class="arch-code"><span class="hl">nielless.com/</span>
+├── <span class="dim">app/</span>
+│   ├── <span class="norm">page.tsx</span>              <span class="comment">← Hero + compile gate</span>
+│   ├── <span class="dim">layout.tsx</span>            <span class="comment">← Cursor + audio provider + nav</span>
+│   └── <span class="dim">globals.css</span>           <span class="comment">← Full token system</span>
+├── <span class="dim">components/</span>
+│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Terminal typewriter + compile button</span>
+│   ├── <span class="norm">Nav.tsx</span>               <span class="comment">← Sticky top + left tick nav</span>
+│   ├── <span class="norm">SchematicCard.tsx</span>     <span class="comment">← Engine project cards (reusable)</span>
+│   ├── <span class="norm">EngineSection.tsx</span>     <span class="comment">← Section container</span>
+│   ├── <span class="norm">AnalogPanel.tsx</span>       <span class="comment">← Audiophile / Lens / Diesel</span>
+│   ├── <span class="norm">Timeline.tsx</span>          <span class="comment">← Blueprint deployment history</span>
+│   ├── <span class="norm">CustomCursor.tsx</span>      <span class="comment">← Brass ring cursor</span>
+│   └── <span class="norm">AudioEngine.ts</span>        <span class="comment">← Web Audio API singleton</span>
+├── <span class="dim">lib/</span>
+│   └── <span class="norm">sounds.ts</span>             <span class="comment">← Oscillator presets (solenoid, shutter, harmonium, diesel)</span>
+├── <span class="dim">data/</span>
+│   └── <span class="norm">projects.ts</span>           <span class="comment">← Schematic card data (typed)</span>
+└── <span class="dim">public/fonts/</span>          <span class="comment">← Self-hosted Bebas Neue, JetBrains Mono, Crimson Pro</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">IMPLEMENTATION ORDER (RECOMMENDED)</div>
+      <ol class="order-list">
+        <li class="order-item"><span class="order-num">01</span><div><code>globals.css</code> — <span>Lock the full token system first. Everything else references it. Don't start any component until this is done.</span></div></li>
+        <li class="order-item"><span class="order-num">02</span><div><code>AudioEngine.ts</code> — <span>Build and test all five sounds early. They are easy to break late when you're deep in component work.</span></div></li>
+        <li class="order-item"><span class="order-num">03</span><div><code>CustomCursor.tsx</code> — <span>Install globally in layout.tsx, verify all cursor states work before building any section.</span></div></li>
+        <li class="order-item"><span class="order-num">04</span><div><code>HeroBoot.tsx</code> — <span>The boot sequence animation is the most complex piece. Do it early while the codebase is clean. The typewriter, staggered reveals, and compile gate all live here.</span></div></li>
+        <li class="order-item"><span class="order-num">05</span><div><code>SchematicCard.tsx</code> — <span>Most reusable component. Build it once, use it five times. Get the hover states, badge system, and visual slot right here.</span></div></li>
+        <li class="order-item"><span class="order-num">06</span><div><code>AnalogPanel.tsx</code> + <code>Timeline.tsx</code> — <span>Straightforward once the token system and animation patterns are solid from previous steps.</span></div></li>
+        <li class="order-item"><span class="order-num">07</span><div><strong>Performance pass</strong> — <span>Font subsetting (pyftsubset), image optimization, Lighthouse audit, bundle analysis. Target 95+ on all four metrics before ship.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 08 — FOOTER MOCKUP -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="section-label">[08] FOOTER</div>
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com — bottom</span>
+      </div>
+      <div class="footer-mock">
+        <div class="footer-mock-grid">
+          <div class="footer-mock-sig">N/A :: nielless.com</div>
+          <div class="footer-mock-build">BUILD 2025.XX.XX</div>
+          <div class="footer-mock-icons">
+            <span class="footer-mock-icon">GH</span>
+            <span class="footer-mock-icon">LI</span>
+          </div>
+        </div>
+        <div class="footer-mock-quote">"Build until it holds."</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 09 — MOBILE -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="section-label">[09] MOBILE CONSIDERATIONS</div>
+    <div class="mobile-grid">
+      <div class="mobile-card">
+        <div class="mobile-context">HERO</div>
+        <div class="mobile-rule">Font scales from 62px → 40px Bebas. Left-edge tick nav hides. Terminal boot lines condense to 2 (remove loading line, keep "All systems nominal").</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">ENGINE</div>
+        <div class="mobile-rule">2-column grid → 1-column stack. WCI full-width card stays full-width. Migration arrow diagram reflowed vertically (FROM → (arrow down) → TO).</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">ANALOG</div>
+        <div class="mobile-rule">3-column grid → 1-column stack, panels full-width. Philosophy strip text reduces to 15px.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">SOUND</div>
+        <div class="mobile-rule">All sounds disabled by default on touch devices. Respect battery context. The sound toggle is still accessible but defaults to off.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">CURSOR</div>
+        <div class="mobile-rule">Custom brass ring cursor disabled on touch devices. Falls back to native cursor. No custom cursor logic runs.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">MOTION</div>
+        <div class="mobile-rule"><code>@media (prefers-reduced-motion: reduce)</code> disables all animations — typewriter, staggered reveals, waveform animation, EQ bars, parallax. Static fallback only.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DOCUMENT FOOTER ── -->
+  <footer class="spec-footer">
+    <div class="footer-left">N/A :: DESIGN SPEC — REV 1.0</div>
+    <div class="footer-center" style="color:var(--border2)">nielless.com</div>
+    <div class="footer-right">
+      <span class="footer-icon">GH</span>
+      <span class="footer-icon">LI</span>
+    </div>
+  </footer>
+  <div class="footer-quote">"Build until it holds."</div>
+
+</div><!-- /page-wrap -->
+</body>
+</html>
