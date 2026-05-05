@@ -67,7 +67,7 @@ export const SchematicCard: React.FC<SchematicCardProps> = ({
                 <div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--brass)', letterSpacing: '0.12em', marginBottom: '4px' }}>{counter}</div>
                     <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', letterSpacing: '0.06em', color: 'var(--dust)', textTransform: 'uppercase' }}>{title}</h3>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--muted)', lineHeight: 1.7, marginTop: '8px', marginBottom: '14px' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--dust)', opacity: 0.8, lineHeight: 1.7, marginTop: '8px', marginBottom: '14px' }}>
                         {description}
                     </p>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
@@ -126,10 +126,9 @@ export const SchematicCard: React.FC<SchematicCardProps> = ({
                     {visualization}
                 </div>
 
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '14px' }}>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--dust)', opacity: 0.8, lineHeight: 1.7, marginBottom: '14px' }}>
                     {description}
                 </p>
-
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
                     {tags.map((tag, i) => (
                         <React.Fragment key={i}>

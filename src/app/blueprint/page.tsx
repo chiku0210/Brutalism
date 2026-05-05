@@ -3,8 +3,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { TimelineEntry, StackSnapshot } from "@/components/Timeline";
+import Link from "next/link";
+import { useAudio } from "@/components/AudioProvider";
 
 export default function BlueprintPage() {
+  const { playSound } = useAudio();
   return (
     <main style={{ backgroundColor: 'var(--void)', minHeight: '100vh' }}>
       <motion.section 
@@ -15,7 +18,7 @@ export default function BlueprintPage() {
           style={{
               maxWidth: 'var(--max-width)',
               margin: '0 auto',
-              padding: '120px var(--page-padding) 80px',
+              padding: '60px var(--page-padding) 80px',
           }}
       >
           <div style={{ marginBottom: '32px' }}>
@@ -40,8 +43,9 @@ export default function BlueprintPage() {
                   status="old"
                   timestamp="2018 → 2022"
                   title="BITS PILANI — B.E. CS"
-                  description="Hyderabad Campus. The foundation. Explored systems engineering, distributed computing, and the rigorous logic of computer science."
+                  description="Hyderabad Campus. Computer Science. The foundation. Explored systems engineering, distributed computing, and the rigorous logic of computer science."
               />
+
           </div>
 
           <StackSnapshot />

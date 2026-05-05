@@ -40,6 +40,7 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body
         className={`${bebasNeue.variable} ${jetbrainsMono.variable} ${crimsonPro.variable} antialiased`}
+        style={{ cursor: 'none' }}
       >
         <AudioProvider>
           <CustomCursor />

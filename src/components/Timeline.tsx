@@ -41,8 +41,9 @@ export const TimelineEntry: React.FC<TimelineEntryProps> = ({ status, timestamp,
             {title}
         </h3>
         <p style={{
-            fontSize: '10px',
-            color: 'var(--muted)',
+            fontSize: '11px',
+            color: 'var(--dust)',
+            opacity: 0.8,
             lineHeight: 1.7,
             maxWidth: '600px'
         }}>

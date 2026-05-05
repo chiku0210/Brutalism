@@ -1,3 +1,22 @@
+/* 
+  NUCLEAR SYSTEM CURSOR SUPPRESSION 
+  Forcing 'none' on every element, state, and text node.
+*/
+html, body, #root-container, #root-container *, * {
+  cursor: none !important;
+}
+
+/* Explicitly target text selection and interactive states */
+::selection, ::-moz-selection {
+  cursor: none !important;
+}
+
+a, button, [role="button"], input, select, textarea, .interactive,
+a:hover, button:hover, [role="button"]:hover, .interactive:hover,
+p, span, h1, h2, h3, h4, h5, h6, li, blockquote, pre, code, div, section {
+  cursor: none !important;
+}
+
 :root {
   --void: #060608;
   --surface: #0E0E10;
@@ -12,8 +31,8 @@
   --hot: #FF4D1A;
   --ice: #A8C8E8;
   --dust: #E8E2D5;
-  --muted: #606068;
-  --muted2: #404044;
+  --muted: #A0A0A8;
+  --muted2: #808088;
 
   /* Spacing */
   --base-unit: 8px;
@@ -51,6 +70,22 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* Background Grid Overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* ── LAYOUT ── */
@@ -136,6 +171,8 @@ body {
         grid-template-columns: repeat(3, 1fr) !important;
     }
 }
+
+/* Page Wipe Animation */
 .page-wipe {
   position: fixed;
   top: 50%;

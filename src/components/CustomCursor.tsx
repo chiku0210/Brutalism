@@ -22,12 +22,9 @@ export const CustomCursor = () => {
       if (!target) return;
 
       const isInteractive = target.closest("a, button, [role='button'], .interactive");
-      const isText = target.closest("p, span, h1, h2, h3, h4, h5, h6, li, blockquote, pre, code");
 
       if (isInteractive) {
         setCursorType("hover");
-      } else if (isText) {
-        setCursorType("text");
       } else {
         // Check if it's "void" (background)
         const isVoid = target.tagName === "BODY" || target.id === "root-container" || target.classList.contains("void-bg");
@@ -115,11 +112,14 @@ export const CustomCursor = () => {
         translateY: "-50%",
         pointerEvents: "none",
         zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
       initial="default"
       animate={{
         ...variants[cursorType],
-        scale: isClicked ? 1.4 : 1,
+        scale: isClicked ? 1.2 : 1,
       }}
       transition={{
         type: "spring",
@@ -127,6 +127,17 @@ export const CustomCursor = () => {
         stiffness: 300,
         mass: 0.5,
       }}
-    />
+    >
+        {cursorType !== "text" && (
+            <motion.div 
+                style={{
+                    width: '2px',
+                    height: '2px',
+                    backgroundColor: 'var(--brass)',
+                    borderRadius: '50%'
+                }}
+            />
+        )}
+    </motion.div>
   );
 };

@@ -12,9 +12,10 @@ interface NavTickProps {
     index: number;
     isActive: boolean;
     onNavigate: (href: string) => void;
+    rotation: number;
 }
 
-const NavTick = ({ link, index, isActive, onNavigate }: NavTickProps) => {
+const DialTick = ({ link, index, isActive, onNavigate, rotation }: NavTickProps) => {
     const { playSound } = useAudio();
     const [isHovered, setIsHovered] = useState(false);
 
@@ -25,69 +26,69 @@ const NavTick = ({ link, index, isActive, onNavigate }: NavTickProps) => {
                 playSound("solenoid");
             }}
             onMouseLeave={() => setIsHovered(false)}
-            onMouseDown={() => playSound("solenoid")}
             onClick={() => onNavigate(link.href)}
-            whileHover={{ x: 8 }}
-            whileTap={{ scale: 0.98 }}
             style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '16px',
-                cursor: 'pointer',
-                padding: '10px 0',
-                position: 'relative',
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                width: '220px', 
+                height: '1px', // Exact 1px height for rotation precision
+                transformOrigin: 'left center', 
+                transform: `translateY(-50%) rotate(${rotation}deg)`,
                 zIndex: isHovered || isActive ? 10 : 1,
-                pointerEvents: 'auto'
+                pointerEvents: 'auto',
+                cursor: 'pointer'
             }}
         >
+            {/* Label - Positioned relative to the 1px center line */}
             <motion.div 
                 initial={false}
                 animate={{ 
                     opacity: isHovered || isActive ? 1 : 0.4,
                     x: isHovered ? 4 : 0,
-                    color: isHovered || isActive ? 'var(--brass)' : 'var(--muted2)'
+                    color: isHovered || isActive ? 'var(--brass)' : 'var(--muted)'
                 }}
                 style={{
+                    position: 'absolute',
+                    right: '48px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
                     fontFamily: 'var(--font-mono)',
                     fontSize: '9px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.12em',
                     width: '80px',
                     textAlign: 'right',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    lineHeight: '1'
                 }}
             >
-                {isHovered || isActive ? link.name : `0${index + 1}`}
+                {`0${index + 1}`}
             </motion.div>
             
+            {/* The Tick Line */}
             <motion.div
                 style={{ 
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
                     height: '1px',
                     backgroundColor: isActive ? "var(--brass)" : "var(--border)",
                 }}
                 animate={{ 
-                    width: isHovered ? 48 : isActive ? 36 : 12,
-                    backgroundColor: isHovered || isActive ? "var(--brass)" : "var(--border)",
+                    width: isHovered ? 40 : isActive ? 24 : 12,
+                    backgroundColor: isHovered || isActive ? "var(--brass)" : "var(--border2)",
                     boxShadow: isHovered || isActive ? "0 0 15px var(--brass)" : "none",
-                    scaleX: isHovered ? 1.2 : 1
                 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             />
 
-            {isHovered && (
-                <motion.div 
-                    layoutId="focus-ring"
-                    style={{
-                        position: 'absolute',
-                        right: '-10px',
-                        width: '4px',
-                        height: '4px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--brass)',
-                        boxShadow: '0 0 10px var(--brass)'
-                    }}
-                />
-            )}
+            {/* Expanded Hit Area for UX */}
+            <div style={{
+                position: 'absolute',
+                inset: '-10px 0',
+                zIndex: -1
+            }} />
         </motion.div>
     );
 };
@@ -113,6 +114,18 @@ export const Nav = () => {
   ];
 
   if (pathname === "/") return null;
+
+  // Dial rotation logic: 
+  // Home: 30deg (Home is top)
+  // Engine: 0deg (Engine is centered)
+  // Blueprint: -30deg (Blueprint is bottom)
+  const dialRotation = pathname.startsWith("/engine") ? 0 : pathname.startsWith("/blueprint") ? -30 : 30;
+
+  const nextModule = pathname.startsWith("/engine") 
+    ? { name: "Blueprint", label: "PROCEED_TO", href: "/blueprint", direction: "forward" } 
+    : pathname.startsWith("/blueprint") 
+    ? { name: "Engine", label: "GO_BACK_TO", href: "/engine", direction: "backward" } 
+    : null;
 
   return (
     <>
@@ -146,27 +159,6 @@ export const Nav = () => {
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }} className="hidden md:flex">
-            {navLinks.slice(1).map((link) => (
-              <Link 
-                key={link.name} 
-                href={link.href}
-                onMouseEnter={() => playSound("solenoid")}
-                style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '10px',
-                    color: pathname === link.href ? 'var(--brass)' : 'var(--muted)',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    transition: 'color 0.15s',
-                    textDecoration: 'none'
-                }}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <button
               onMouseEnter={() => playSound("solenoid")}
@@ -209,29 +201,147 @@ export const Nav = () => {
         </div>
       </nav>
 
-      {/* Left-edge Ticks */}
+      {/* Left-edge Vintage Camera Dial */}
       <div style={{
           position: 'fixed',
-          left: '32px',
+          left: '-230px', // Half of a 460px circle
           top: '50%',
           transform: 'translateY(-50%)',
-          zIndex: 90,
+          zIndex: 100,
+          width: '460px',
+          height: '460px',
+          borderRadius: '50%',
+          border: '1px solid var(--border)',
+          pointerEvents: 'none',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          padding: '40px 20px',
-          userSelect: 'none'
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          backgroundColor: 'rgba(10, 10, 12, 0.2)',
+          boxShadow: 'inset -20px 0 40px rgba(0,0,0,0.5)'
       }} className="hidden lg:flex">
-        {navLinks.map((link, i) => (
-            <NavTick 
-                key={i}
-                link={link}
-                index={i}
-                isActive={pathname === link.href}
-                onNavigate={(href) => router.push(href)}
-            />
-        ))}
+          <motion.div 
+            animate={{ rotate: dialRotation }}
+            transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+            style={{
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+                borderRadius: '50%',
+                border: '4px double var(--grid)',
+            }}
+          >
+              {/* Dial Ticks */}
+              {navLinks.map((link, i) => {
+                  const isActive = pathname === link.href;
+                  // Ticks are at -30, 0, 30 degrees relative to horizontal
+                  const tickRotation = (i - 1) * 30; 
+                  return (
+                      <DialTick 
+                        key={i}
+                        link={link}
+                        index={i}
+                        isActive={isActive}
+                        rotation={tickRotation}
+                        onNavigate={(href) => {
+                            playSound("thud");
+                            router.push(href);
+                        }}
+                      />
+                  );
+              })}
+          </motion.div>
+          
+          {/* Static Center Marker Line */}
+          <div style={{
+              position: 'absolute',
+              right: '-10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '40px',
+              height: '1px',
+              backgroundColor: 'var(--brass)',
+              boxShadow: '0 0 10px var(--brass)',
+              zIndex: 110
+          }} />
       </div>
+
+      {/* Right-edge Proceed Indicator */}
+      <AnimatePresence>
+        {nextModule && (
+            <div style={{
+                position: 'fixed',
+                right: '32px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 90,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                userSelect: 'none'
+            }} className="hidden lg:flex">
+                <Link href={nextModule.href} style={{ textDecoration: 'none' }}>
+                    <motion.div 
+                        onMouseEnter={() => playSound("solenoid")}
+                        initial={{ x: 20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: 20, opacity: 0 }}
+                        whileHover="hover"
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '16px',
+                            cursor: 'pointer',
+                            padding: '10px 0',
+                            position: 'relative',
+                            flexDirection: nextModule.direction === "backward" ? "row-reverse" : "row"
+                        }}
+                    >
+                        <motion.div
+                            style={{ 
+                                height: '1px',
+                                width: '36px',
+                                backgroundColor: "var(--border)",
+                            }}
+                            variants={{
+                                hover: { 
+                                    width: 48, 
+                                    backgroundColor: "var(--brass)",
+                                    boxShadow: "0 0 15px var(--brass)"
+                                }
+                            }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        />
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexDirection: nextModule.direction === "backward" ? "row-reverse" : "row" }}>
+                            <div style={{ textAlign: nextModule.direction === "backward" ? 'left' : 'right' }}>
+                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--muted2)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                                    {nextModule.label}
+                                </div>
+                                <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--brass)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    {nextModule.name}
+                                </div>
+                            </div>
+                            <motion.div 
+                                variants={{
+                                    hover: { x: nextModule.direction === "backward" ? -4 : 4, color: 'var(--brass-bright)' }
+                                }}
+                                style={{ 
+                                    color: 'var(--brass)', 
+                                    display: 'flex', 
+                                    alignItems: 'center',
+                                    transform: nextModule.direction === "backward" ? 'rotate(180deg)' : 'none'
+                                }}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M5 12H19M19 12L13 6M19 12L13 18" strokeLinecap="square" strokeLinejoin="miter"/>
+                                </svg>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                </Link>
+            </div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
