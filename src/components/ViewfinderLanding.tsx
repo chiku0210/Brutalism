@@ -2,157 +2,148 @@
 
 /**
  * ViewfinderLanding
- * 
- * Simulates pointing a vintage DSLR at a scene and pulling focus:
- *   Phase 0 — void black (0ms)
- *   Phase 1 — content fades in, slightly zoomed (1.06×) and blurred (8px) → "out of focus"
- *   Phase 2 — zoom eases back to 1× and blur dissolves → "focus acquired"
- *   Phase 3 — overlay disappears, site is live
- * 
- * The centre crosshair (+) reticle persists permanently as the viewfinder
- * focus point indicator. It fades from full brass on focus-acquire to
- * a dim ambient presence.
- * 
- * No animation libraries — pure CSS keyframes + a single useEffect timer.
- * Respects prefers-reduced-motion: skips directly to focused state.
+ *
+ * On mount, wraps page content in a Framer Motion div that:
+ *   1. Starts at scale(1.06) + blur(10px) + brightness(0.65)  — "out of focus"
+ *   2. Animates to scale(1) + blur(0) + brightness(1)          — "focus acquired"
+ *
+ * A fixed HUD layer (crosshair + corner brackets) sits OUTSIDE the warp
+ * so it is never blurred itself.
+ *
+ * Architecture:
+ *   layout.tsx renders:
+ *     <WarpLayer>          ← this component drives scale+filter
+ *       <PageContent />    ← only this is blurred/zoomed
+ *     </WarpLayer>
+ *     <ViewfinderHUD />    ← fixed, always sharp, persists after done
+ *
+ * Why NOT CSS class on #root-container:
+ *   - filter on a containing block breaks position:fixed for all children
+ *     (Nav, ApertureRing, Cursor would get trapped in the stacking context)
+ *   - JS hydration timing means class is applied AFTER the animation window
+ *
+ * Instead: <motion.div> wraps ONLY <PageTransition>{children}</PageTransition>
+ * so Nav + fixed instruments are untouched.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, createContext, useContext } from 'react';
+import { motion, useAnimation } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
-type Phase = 'void' | 'blurred' | 'focused' | 'done';
+// ── Context so WarpLayer & HUD can share phase state ──
+type Phase = 'blurred' | 'focused' | 'done';
+interface VFCtx { phase: Phase }
+const VFContext = createContext<VFCtx>({ phase: 'done' });
 
-export const ViewfinderLanding: React.FC = () => {
+// ── Hook for child consumers (e.g. HeroBoot delay) ──
+export const useViewfinderPhase = () => useContext(VFContext);
+
+// ── WarpLayer — wraps ONLY page content ──
+export const WarpLayer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const reduced = useReducedMotion();
-  const [phase, setPhase] = useState<Phase>('void');
-  const [mounted, setMounted] = useState(false);
+  const controls = useAnimation();
+  const [phase, setPhase] = useState<Phase>('blurred');
 
   useEffect(() => {
-    setMounted(true);
-
     if (reduced) {
       setPhase('done');
       return;
     }
 
-    // Phase timeline:
-    // 0ms    : void (black)
-    // 80ms   : blurred (content visible but out of focus + zoomed)
-    // 1000ms : focused (zoom snaps back, blur dissolves)
-    // 2200ms : done (overlay removed, reticle settles to ambient)
-    const t1 = setTimeout(() => setPhase('blurred'),  80);
-    const t2 = setTimeout(() => setPhase('focused'),  1000);
-    const t3 = setTimeout(() => setPhase('done'),     2200);
+    // Start: zoomed in + blurred
+    controls.set({ scale: 1.055, filter: 'blur(10px) brightness(0.65)' });
 
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // After a single rAF to ensure the initial state is painted,
+    // animate to sharp focus over 1.1s with a custom spring curve
+    const raf = requestAnimationFrame(() => {
+      controls.start({
+        scale: 1,
+        filter: 'blur(0px) brightness(1)',
+        transition: {
+          duration: 1.1,
+          ease: [0.22, 1, 0.36, 1], // custom ease-out-expo — snappy focus snap
+        },
+      }).then(() => {
+        setPhase('focused');
+        setTimeout(() => setPhase('done'), 800);
+      });
+    });
+
+    return () => cancelAnimationFrame(raf);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced]);
+
+  return (
+    <VFContext.Provider value={{ phase }}>
+      <motion.div
+        animate={controls}
+        style={{
+          // Initial state set via controls.set — no flash of un-animated state
+          transformOrigin: 'center center',
+          willChange: phase === 'blurred' ? 'transform, filter' : 'auto',
+          // Ensure this wrapper never clips fixed children that happen to be
+          // inside — it doesn't contain any, but defensive
+          overflow: 'visible',
+          minHeight: '100vh',
+        }}
+      >
+        {children}
+      </motion.div>
+    </VFContext.Provider>
+  );
+};
+
+// ── ViewfinderHUD — fixed overlay, always sharp ──
+export const ViewfinderHUD: React.FC = () => {
+  const reduced = useReducedMotion();
+  const [phase, setPhase] = useState<Phase>('blurred');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (reduced) { setPhase('done'); return; }
+
+    // Mirror the WarpLayer timeline
+    const t1 = setTimeout(() => setPhase('focused'), 1100);
+    const t2 = setTimeout(() => setPhase('done'),    1900);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [reduced]);
 
   if (!mounted) return null;
 
-  const overlayVisible = phase === 'void' || phase === 'blurred' || phase === 'focused';
+  const isFocused = phase === 'focused' || phase === 'done';
+  const isAmbient = phase === 'done';
+  const B = 20; // bracket arm length px
+  const bracketColor = isAmbient ? 'var(--brass-dim)' : 'var(--brass)';
+  const bracketOpacity = isAmbient ? 0.28 : 1;
 
-  return (
-    <>
-      {/* ── Content warp layer
-            Sits between the page content and the overlay.
-            Applies the zoom + blur to the ENTIRE page via a wrapper.
-            Uses a portal-style fixed cover so layout is unaffected. */}
-      <style>{`
-        /* Warp layer applied to root container during focus-pull */
-        @keyframes vf-zoom-blur {
-          0%   { transform: scale(1.06); filter: blur(8px) brightness(0.7); }
-          100% { transform: scale(1);    filter: blur(0px) brightness(1);   }
-        }
-        @keyframes vf-focus-confirm {
-          0%   { opacity: 0; }
-          30%  { opacity: 1; }
-          70%  { opacity: 1; }
-          100% { opacity: 0.18; }
-        }
-        @keyframes vf-reticle-in {
-          0%   { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
-          40%  { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
-          100% { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
-        }
-        @keyframes vf-bracket-slide-tl {
-          0%   { transform: translate(-6px, -6px); opacity: 0; }
-          100% { transform: translate(0, 0);       opacity: 1; }
-        }
-        @keyframes vf-bracket-slide-tr {
-          0%   { transform: translate(6px, -6px);  opacity: 0; }
-          100% { transform: translate(0, 0);       opacity: 1; }
-        }
-        @keyframes vf-bracket-slide-bl {
-          0%   { transform: translate(-6px, 6px);  opacity: 0; }
-          100% { transform: translate(0, 0);       opacity: 1; }
-        }
-        @keyframes vf-bracket-slide-br {
-          0%   { transform: translate(6px, 6px);   opacity: 0; }
-          100% { transform: translate(0, 0);       opacity: 1; }
-        }
+  // Bracket slide-in animation configs
+  const slideVariants = {
+    hidden: (offset: [number, number]) => ({
+      opacity: 0,
+      x: offset[0],
+      y: offset[1],
+    }),
+    visible: {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+    },
+    ambient: {
+      opacity: bracketOpacity,
+      x: 0,
+      y: 0,
+      transition: { duration: 0.8, ease: 'easeOut' },
+    },
+  };
 
-        /* Applied to #root-container during blurred phase */
-        .vf-phase-blurred #root-container {
-          animation: vf-zoom-blur 1120ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-        /* Transition preserved after focused */
-        .vf-phase-focused #root-container,
-        .vf-phase-done #root-container {
-          transform: scale(1);
-          filter: blur(0px) brightness(1);
-        }
-      `}</style>
-
-      {/* Phase class on body for CSS targeting */}
-      {mounted && (
-        <PhaseClassApplicator phase={phase} />
-      )}
-
-      {/* ── Void black overlay — fades out as blur kicks in ── */}
-      {overlayVisible && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 8000,
-            backgroundColor: 'var(--void)',
-            pointerEvents: phase === 'void' ? 'auto' : 'none',
-            opacity: phase === 'void' ? 1 : 0,
-            transition: 'opacity 120ms ease',
-          }}
-        />
-      )}
-
-      {/* ── Viewfinder HUD overlay ── */}
-      {(phase === 'blurred' || phase === 'focused' || phase === 'done') && (
-        <ViewfinderHUD phase={phase} />
-      )}
-    </>
-  );
-};
-
-/* Applies phase class to <html> so CSS can target #root-container */
-const PhaseClassApplicator: React.FC<{ phase: Phase }> = ({ phase }) => {
-  useEffect(() => {
-    const html = document.documentElement;
-    html.classList.remove('vf-phase-void', 'vf-phase-blurred', 'vf-phase-focused', 'vf-phase-done');
-    html.classList.add(`vf-phase-${phase}`);
-  }, [phase]);
-  return null;
-};
-
-/* The viewfinder HUD: centre crosshair + corner brackets + metadata */
-const ViewfinderHUD: React.FC<{ phase: Phase }> = ({ phase }) => {
-  const isFocused  = phase === 'focused' || phase === 'done';
-  const isAmbient  = phase === 'done';
-
-  // Corner bracket size
-  const B = 22;
-  const STROKE = '1px';
-  const COLOR_ACTIVE  = 'var(--brass)';
-  const COLOR_AMBIENT = 'var(--brass-dim)';
-  const bracketColor  = isAmbient ? COLOR_AMBIENT : COLOR_ACTIVE;
+  const bracketStyle = (pos: { top?: string; bottom?: string; left?: string; right?: string }) => ({
+    position: 'absolute' as const,
+    width: `${B}px`,
+    height: `${B}px`,
+    ...pos,
+  });
 
   return (
     <div
@@ -160,141 +151,149 @@ const ViewfinderHUD: React.FC<{ phase: Phase }> = ({ phase }) => {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 7999,
+        zIndex: 7998,
         pointerEvents: 'none',
-        // Fade the whole HUD to low opacity once the site is live
-        opacity: isAmbient ? 0.35 : 1,
-        transition: 'opacity 800ms ease',
       }}
     >
-      {/* ── Centre crosshair (the focus point) ── */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        animation: isFocused ? 'vf-reticle-in 600ms cubic-bezier(0.22,1,0.36,1) forwards' : undefined,
-        opacity: isFocused ? undefined : 0,
-      }}>
-        {/* Horizontal bar */}
-        <div style={{
+      {/* ── Centre crosshair ── */}
+      <motion.div
+        initial={{ opacity: 0, scale: 1.3 }}
+        animate={isFocused ? {
+          opacity: isAmbient ? 0.22 : 1,
+          scale: 1,
+          transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+        } : { opacity: 0, scale: 1.3 }}
+        style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '20px',
-          height: '1px',
+          width: '32px',
+          height: '32px',
+        }}
+      >
+        {/* Horizontal arm */}
+        <div style={{
+          position: 'absolute',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '24px', height: '1px',
           backgroundColor: bracketColor,
-          opacity: 0.9,
         }} />
-        {/* Vertical bar */}
+        {/* Vertical arm */}
         <div style={{
           position: 'absolute',
-          top: '50%',
-          left: '50%',
+          top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '1px',
-          height: '20px',
+          width: '1px', height: '24px',
           backgroundColor: bracketColor,
-          opacity: 0.9,
         }} />
-        {/* Centre dot */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '3px',
-          height: '3px',
-          borderRadius: '50%',
-          backgroundColor: isFocused && !isAmbient ? 'var(--brass)' : 'transparent',
-          boxShadow: isFocused && !isAmbient ? '0 0 8px var(--brass)' : 'none',
-          transition: 'all 400ms ease',
-        }} />
-      </div>
+        {/* Centre dot — glows on focus-acquire, gone when ambient */}
+        <motion.div
+          animate={{
+            opacity: isAmbient ? 0 : isFocused ? 1 : 0,
+            boxShadow: isAmbient ? 'none' : '0 0 6px var(--brass)',
+          }}
+          transition={{ duration: 0.4 }}
+          style={{
+            position: 'absolute',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '4px', height: '4px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--brass)',
+          }}
+        />
+      </motion.div>
 
-      {/* ── Corner viewfinder brackets ── */}
+      {/* ── Corner brackets ── */}
       {/* Top-left */}
-      <div style={{
-        position: 'absolute',
-        top: '24px', left: '24px',
-        width: `${B}px`, height: `${B}px`,
-        borderTop: `${STROKE} solid ${bracketColor}`,
-        borderLeft: `${STROKE} solid ${bracketColor}`,
-        animation: isFocused ? 'vf-bracket-slide-tl 500ms 100ms cubic-bezier(0.22,1,0.36,1) both' : undefined,
-        opacity: isFocused ? undefined : 0,
-      }} />
+      <motion.div
+        custom={[-7, -7]}
+        variants={slideVariants}
+        initial="hidden"
+        animate={isFocused ? (isAmbient ? 'ambient' : 'visible') : 'hidden'}
+        transition={{ delay: 0.05 }}
+        style={{ ...bracketStyle({ top: '22px', left: '22px' }),
+          borderTop: `1px solid ${bracketColor}`,
+          borderLeft: `1px solid ${bracketColor}`,
+        }}
+      />
       {/* Top-right */}
-      <div style={{
-        position: 'absolute',
-        top: '24px', right: '24px',
-        width: `${B}px`, height: `${B}px`,
-        borderTop: `${STROKE} solid ${bracketColor}`,
-        borderRight: `${STROKE} solid ${bracketColor}`,
-        animation: isFocused ? 'vf-bracket-slide-tr 500ms 150ms cubic-bezier(0.22,1,0.36,1) both' : undefined,
-        opacity: isFocused ? undefined : 0,
-      }} />
+      <motion.div
+        custom={[7, -7]}
+        variants={slideVariants}
+        initial="hidden"
+        animate={isFocused ? (isAmbient ? 'ambient' : 'visible') : 'hidden'}
+        transition={{ delay: 0.1 }}
+        style={{ ...bracketStyle({ top: '22px', right: '22px' }),
+          borderTop: `1px solid ${bracketColor}`,
+          borderRight: `1px solid ${bracketColor}`,
+        }}
+      />
       {/* Bottom-left */}
-      <div style={{
-        position: 'absolute',
-        bottom: '24px', left: '24px',
-        width: `${B}px`, height: `${B}px`,
-        borderBottom: `${STROKE} solid ${bracketColor}`,
-        borderLeft: `${STROKE} solid ${bracketColor}`,
-        animation: isFocused ? 'vf-bracket-slide-bl 500ms 200ms cubic-bezier(0.22,1,0.36,1) both' : undefined,
-        opacity: isFocused ? undefined : 0,
-      }} />
+      <motion.div
+        custom={[-7, 7]}
+        variants={slideVariants}
+        initial="hidden"
+        animate={isFocused ? (isAmbient ? 'ambient' : 'visible') : 'hidden'}
+        transition={{ delay: 0.15 }}
+        style={{ ...bracketStyle({ bottom: '22px', left: '22px' }),
+          borderBottom: `1px solid ${bracketColor}`,
+          borderLeft: `1px solid ${bracketColor}`,
+        }}
+      />
       {/* Bottom-right */}
-      <div style={{
-        position: 'absolute',
-        bottom: '24px', right: '24px',
-        width: `${B}px`, height: `${B}px`,
-        borderBottom: `${STROKE} solid ${bracketColor}`,
-        borderRight: `${STROKE} solid ${bracketColor}`,
-        animation: isFocused ? 'vf-bracket-slide-br 500ms 250ms cubic-bezier(0.22,1,0.36,1) both' : undefined,
-        opacity: isFocused ? undefined : 0,
-      }} />
+      <motion.div
+        custom={[7, 7]}
+        variants={slideVariants}
+        initial="hidden"
+        animate={isFocused ? (isAmbient ? 'ambient' : 'visible') : 'hidden'}
+        transition={{ delay: 0.2 }}
+        style={{ ...bracketStyle({ bottom: '22px', right: '22px' }),
+          borderBottom: `1px solid ${bracketColor}`,
+          borderRight: `1px solid ${bracketColor}`,
+        }}
+      />
 
-      {/* ── Focus confirm metadata strip (top-right corner, inside bracket) ── */}
-      {isFocused && (
-        <div style={{
+      {/* ── AF metadata — top-right, inside bracket ── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isFocused ? (isAmbient ? 0.18 : 0.8) : 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        style={{
           position: 'absolute',
-          top: '52px',
-          right: '52px',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '9px',
-          color: isAmbient ? 'var(--muted2)' : 'var(--brass)',
-          letterSpacing: '0.12em',
-          lineHeight: 1.8,
-          textAlign: 'right',
-          opacity: isAmbient ? 0.6 : 1,
-          transition: 'color 600ms ease, opacity 600ms ease',
-          animation: 'vf-focus-confirm 1200ms ease forwards',
-        }}>
-          <div>AF ● LOCK</div>
-          <div style={{ color: isAmbient ? 'var(--muted2)' : 'var(--brass-dim)', fontSize: '8px' }}>f/1.4 · ISO 100</div>
-        </div>
-      )}
-
-      {/* ── Focus confirm metadata strip (bottom-left, inside bracket) ── */}
-      {isFocused && (
-        <div style={{
-          position: 'absolute',
-          bottom: '52px',
-          left: '52px',
+          top: '48px', right: '48px',
           fontFamily: 'var(--font-mono)',
           fontSize: '8px',
-          color: isAmbient ? 'var(--muted2)' : 'var(--muted)',
+          color: 'var(--brass)',
+          letterSpacing: '0.12em',
+          lineHeight: 2,
+          textAlign: 'right',
+        }}
+      >
+        <div>AF ● LOCK</div>
+        <div style={{ color: 'var(--brass-dim)', fontSize: '7px' }}>f/1.4 · ISO 100</div>
+      </motion.div>
+
+      {/* ── Build tag — bottom-left, inside bracket ── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isFocused ? (isAmbient ? 0.12 : 0.5) : 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        style={{
+          position: 'absolute',
+          bottom: '48px', left: '48px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '7px',
+          color: 'var(--muted2)',
           letterSpacing: '0.1em',
-          lineHeight: 1.8,
-          opacity: isAmbient ? 0.4 : 0.7,
-          transition: 'opacity 600ms ease',
-          animation: 'vf-focus-confirm 1200ms 200ms ease forwards',
-        }}>
-          <div>NIELLESS.COM</div>
-          <div>v4.0.0-production</div>
-        </div>
-      )}
+          lineHeight: 2,
+        }}
+      >
+        <div>NIELLESS.COM</div>
+        <div>v4.0.0</div>
+      </motion.div>
     </div>
   );
 };
