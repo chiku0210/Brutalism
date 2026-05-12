@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAudio } from "./AudioProvider";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
+// How long the WarpLayer focus-pull takes before content should appear.
+// Must match the duration in ViewfinderLanding WarpLayer (1100ms).
+const FOCUS_PULL_MS = 1100;
+
 export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
   const { playSound, resumeContext } = useAudio();
   const reduced = useReducedMotion();
@@ -12,16 +16,13 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
   const [showHeadline, setShowHeadline] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
 
-  // Spec §03 — exact boot terminal lines
   const terminalLines = [
     "NIELLESS OPTICAL SYSTEMS",
-    "SENSOR: 35MM FULL-FRAME · MOUNT: AI-NATIVE",
-    "APERTURE: f/LOGIC · ISO: MINIMUM",
+    "SENSOR: 35MM FULL-FRAME \u00b7 MOUNT: AI-NATIVE",
+    "APERTURE: f/LOGIC \u00b7 ISO: MINIMUM",
     "SHUTTER: ARMED",
   ];
 
-  // Boot sequence timing per spec:
-  // 0ms void, 200ms line1, 400ms line2, 600ms line3 (armed), 800ms headline
   useEffect(() => {
     if (reduced) {
       setLines(terminalLines);
@@ -29,7 +30,11 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
       return;
     }
 
-    const delays = [200, 400, 600, 800];
+    // Each line fires AFTER the focus-pull completes.
+    // FOCUS_PULL_MS + stagger: 0 / 160 / 320 / 480ms
+    // Then headline 200ms after last line.
+    const base = FOCUS_PULL_MS;
+    const stagger = 160;
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     terminalLines.forEach((line, i) => {
@@ -38,7 +43,7 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
         if (i === terminalLines.length - 1) {
           timers.push(setTimeout(() => setShowHeadline(true), 200));
         }
-      }, delays[i]));
+      }, base + i * stagger));
     });
 
     return () => timers.forEach(clearTimeout);
@@ -50,12 +55,11 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
     await resumeContext();
     playSound("thud");
     setIsCompiling(true);
-    // 180ms shutter curtain + 200ms mechanical delay = 380ms before route
     setTimeout(() => onCompile(), 380);
   };
 
   const lineColor = (i: number) => {
-    if (i === 3) return 'var(--signal)'; // SHUTTER: ARMED
+    if (i === 3) return 'var(--signal)';
     if (i === 1 || i === 2) return 'var(--brass)';
     return 'var(--muted2)';
   };
@@ -72,7 +76,7 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
       backgroundColor: 'var(--void)'
     }}>
 
-      {/* Right-edge tech ticker (ambient, pointer-events none) */}
+      {/* Right-edge ambient tech ticker */}
       <div style={{
         position: 'absolute',
         right: 'var(--page-padding)',
@@ -98,11 +102,11 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
               color: 'var(--muted)'
             }}
           >
-            {['Node.js', 'PostgreSQL', 'TypeScript', 'AWS', 'Next.js', 'LLM Agents', 'Docker', 'React', 'Python', 'Go'].map(t => (
+            {['Node.js','PostgreSQL','TypeScript','AWS','Next.js','LLM Agents','Docker','React','Python','Go'].map(t => (
               <div key={t}>{t}</div>
             ))}
-            {['Node.js', 'PostgreSQL', 'TypeScript', 'AWS', 'Next.js', 'LLM Agents', 'Docker', 'React', 'Python', 'Go'].map(t => (
-              <div key={t + '_2'}>{t}</div>
+            {['Node.js','PostgreSQL','TypeScript','AWS','Next.js','LLM Agents','Docker','React','Python','Go'].map(t => (
+              <div key={t+'_2'}>{t}</div>
             ))}
           </motion.div>
         )}
@@ -110,14 +114,14 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
 
       <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10 }}>
 
-        {/* Boot terminal */}
+        {/* Boot terminal lines */}
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', marginBottom: '48px', minHeight: '88px' }}>
           {lines.map((line, i) => (
             <motion.div
               key={i}
-              initial={reduced ? { opacity: 1 } : { opacity: 0, x: -10 }}
+              initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
               style={{ color: lineColor(i), lineHeight: 2.2 }}
             >
               {line}
@@ -128,11 +132,11 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
         <AnimatePresence>
           {showHeadline && (
             <motion.div
-              initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: reduced ? 0 : 0.8 }}
+              transition={{ duration: 0.6 }}
             >
-              {/* Headline — spec: ORDER. / LOGIC. / AMOR FATI. */}
+              {/* Headline — each word snaps up into view */}
               <h1 style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: 'clamp(38px, 8vw, 62px)',
@@ -142,15 +146,15 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
                 textTransform: 'uppercase'
               }}>
                 {[
-                  { text: 'ORDER.', color: 'var(--dust)' },
-                  { text: 'LOGIC.', color: 'var(--dust)' },
+                  { text: 'ORDER.',     color: 'var(--dust)' },
+                  { text: 'LOGIC.',     color: 'var(--dust)' },
                   { text: 'AMOR FATI.', color: 'var(--brass)' },
                 ].map(({ text, color }, i) => (
                   <motion.span
                     key={text}
-                    initial={reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: reduced ? 0 : 0.2 + i * 0.2, duration: 0.5 }}
+                    transition={{ delay: 0.1 + i * 0.18, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                     style={{ display: 'block', color }}
                   >
                     {text}
@@ -158,11 +162,11 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
                 ))}
               </h1>
 
-              {/* Subtext — Crimson Pro italic */}
+              {/* Subtext */}
               <motion.p
-                initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: reduced ? 0 : 1, duration: 0.8 }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.65, duration: 0.6 }}
                 style={{
                   fontFamily: 'var(--font-serif)',
                   fontStyle: 'italic',
@@ -176,11 +180,11 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
                 Full-Stack Engineer. AI-native builder. Backend-first. Systems that hold under load — or are rebuilt until they do.
               </motion.p>
 
-              {/* Hot Shoe CTA — spec: [ RELEASE SHUTTER ] */}
+              {/* CTA */}
               <motion.button
-                initial={reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: reduced ? 0 : 1.2, duration: 0.5 }}
+                transition={{ delay: 0.85, duration: 0.5 }}
                 onMouseEnter={() => playSound('solenoid')}
                 onClick={handleRelease}
                 aria-label="Release shutter and enter portfolio"
@@ -189,7 +193,6 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
                   border: '1px solid var(--brass-dim)',
                   padding: '12px 28px',
                   cursor: 'pointer',
-                  position: 'relative',
                   transition: 'border-color 0.12s ease'
                 }}
                 onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--brass-bright)')}
@@ -210,12 +213,12 @@ export const HeroBoot = ({ onCompile }: { onCompile: () => void }) => {
         </AnimatePresence>
       </div>
 
-      {/* Shutter wipe — void black, scaleX from left, per spec */}
+      {/* Shutter wipe out */}
       <AnimatePresence>
         {isCompiling && (
           <motion.div
             aria-hidden="true"
-            initial={{ scaleX: 0, originX: 0 }}
+            initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
             style={{
