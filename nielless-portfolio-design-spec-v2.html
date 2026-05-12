@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIELLESS.COM — Design Specification Rev 2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --void: #060608;
+    --surface: #0E0E10;
+    --surface2: #161618;
+    --grid: #1A1A1C;
+    --border: #2E2E31;
+    --border2: #3A3A3D;
+    --brass: #C8A96E;
+    --brass-dim: #8A7249;
+    --brass-bright: #E2C48A;
+    --signal: #39FF14;
+    --hot: #FF4D1A;
+    --ice: #A8C8E8;
+    --dust: #E8E2D5;
+    --muted: #606068;
+    --muted2: #404044;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --serif: 'Crimson Pro', serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--dust);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 36px 100px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6,6,8,0.96);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 36px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .topbar-logo { font-family: var(--mono); font-size: 11px; color: var(--brass); letter-spacing: 0.15em; }
+  .topbar-nav { display: flex; gap: 32px; align-items: center; }
+  .topbar-nav a { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .topbar-nav a:hover { color: var(--dust); }
+  .topbar-nav .cta { border: 1px solid var(--brass-dim); color: var(--brass); padding: 4px 12px; transition: border-color 0.15s, color 0.15s; }
+  .topbar-nav .cta:hover { border-color: var(--brass-bright); color: var(--brass-bright); }
+
+  /* ── DOCUMENT HEADER ── */
+  .doc-header { padding: 56px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 56px; }
+  .doc-rev { font-size: 10px; color: var(--brass); letter-spacing: 0.15em; margin-bottom: 10px; }
+  .doc-title { font-family: var(--display); font-size: 52px; letter-spacing: 0.05em; color: var(--dust); line-height: 1; }
+  .doc-sub { font-family: var(--serif); font-size: 16px; font-style: italic; color: var(--muted); margin-top: 12px; }
+
+  /* ── SECTIONS ── */
+  .spec-section { margin-bottom: 72px; }
+  .section-label { font-size: 10px; color: var(--brass); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title { font-family: var(--display); font-size: 40px; letter-spacing: 0.04em; color: var(--dust); margin-bottom: 24px; }
+  .section-intro { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); line-height: 1.8; margin-bottom: 28px; max-width: 720px; }
+
+  /* ── PHILOSOPHY PRINCIPLES ── */
+  .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .principle { background: var(--surface); border: 1px solid var(--border); padding: 16px 20px; border-left: 2px solid var(--brass); }
+  .principle-text { font-size: 12px; color: var(--dust); line-height: 1.7; }
+
+  /* ── DESIGN SYSTEM ── */
+  .ds-block { background: var(--surface); border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; }
+  .ds-label { font-size: 9px; color: var(--brass); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; }
+  .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .color-swatch { border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .swatch-fill { height: 40px; }
+  .swatch-info { background: var(--surface2); padding: 8px 10px; }
+  .swatch-token { font-size: 9px; color: var(--brass); letter-spacing: 0.08em; }
+  .swatch-hex { font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .swatch-use { font-size: 8px; color: var(--muted2); margin-top: 2px; line-height: 1.4; }
+
+  .scale-table { width: 100%; border-collapse: collapse; }
+  .scale-table th { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+  .scale-table td { padding: 10px 12px; border-bottom: 1px solid var(--grid); font-size: 11px; color: var(--muted); vertical-align: top; }
+  .scale-table td:first-child { color: var(--dust); }
+
+  .font-preview { font-family: var(--display); font-size: 28px; letter-spacing: 0.04em; color: var(--dust); }
+  .font-preview-mono { font-family: var(--mono); font-size: 13px; color: var(--dust); margin-top: 4px; }
+  .font-preview-serif { font-family: var(--serif); font-size: 17px; font-style: italic; color: var(--dust); margin-top: 4px; }
+
+  .spacing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .spacing-item { background: var(--surface2); padding: 14px; }
+  .spacing-value { font-size: 20px; color: var(--dust); font-family: var(--display); letter-spacing: 0.05em; }
+  .spacing-desc { font-size: 9px; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; }
+
+  /* ── SCREENS ── */
+  .screen-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+  .screen-chrome { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+  .chrome-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .chrome-url { font-family: var(--mono); font-size: 10px; color: var(--muted2); margin-left: 10px; letter-spacing: 0.05em; }
+  .screen-body { background: var(--void); padding: 40px; }
+
+  /* ── NOTES ── */
+  .interaction-note { background: var(--surface); border-left: 2px solid var(--brass-dim); padding: 16px 20px; margin-top: 12px; }
+  .interaction-note.new { border-left-color: var(--brass); background: rgba(200,169,110,0.04); }
+  .interaction-note-label { font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 8px; }
+  .interaction-note-body { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .interaction-note-body code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+  .bullet-list { list-style: none; padding: 0; }
+  .bullet-list li { font-size: 11px; color: var(--muted); line-height: 1.9; padding-left: 14px; position: relative; }
+  .bullet-list li::before { content: '▸'; position: absolute; left: 0; color: var(--brass); font-size: 8px; top: 4px; }
+  .bullet-list li strong { color: var(--dust); font-weight: 500; }
+  .bullet-list li code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+
+  /* ── EXPERIENCE LAYER (new in v2) ── */
+  .signal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .signal-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; position: relative; overflow: hidden; }
+  .signal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .signal-card.camera::before { background: var(--brass); }
+  .signal-card.music::before { background: var(--ice); }
+  .signal-card.diesel::before { background: var(--hot); }
+  .signal-name { font-family: var(--display); font-size: 22px; letter-spacing: 0.05em; color: var(--dust); margin-bottom: 8px; }
+  .signal-source { font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; margin-bottom: 14px; }
+  .signal-body { font-family: var(--serif); font-size: 13px; font-style: italic; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .signal-encoded { font-size: 9px; color: var(--brass); letter-spacing: 0.08em; line-height: 1.8; }
+
+  .arc-diagram { background: var(--void); border: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 0; }
+  .arc-row { display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--grid); }
+  .arc-row:last-child { border-bottom: none; }
+  .arc-position { font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; min-width: 80px; }
+  .arc-swatch { width: 80px; height: 8px; border-radius: 2px; }
+  .arc-label { font-size: 10px; color: var(--muted); flex: 1; }
+  .arc-feel { font-family: var(--serif); font-size: 12px; font-style: italic; color: var(--muted2); }
+
+  /* Aperture diagram */
+  .aperture-demo { display: flex; align-items: center; gap: 32px; padding: 20px; background: var(--void); border: 1px solid var(--border); margin-bottom: 14px; }
+  .aperture-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .aperture-ring { position: relative; display: flex; align-items: center; justify-content: center; }
+  .aperture-label { font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-align: center; }
+  .aperture-state { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; text-align: center; }
+
+  /* Timeline cadence diagram */
+  .cadence-diagram { background: var(--void); border: 1px solid var(--border); padding: 20px; font-family: var(--mono); font-size: 10px; }
+  .beat-row { display: flex; align-items: center; gap: 0; margin-bottom: 10px; }
+  .beat-cell { min-width: 40px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 9px; border-right: 1px solid var(--grid); }
+  .beat-cell.hit { background: rgba(200,169,110,0.15); color: var(--brass); }
+  .beat-cell.accent { background: rgba(200,169,110,0.06); color: var(--brass-dim); }
+  .beat-cell.rest { color: var(--border); }
+  .beat-label { min-width: 80px; font-size: 9px; color: var(--muted2); letter-spacing: 0.08em; }
+
+  /* grain demo */
+  .grain-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grain-box { height: 80px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .grain-box-label { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; z-index: 1; }
+  .grain-box.with-grain { background: var(--void); }
+  .grain-box.with-grain::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); background-size: 200px; opacity: 0.5; }
+
+  /* ── HERO MOCKUP ── */
+  .hero-nav-mock { display: flex; justify-content: space-between; align-items: center; margin-bottom: 52px; }
+  .hero-nav-logo { font-family: var(--mono); font-size: 11px; color: var(--brass); letter-spacing: 0.15em; }
+  .hero-nav-links { display: flex; gap: 28px; align-items: center; }
+  .hero-nav-link { font-family: var(--mono); font-size: 10px; color: var(--muted2); letter-spacing: 0.1em; }
+  .hero-nav-cta { border: 1px solid var(--brass-dim); color: var(--brass); padding: 4px 12px; font-size: 10px; font-family: var(--mono); letter-spacing: 0.1em; }
+  .hero-terminal { font-family: var(--mono); margin-bottom: 36px; }
+  .term-line { font-size: 11px; color: var(--muted2); line-height: 2.2; }
+  .term-line.ok { color: var(--signal); }
+  .term-line.meta { color: var(--brass); }
+  .hero-headline { font-family: var(--display); font-size: 62px; letter-spacing: 0.04em; color: var(--dust); line-height: 0.95; margin-bottom: 20px; }
+  .hero-headline .accent { color: var(--brass); }
+  .hero-sub { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); max-width: 400px; line-height: 1.8; margin-bottom: 36px; }
+  .hero-cta { display: inline-block; border: 1px solid var(--brass-dim); padding: 12px 28px; }
+  .hero-cta-text { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--brass); }
+.hero-ticker {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+  width: 90px;
+  pointer-events: none;
+}
+
+.ticker-track {
+  display: flex;
+  flex-direction: column;
+  animation: ticker-scroll 8s linear infinite;
+}
+
+.ticker-item {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--border2);
+  letter-spacing: 0.15em;
+  padding: 7px 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@keyframes ticker-scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+@media (max-width: 900px) {
+  .hero-ticker { display: none; }
+}
+  .hero-inner { position: relative; }
+
+  /* ── VIEWFINDER BRACKETS — ALL 4 CORNERS ── */
+  .viewfinder-card { position: relative; }
+
+  /* Top-left bracket */
+  .viewfinder-card::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 8px;
+    width: 14px; height: 14px;
+    border-top: 1px solid var(--brass);
+    border-left: 1px solid var(--brass);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Bottom-right bracket */
+  .viewfinder-card::after {
+    content: '';
+    position: absolute;
+    bottom: 8px; right: 8px;
+    width: 14px; height: 14px;
+    border-bottom: 1px solid var(--brass);
+    border-right: 1px solid var(--brass);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Top-right and bottom-left via inner spans */
+  .viewfinder-card .vf-tl,
+  .viewfinder-card .vf-tr,
+  .viewfinder-card .vf-bl,
+  .viewfinder-card .vf-br {
+    position: absolute;
+    width: 14px; height: 14px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .viewfinder-card .vf-tl { top: 8px; left: 8px; border-top: 1px solid var(--brass); border-left: 1px solid var(--brass); }
+  .viewfinder-card .vf-tr { top: 8px; right: 8px; border-top: 1px solid var(--brass); border-right: 1px solid var(--brass); }
+  .viewfinder-card .vf-bl { bottom: 8px; left: 8px; border-bottom: 1px solid var(--brass); border-left: 1px solid var(--brass); }
+  .viewfinder-card .vf-br { bottom: 8px; right: 8px; border-bottom: 1px solid var(--brass); border-right: 1px solid var(--brass); }
+
+  .viewfinder-card:hover::before,
+  .viewfinder-card:hover::after,
+  .viewfinder-card:hover .vf-tl,
+  .viewfinder-card:hover .vf-tr,
+  .viewfinder-card:hover .vf-bl,
+  .viewfinder-card:hover .vf-br { opacity: 1; }
+
+  /* ── ENGINE CARDS ── */
+  .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .engine-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; transition: border-color 0.15s; position: relative; overflow: hidden; }
+  .engine-card:hover { border-color: var(--brass); }
+  .engine-card-full { background: var(--surface); border: 1px solid var(--border); padding: 20px; transition: border-color 0.15s; }
+  .engine-card-full:hover { border-color: var(--brass); }
+  .card-counter { font-family: var(--mono); font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 4px; }
+  .card-title { font-family: var(--display); font-size: 26px; letter-spacing: 0.06em; color: var(--dust); margin-bottom: 14px; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .badge { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border: 1px solid; letter-spacing: 0.06em; white-space: nowrap; }
+  .badge-live { color: var(--signal); border-color: #1a4a1a; background: rgba(57,255,20,0.06); }
+  .badge-hot { color: var(--hot); border-color: #4a1a10; background: rgba(255,77,26,0.06); }
+  .badge-ice { color: var(--ice); border-color: #1a2a3a; background: rgba(168,200,232,0.06); }
+  .badge-muted { color: var(--muted2); border-color: var(--border); }
+  .card-visual { margin-bottom: 14px; }
+  .card-desc { font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+  .card-tags { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .tag { font-family: var(--mono); font-size: 9px; color: var(--muted2); border: 1px solid var(--border); padding: 2px 7px; }
+  .tag-arrow { font-size: 9px; color: var(--brass); }
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .card-watermark { font-family: var(--mono); font-size: 9px; color: var(--border2); letter-spacing: 0.1em; margin-top: 8px; }
+
+  /* waveform */
+  .waveform { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+  .waveform-bar { width: 3px; background: var(--brass); border-radius: 1px; opacity: 0.7; }
+  /* progress bars */
+  .metric-bar { margin-bottom: 8px; }
+  .metric-label { font-size: 9px; color: var(--muted2); letter-spacing: 0.08em; margin-bottom: 4px; }
+  .bar-track { height: 4px; background: var(--surface2); border: 1px solid var(--border); }
+  .bar-fill-brass { height: 100%; background: var(--brass); }
+  .bar-fill-muted { height: 100%; background: var(--muted2); }
+  /* fan-out */
+  .fanout { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 4px 0; }
+  .fanout-node-src { width: 12px; height: 12px; background: var(--brass); border-radius: 50%; }
+  .fanout-node-w { width: 8px; height: 8px; border: 1px solid var(--brass); }
+  .fanout-node-agg { width: 10px; height: 10px; background: var(--muted2); border-radius: 50%; }
+  .fanout-tick { height: 1px; width: 22px; background: var(--border2); }
+  /* migration */
+  .migration { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+  .mig-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; }
+  .mig-label.dead { color: var(--muted2); }
+  .mig-label.live { color: var(--dust); }
+  .mig-sub { font-family: var(--mono); font-size: 8px; color: var(--border2); margin-top: 2px; }
+  .mig-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+  .mig-line { height: 1px; background: var(--brass); width: 100%; }
+  .mig-arrowhead { font-size: 9px; color: var(--brass); align-self: flex-end; }
+  .mig-confirm { font-family: var(--mono); font-size: 8px; color: var(--signal); margin-top: 2px; letter-spacing: 0.08em; }
+  .wci-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+  /* ── TIMELINE ── */
+  .timeline { border-left: 1px solid var(--border); padding-left: 28px; margin-left: 10px; }
+  .timeline-entry { position: relative; margin-bottom: 28px; }
+  .timeline-dot { position: absolute; left: -34px; top: 5px; width: 9px; height: 9px; border-radius: 50%; }
+  .timeline-dot.active { background: var(--brass); }
+  .timeline-dot.past { background: var(--muted2); }
+  .timeline-dot.old { background: var(--border2); }
+  .timeline-ts { font-size: 9px; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .timeline-ts.active { color: var(--brass); }
+  .timeline-ts.past { color: var(--muted2); }
+  .timeline-ts.old { color: var(--border); }
+  .timeline-title { font-family: var(--display); font-size: 20px; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .timeline-title.active { color: var(--dust); }
+  .timeline-title.past { color: var(--dust); }
+  .timeline-title.old { color: var(--muted2); }
+  .timeline-desc { font-size: 10px; color: var(--muted); line-height: 1.7; }
+  .timeline-desc.old { color: var(--muted2); }
+
+  /* stack snapshot */
+  .stack-snap { border: 1px solid var(--grid); padding: 16px 18px; background: var(--surface); margin-top: 20px; }
+  .stack-cmd { font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; margin-bottom: 10px; }
+  .stack-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .stack-tag { font-family: var(--mono); font-size: 9px; padding: 3px 9px; border: 1px solid; }
+  .stack-tag.normal { color: var(--dust); border-color: var(--border); }
+  .stack-tag.ai { color: var(--brass); border-color: var(--brass-dim); }
+
+  /* ── INTERACTIONS ── */
+  .interactions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .interact-card { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; }
+  .interact-title { font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 10px; }
+  .interact-body { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .interact-body code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+
+  .sound-table { width: 100%; border-collapse: collapse; }
+  .sound-table th { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+  .sound-table td { padding: 9px 12px; border-bottom: 1px solid var(--grid); font-size: 11px; color: var(--muted); }
+  .sound-table td:first-child { color: var(--dust); }
+
+  /* ── ARCHITECTURE ── */
+  .arch-block { background: var(--surface); border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; }
+  .arch-code { font-family: var(--mono); font-size: 11px; line-height: 2; background: var(--void); padding: 18px 20px; border: 1px solid var(--grid); border-radius: 4px; overflow-x: auto; white-space: pre; }
+  .arch-code .hl { color: var(--brass); }
+  .arch-code .dim { color: var(--muted2); }
+  .arch-code .norm { color: var(--dust); }
+  .arch-code .comment { color: var(--border2); }
+  .order-list { list-style: none; padding: 0; }
+  .order-item { display: flex; gap: 14px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--grid); font-size: 11px; color: var(--muted); line-height: 1.7; }
+  .order-num { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; min-width: 20px; margin-top: 2px; }
+  .order-item code { font-family: var(--mono); color: var(--dust); font-size: 10px; }
+
+.spec-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 80px;
+  padding-top: 32px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 20px;
+  align-items: center;
+}
+.footer-left { font-size: 10px; color: var(--brass); letter-spacing: 0.1em; }
+.footer-right { display: flex; justify-content: flex-end; gap: 14px; }
+.footer-icon-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  transition: color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+.footer-icon-link:hover { color: var(--brass); border-color: var(--brass-dim); }
+.footer-icon-link:focus-visible {
+  outline: 1px solid var(--brass);
+  outline-offset: 3px;
+  color: var(--brass);
+}
+.footer-icon-link svg { width: 14px; height: 14px; }
+.footer-quote {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted2);
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Global focus-visible for all interactive elements */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 1px solid var(--brass);
+  outline-offset: 3px;
+}
+  .footer-mock { background: var(--void); padding: 24px 28px; border-top: 1px solid var(--border); }
+  .footer-mock-grid { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .footer-mock-sig { font-size: 10px; color: var(--brass); letter-spacing: 0.1em; }
+  .footer-mock-build { font-size: 9px; color: var(--border2); letter-spacing: 0.08em; }
+  .footer-mock-icons { display: flex; gap: 14px; }
+  .footer-mock-icon { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-mock-quote { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); text-align: center; border-top: 1px solid var(--grid); padding-top: 14px; }
+
+  /* ── MOBILE ── */
+  .mobile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mobile-card { background: var(--surface); border: 1px solid var(--border); padding: 16px; }
+  .mobile-context { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; margin-bottom: 8px; }
+  .mobile-rule { font-size: 11px; color: var(--muted); line-height: 1.8; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border: 1px solid var(--brass-dim);
+    background: rgba(200,169,110,0.04);
+    padding: 18px 22px;
+    margin: 20px 0;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .callout strong { color: var(--brass); font-weight: 500; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; }
+
+  /* ── DIFF BADGE ── */
+  .diff-badge { display: inline-block; font-size: 8px; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 2px; vertical-align: middle; margin-left: 8px; }
+  .diff-new { background: rgba(200,169,110,0.15); color: var(--brass); border: 1px solid var(--brass-dim); }
+  .diff-changed { background: rgba(168,200,232,0.08); color: var(--ice); border: 1px solid #1a2a3a; }
+  .diff-removed { background: rgba(255,77,26,0.08); color: var(--hot); border: 1px solid #3a1a10; }
+
+  .rule { border: none; border-top: 1px solid var(--border); margin: 0 0 56px; }
+
+  @media (max-width: 768px) {
+    .page-wrap { padding: 0 20px 80px; }
+    .signal-grid, .engine-grid, .interactions-grid, .mobile-grid { grid-template-columns: 1fr; }
+    .wci-inner { grid-template-columns: 1fr; }
+    .hero-headline { font-size: 40px; }
+  }
+
+  @media (max-width: 768px) {
+    .topbar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 20px;
+    }
+    .topbar-nav {
+      width: 100%;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+    .topbar-nav::-webkit-scrollbar { display: none; }
+    .topbar-nav a {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      font-size: 9px;
+    }
+    .topbar-nav .cta {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+  }
+
+  /* Color temperature arc — fixed full-page background layer */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(168, 200, 232, 0.02) 0%,      /* HERO — ice/cold */
+      rgba(168, 200, 232, 0.01) 15%,
+      transparent 30%,                    /* transition */
+      rgba(200, 169, 110, 0.01) 40%,     /* ENGINE — brass enters */
+      rgba(200, 169, 110, 0.03) 60%,     /* BLUEPRINT — warmest */
+      rgba(200, 169, 110, 0.015) 75%,
+      transparent 90%,                   /* transition back */
+      rgba(6, 6, 8, 0.6) 100%            /* FOOTER — void returns */
+    );
+  }
+
+  /* Ensure page content sits above the arc */
+  .page-wrap, .topbar { position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-logo">N/A — SPEC v2</div>
+  <div class="topbar-nav">
+    <a href="#design-system">SYSTEM</a>
+    <a href="#experience-layer">EXPERIENCE</a>
+    <a href="#hero">HERO</a>
+    <a href="#engine">ENGINE</a>
+    <a href="#blueprint">BLUEPRINT</a>
+    <a href="#interactions">MICRO</a>
+    <a href="#architecture">ARCH</a>
+    <a href="https://nielless.com" class="cta">LIVE SITE →</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <header class="doc-header">
+    <div class="doc-rev">DESIGN SPECIFICATION — REV 2.0 &nbsp;·&nbsp; INTEGRATED EXPERIENCE</div>
+    <div class="doc-title">NIELLESS.COM</div>
+    <div class="doc-sub">Modern Brutalism × Mechanical Elegance — Integrated Persona Experience</div>
+    <div style="margin-top:20px;font-size:10px;color:var(--muted2);line-height:2">
+      <span style="color:var(--brass)">WHAT CHANGED IN v2.0 →</span>&nbsp;
+      The standalone "Analog Soul" section is gone.
+      The three analog signals (camera, music, diesel engine) are no longer showcased —
+      they are encoded into the mechanics of the experience itself.
+      A visitor will never read the word "audiophile."
+      They will feel the rhythm. They will handle the aperture ring.
+      They will sense the idle.
+    </div>
+  </header>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 00 — PHILOSOPHY -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="section-label">[00] DESIGN PHILOSOPHY</div>
+    <p class="section-intro">The site operates as a system boot sequence, not a greeting. The visitor doesn't scroll through a portfolio — they initiate one. Every interaction should feel like turning a physical dial or pressing a mechanical key: deliberate, weighted, with consequence.</p>
+    <div class="principles">
+      <div class="principle"><div class="principle-text">Order. Logic. Amor Fati. These are not decorative taglines. They are the structural constraints the entire design system is derived from.</div></div>
+      <div class="principle"><div class="principle-text">Negative space is structural, not decorative. Silence between elements carries weight — like the space between notes in Hindustani classical.</div></div>
+      <div class="principle"><div class="principle-text"><strong style="color:var(--brass)">The portfolio is not a showcase of a person. It is the person.</strong> The visitor should leave knowing what he is like in a room, without being told.</div></div>
+      <div class="principle"><div class="principle-text">Sound is an opt-in layer that rewards the curious. Muted by default. Discovered, not announced.</div></div>
+      <div class="principle"><div class="principle-text"><strong style="color:var(--brass)">Analog personality is never labeled.</strong> Nobody narrates their own soul. It is either felt or it isn't.</div></div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 01 — DESIGN SYSTEM -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="design-system">
+    <div class="section-label">[01] DESIGN SYSTEM</div>
+    <div class="section-title">TOKENS, TYPE & GRID</div>
+
+    <div class="ds-block">
+      <div class="ds-label">COLOR TOKENS</div>
+      <div class="color-grid">
+        <div class="color-swatch"><div class="swatch-fill" style="background:#060608;border-bottom:1px solid #2E2E31"></div><div class="swatch-info"><div class="swatch-token">--void</div><div class="swatch-hex">#060608</div><div class="swatch-use">Page background</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#0E0E10"></div><div class="swatch-info"><div class="swatch-token">--surface</div><div class="swatch-hex">#0E0E10</div><div class="swatch-use">Card backgrounds</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#161618"></div><div class="swatch-info"><div class="swatch-token">--surface2</div><div class="swatch-hex">#161618</div><div class="swatch-use">Nested containers</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#2E2E31"></div><div class="swatch-info"><div class="swatch-token">--border</div><div class="swatch-hex">#2E2E31</div><div class="swatch-use">Default card borders</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#C8A96E"></div><div class="swatch-info"><div class="swatch-token">--brass</div><div class="swatch-hex">#C8A96E</div><div class="swatch-use">Primary accent — load-bearing</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#8A7249"></div><div class="swatch-info"><div class="swatch-token">--brass-dim</div><div class="swatch-hex">#8A7249</div><div class="swatch-use">Brass borders</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#E2C48A"></div><div class="swatch-info"><div class="swatch-token">--brass-bright</div><div class="swatch-hex">#E2C48A</div><div class="swatch-use">Brass hover state</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#39FF14"></div><div class="swatch-info"><div class="swatch-token">--signal</div><div class="swatch-hex">#39FF14</div><div class="swatch-use">LIVE status only</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#FF4D1A"></div><div class="swatch-info"><div class="swatch-token">--hot</div><div class="swatch-hex">#FF4D1A</div><div class="swatch-use">Regulated / warning</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#A8C8E8"></div><div class="swatch-info"><div class="swatch-token">--ice</div><div class="swatch-hex">#A8C8E8</div><div class="swatch-use">Cloud / AWS tags</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#E8E2D5"></div><div class="swatch-info"><div class="swatch-token">--dust</div><div class="swatch-hex">#E8E2D5</div><div class="swatch-use">Primary text — warm white</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#606068"></div><div class="swatch-info"><div class="swatch-token">--muted</div><div class="swatch-hex">#606068</div><div class="swatch-use">Secondary text</div></div></div>
+      </div>
+      <div style="margin-top:16px;font-size:10px;color:var(--brass);border-left:2px solid var(--brass-dim);padding:10px 14px;background:rgba(200,169,110,0.05)">
+        RULE: <span style="color:var(--muted)">--brass is load-bearing. Active nav states, section counters, CTA borders, one accent per card maximum. It is machined brass — physical, warm, not decorative.</span>
+      </div>
+    </div>
+
+    <div class="ds-block">
+      <div class="ds-label">TYPOGRAPHY — THREE FONTS, THREE VOICES</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">DISPLAY</div>
+          <div class="font-preview">ORDER.</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">Bebas Neue — headings, hero, project titles. Brutalist. Industrial. Zero warmth.</div>
+        </div>
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">MONO</div>
+          <div class="font-preview-mono">nielless:~$ ignite</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">JetBrains Mono — UI labels, nav, tags, code. The voice of the system.</div>
+        </div>
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">SERIF</div>
+          <div class="font-preview-serif">"The obstacle is the way."</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">Crimson Pro italic — philosophy, project descriptions. The soul beneath the system.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-block">
+      <div class="ds-label">SPACING & GRID</div>
+      <div class="spacing-grid">
+        <div class="spacing-item"><div class="spacing-value">8PX</div><div class="spacing-desc">BASE UNIT</div></div>
+        <div class="spacing-item"><div class="spacing-value">36PX</div><div class="spacing-desc">PAGE PADDING</div></div>
+        <div class="spacing-item"><div class="spacing-value">80PX</div><div class="spacing-desc">SECTION GAP</div></div>
+        <div class="spacing-item"><div class="spacing-value">20PX</div><div class="spacing-desc">CARD PADDING</div></div>
+        <div class="spacing-item"><div class="spacing-value">2-COL</div><div class="spacing-desc">ENGINE GRID</div></div>
+        <div class="spacing-item"><div class="spacing-value">1100PX</div><div class="spacing-desc">MAX WIDTH</div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 02 — THE EXPERIENCE LAYER (NEW IN v2) -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="experience-layer">
+    <div class="section-label">[02] THE EXPERIENCE LAYER <span class="diff-badge diff-new">NEW IN v2</span></div>
+    <div class="section-title">THE ANALOG SIGNALS ARE THE MECHANICS</div>
+    <p class="section-intro">This section replaces the standalone "Analog Soul" page. The three analog signals — camera, Hindustani music, diesel engine — are no longer exhibited as hobbies. They are encoded into how the site behaves. The visitor never reads a label. They feel the signal.</p>
+
+    <div class="callout">
+      <strong>THE CORE SHIFT:</strong> &nbsp;In v1, the analog personality was displayed in a dedicated section — panels labeled "AUDIOPHILE", "THE LENS", "DIESEL SOUL". The visitor read about it. In v2, there is no such section. Instead: scroll mechanics reference the physical rotation of a camera aperture dial. Reveal timing follows the breathing cadence of a raga. The page idles at the frequency of a diesel engine at rest. The visitor experiences the person without being introduced to them.
+    </div>
+
+    <!-- The Three Signals -->
+    <div class="signal-grid">
+
+      <div class="signal-card camera">
+        <div class="signal-name">CAMERA</div>
+        <div class="signal-source">DSLR · OPTICAL · APERTURE RING</div>
+        <div class="signal-body">"Optical truth over simulation." — The camera is about precision, patience, and the discipline to wait for the right moment. A DSLR shooter knows: you don't fake depth of field. You earn it.</div>
+        <div class="signal-encoded">
+          ENCODED AS ↓<br>
+          · Left-edge nav = aperture ring (rotates on scroll)<br>
+          · Section transitions = shutter wipe<br>
+          · Card hover = viewfinder focus brackets<br>
+          · Timeline = depth-of-field blur on past entries<br>
+          · Boot sequence = camera power-on metadata<br>
+          · Film grain texture = page surface layer
+        </div>
+      </div>
+
+      <div class="signal-card music">
+        <div class="signal-name">MUSIC</div>
+        <div class="signal-source">HINDUSTANI CLASSICAL · GUITAR · BINA NO.8</div>
+        <div class="signal-body">"The space between notes is the music." — Hindustani classical is not about filling silence. It is about the relationship between sound and rest. An audiophile understands that the room matters as much as the speaker.</div>
+        <div class="signal-encoded">
+          ENCODED AS ↓<br>
+          · Section reveals follow a 16-beat taal cadence<br>
+          · Heading arrives at beat 1, sub at beat 2.5, tags at beat 4<br>
+          · Negative space between sections = musical rest<br>
+          · Audio cues woven throughout (not just Analog section)<br>
+          · Orion card waveform = Hindustani harmonic distribution<br>
+          · Footer breathing = tanpura drone rhythm (4s cycle)
+        </div>
+      </div>
+
+      <div class="signal-card diesel">
+        <div class="signal-name">DIESEL</div>
+        <div class="signal-source">FORD ECOSPORT · MECHANICAL · LOW-END TORQUE</div>
+        <div class="signal-body">"The honest machine." — A diesel engine doesn't pretend. It idles at its own frequency. It has weight, resistance, and a sound that you feel before you hear it. There is no polish hiding the mechanism.</div>
+        <div class="signal-encoded">
+          ENCODED AS ↓<br>
+          · Page idle: near-imperceptible 4s opacity pulse (0.99–1.0)<br>
+          · Scroll has CSS snap with slight inertia — feels like engaging a gear<br>
+          · COMPILE button has deliberate 80ms lag before firing — resistance<br>
+          · Background grid breathes subtly — 0.3% opacity cycle, 4s period<br>
+          · Film grain shimmer adds mechanical texture to the surface<br>
+          · Low-frequency audio cue on site entry (20Hz sub-bass, 400ms, felt not heard)
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Signal 1: Aperture Ring Nav -->
+    <div class="ds-block" style="margin-top:24px">
+      <div class="ds-label">SIGNAL 1 — THE APERTURE RING NAV <span class="diff-badge diff-new">REPLACES TICK NAV</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:20px">
+        The left-edge navigation is no longer 4 static tick marks. It is a rendered SVG camera aperture ring. As the user scrolls, the ring <strong style="color:var(--dust)">physically rotates</strong> (CSS <code style="color:var(--brass);font-size:10px">transform: rotate()</code> driven by <code style="color:var(--brass);font-size:10px">scrollY / totalScrollHeight * 270deg</code>). The aperture blades <strong style="color:var(--dust)">open</strong> as the user descends — from f/11 (tight, hero) to f/1.4 (wide open, footer). At each major section boundary, the aperture clicks to a mechanical detent (a brief 20ms scale pulse + click sound). The ring is never labeled. Never explained. A photographer will recognize it within seconds. Everyone else will just notice that the nav feels unusually physical.
+      </p>
+
+      <div class="aperture-demo">
+        <!-- f/11 state -->
+        <div class="aperture-col">
+          <div class="aperture-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="26" cy="26" r="24" stroke="#2E2E31" stroke-width="1.5"/>
+              <circle cx="26" cy="26" r="14" stroke="#3A3A3D" stroke-width="1"/>
+              <circle cx="26" cy="26" r="6" fill="#060608" stroke="#2E2E31" stroke-width="1"/>
+              <!-- aperture blades - tight -->
+              <line x1="26" y1="12" x2="26" y2="20" stroke="#C8A96E" stroke-width="1" opacity="0.5"/>
+              <line x1="26" y1="32" x2="26" y2="40" stroke="#C8A96E" stroke-width="1" opacity="0.5"/>
+              <line x1="12" y1="26" x2="20" y2="26" stroke="#C8A96E" stroke-width="1" opacity="0.5"/>
+              <line x1="32" y1="26" x2="40" y2="26" stroke="#C8A96E" stroke-width="1" opacity="0.5"/>
+              <line x1="16" y1="16" x2="22" y2="22" stroke="#C8A96E" stroke-width="1" opacity="0.3"/>
+              <line x1="30" y1="30" x2="36" y2="36" stroke="#C8A96E" stroke-width="1" opacity="0.3"/>
+              <line x1="36" y1="16" x2="30" y2="22" stroke="#C8A96E" stroke-width="1" opacity="0.3"/>
+              <line x1="16" y1="36" x2="22" y2="30" stroke="#C8A96E" stroke-width="1" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="aperture-label">HERO</div>
+          <div class="aperture-state">f/11 — TIGHT</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);flex:1;text-align:center">
+          scroll rotates ring<br>aperture opens<br>↓
+        </div>
+        <!-- f/5.6 state -->
+        <div class="aperture-col">
+          <div class="aperture-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="26" cy="26" r="24" stroke="#3A3A3D" stroke-width="1.5"/>
+              <circle cx="26" cy="26" r="14" stroke="#3A3A3D" stroke-width="1"/>
+              <circle cx="26" cy="26" r="9" fill="#060608" stroke="#2E2E31" stroke-width="1"/>
+              <line x1="26" y1="12" x2="26" y2="17" stroke="#C8A96E" stroke-width="1" opacity="0.7"/>
+              <line x1="26" y1="35" x2="26" y2="40" stroke="#C8A96E" stroke-width="1" opacity="0.7"/>
+              <line x1="12" y1="26" x2="17" y2="26" stroke="#C8A96E" stroke-width="1" opacity="0.7"/>
+              <line x1="35" y1="26" x2="40" y2="26" stroke="#C8A96E" stroke-width="1" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="aperture-label">ENGINE</div>
+          <div class="aperture-state">f/5.6 — MID</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);flex:1;text-align:center">
+          section detent<br>click sound<br>↓
+        </div>
+        <!-- f/1.4 state -->
+        <div class="aperture-col">
+          <div class="aperture-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="26" cy="26" r="24" stroke="#C8A96E" stroke-width="1.5" opacity="0.6"/>
+              <circle cx="26" cy="26" r="14" stroke="#8A7249" stroke-width="1"/>
+              <circle cx="26" cy="26" r="13" fill="#060608"/>
+            </svg>
+          </div>
+          <div class="aperture-label">BLUEPRINT</div>
+          <div class="aperture-state">f/1.4 — WIDE</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--muted2);line-height:1.8">
+        The aperture ring is positioned fixed to the left edge of the viewport (desktop only, 24px from edge), vertically centered. Width: 36px. It rotates clockwise on scroll. The current section is indicated by the aperture state — no text labels are used. On mobile: replaced by a minimal 4px × 32px vertical progress bar in brass.
+      </div>
+    </div>
+
+    <!-- Signal 2: Musical Cadence -->
+    <div class="ds-block">
+      <div class="ds-label">SIGNAL 2 — THE TAAL CADENCE <span class="diff-badge diff-new">REPLACES LINEAR REVEALS</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:20px">
+        Section reveals do not follow a linear easing curve. They follow the rhythmic structure of a 16-beat Hindustani taal (Teentaal). The primary element (heading) lands on beat 1. Secondary content (subheading, description) arrives on beat 2.5 — a syncopated accent. Tertiary content (tags, meta, badges) closes on beat 4. The gaps between beats are <strong style="color:var(--dust)">not equal</strong>. They are weighted like tabla strokes. An audiophile will perceive this as "breathing" without being able to name why. Everyone else will simply feel that the page doesn't feel mechanical.
+      </p>
+      <div class="cadence-diagram">
+        <div style="font-size:9px;color:var(--brass);letter-spacing:0.12em;margin-bottom:12px">SECTION REVEAL TIMING — TEENTAAL REFERENCE</div>
+        <div class="beat-row">
+          <div class="beat-label">BEAT NUMBER</div>
+          <div class="beat-cell rest">1</div><div class="beat-cell rest">2</div><div class="beat-cell rest">3</div><div class="beat-cell rest">4</div>
+          <div class="beat-cell rest">5</div><div class="beat-cell rest">6</div><div class="beat-cell rest">7</div><div class="beat-cell rest">8</div>
+          <div class="beat-cell rest">9</div><div class="beat-cell rest">10</div><div class="beat-cell rest">11</div><div class="beat-cell rest">12</div>
+          <div class="beat-cell rest">13</div><div class="beat-cell rest">14</div><div class="beat-cell rest">15</div><div class="beat-cell rest">16</div>
+        </div>
+        <div class="beat-row">
+          <div class="beat-label" style="color:var(--brass)">HEADING</div>
+          <div class="beat-cell hit">●</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+        </div>
+        <div class="beat-row">
+          <div class="beat-label">DESCRIPTION</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell accent">◐</div><div class="beat-cell accent">◐</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+        </div>
+        <div class="beat-row">
+          <div class="beat-label">TAGS / META</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell hit">●</div><div class="beat-cell accent">◐</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+          <div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div><div class="beat-cell rest">·</div>
+        </div>
+        <div style="margin-top:12px;font-size:9px;color:var(--muted2)">
+          ● = primary hit (opacity 0→1 + translateY 16px→0) &nbsp;·&nbsp; ◐ = accent (opacity 0→0.7) &nbsp;·&nbsp; · = rest (no animation)
+          <br>One "beat" = 60ms at base tempo. Total section reveal: ~320ms. Stagger between card elements in a grid: 40ms per card (like tabla repeating a bol).
+        </div>
+      </div>
+    </div>
+
+    <!-- Signal 3: Diesel Idle -->
+    <div class="ds-block">
+      <div class="ds-label">SIGNAL 3 — THE DIESEL IDLE <span class="diff-badge diff-new">AMBIENT MECHANICAL PRESENCE</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:20px">
+        The entire page has a near-imperceptible ambient rhythm — like an engine at rest. This is implemented at three layers simultaneously, compounding into a physical presence that no visitor consciously notices but everyone unconsciously feels.
+      </p>
+      <ul class="bullet-list">
+        <li><strong>Body opacity pulse:</strong> The entire body element cycles between <code>opacity: 1.0</code> and <code>opacity: 0.992</code> on a 4-second ease-in-out loop. 0.8% delta is completely imperceptible to conscious vision. Subconsciously, it registers as the page being alive.</li>
+        <li><strong>Background grid breathe:</strong> The CSS grid overlay (the dark crosshatch behind all content) cycles between <code>opacity: 0.18</code> and <code>opacity: 0.22</code> on the same 4s period. Again: invisible to direct attention, present to peripheral vision.</li>
+        <li><strong>Film grain shimmer:</strong> The SVG feTurbulence noise layer (see below) re-seeds every 150ms on a stagger — creating the appearance of grain "shifting" like photographic film in motion. Combined with the opacity pulse, the surface feels physical rather than rendered.</li>
+        <li><strong>Scroll inertia (CSS scroll-snap):</strong> Section boundaries use <code>scroll-snap-type: y mandatory</code> with <code>scroll-snap-align: start</code> and a 40ms snap momentum. The slight resistance before snap release is the gear-engage feeling. You push, it holds briefly, then locks in.</li>
+        <li><strong>COMPILE button resistance:</strong> The button does not fire immediately on click. There is an intentional 80ms delay between mousedown and the action triggering — the gap in which the sound plays and the border pulses. This is the solenoid engaging before the shutter fires. The visitor <em>feels</em> the click before the page responds.</li>
+      </ul>
+    </div>
+
+    <!-- Film Grain -->
+    <div class="ds-block">
+      <div class="ds-label">GLOBAL TEXTURE — FILM GRAIN LAYER <span class="diff-badge diff-new">PERSISTENT SURFACE</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:16px">
+        A persistent SVG feTurbulence noise filter is layered over the entire page via a <code style="color:var(--brass);font-size:10px">body::after</code> pseudo-element at 3–4% opacity, <code style="color:var(--brass);font-size:10px">pointer-events: none</code>, <code style="color:var(--brass);font-size:10px">position: fixed, z-index: 9999</code>. It animates by re-seeding the noise function every 150ms via a JavaScript requestAnimationFrame loop. The result: the page surface has the tactile quality of photographic film — not vintage, not retro, just <em>physical</em>. Something captured, not rendered. The grain is never announced. It is only noticed when absent.
+      </p>
+      <div class="grain-compare">
+        <div class="grain-box" style="background:var(--void)"><span class="grain-box-label">WITHOUT GRAIN — VOID, FLAT</span></div>
+        <div class="grain-box with-grain"><span class="grain-box-label">WITH GRAIN — PHYSICAL SURFACE</span></div>
+      </div>
+      <div style="margin-top:10px;font-size:9px;color:var(--muted2)">CSS: body::after { content:''; position:fixed; inset:0; z-index:9999; pointer-events:none; background: SVG noise at 3% opacity; animation: grain-shift 0.15s steps(1) infinite; }</div>
+    </div>
+
+    <!-- Color Temperature Arc -->
+    <div class="ds-block">
+      <div class="ds-label">COLOR TEMPERATURE ARC — PAGE-SCALE SHIFT <span class="diff-badge diff-new">SCROLL-DRIVEN WARMTH</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:16px">
+        The page has a temperature gradient that shifts from cold-technical (top) to warm-analog (middle) and back to cold precision (footer). Implemented as a fixed full-page background layer using a vertical CSS linear-gradient with very low opacity overlays — imperceptible individually, cumulative. An audiophile setting up a listening room understands this: the room temperature changes as you move from the near-field to the listening position to the rear wall. Here, the visitor warms as they descend toward the work, and cools as they exit to the footer.
+      </p>
+      <div class="arc-diagram">
+        <div class="arc-row">
+          <div class="arc-position">HERO (TOP)</div>
+          <div class="arc-swatch" style="background:rgba(168,200,232,0.12)"></div>
+          <div class="arc-label">rgba(168,200,232, 0.02) ice overlay · cold, technical, precise</div>
+          <div class="arc-feel">sterile · calculating</div>
+        </div>
+        <div class="arc-row">
+          <div class="arc-position">ENGINE</div>
+          <div class="arc-swatch" style="background:rgba(200,169,110,0.06)"></div>
+          <div class="arc-label">rgba(200,169,110, 0.01) brass overlay · neutral, warm brass enters</div>
+          <div class="arc-feel">focused · building</div>
+        </div>
+        <div class="arc-row">
+          <div class="arc-position">BLUEPRINT</div>
+          <div class="arc-swatch" style="background:rgba(200,169,110,0.16)"></div>
+          <div class="arc-label">rgba(200,169,110, 0.03) brass overlay · warmest · personal history</div>
+          <div class="arc-feel">grounded · truthful</div>
+        </div>
+        <div class="arc-row">
+          <div class="arc-position">FOOTER (BOTTOM)</div>
+          <div class="arc-swatch" style="background:rgba(6,6,8,1)"></div>
+          <div class="arc-label">Returns to void · all signal fades · just the tagline remains</div>
+          <div class="arc-feel">the system halts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Sound Map -->
+    <div class="ds-block">
+      <div class="ds-label">GLOBAL AUDIO MAP <span class="diff-changed diff-badge">EXTENDED FROM v1</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:16px">
+        In v1, sounds were concentrated in the Analog Soul section. In v2, audio cues are distributed throughout the entire experience. All sounds muted by default. Activated by the global speaker toggle in the nav. The total experience — when unmuted — should feel like a well-recorded live session: intentional, never intrusive.
+      </p>
+      <table class="sound-table">
+        <thead>
+          <tr><th>Trigger</th><th>Sound</th><th>Technique</th><th>Signal Origin</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Site entry (first load)</td><td style="color:var(--hot)">Sub-bass pulse</td><td>400ms at 20Hz, felt not heard, volume 0.05</td><td style="color:var(--hot)">DIESEL — engine turning over</td></tr>
+          <tr><td>Aperture ring scroll detent</td><td style="color:var(--brass)">Mechanical click</td><td>20ms burst, 240Hz + 800Hz transient, sharp decay</td><td style="color:var(--brass)">CAMERA — aperture dial detent</td></tr>
+          <tr><td>COMPILE button hover</td><td style="color:var(--brass)">Solenoid pre-engage</td><td>80ms sine at 180Hz, soft attack</td><td style="color:var(--brass)">CAMERA — autofocus confirm</td></tr>
+          <tr><td>COMPILE button click (fire)</td><td style="color:var(--brass)">Shutter release</td><td>60ms: 90Hz body + 3kHz mirror slap</td><td style="color:var(--brass)">CAMERA — mechanical shutter</td></tr>
+          <tr><td>Section transition</td><td style="color:var(--brass)">Shutter wipe sound</td><td>80ms: low sweep 80→200Hz, simultaneous with visual wipe</td><td style="color:var(--brass)">CAMERA — film advance</td></tr>
+          <tr><td>Engine card click</td><td style="color:var(--ice)">Lens mount lock</td><td>60ms: 120Hz + 600Hz click, resonant tail 40ms</td><td style="color:var(--brass)">CAMERA — bayonet mount</td></tr>
+          <tr><td>Timeline entry reveal</td><td style="color:var(--ice)">Tabla bol</td><td>Staggered per entry: 40ms interval, 200Hz percussive hit</td><td style="color:var(--ice)">MUSIC — tabla stroke cadence</td></tr>
+          <tr><td>Footer load</td><td style="color:var(--muted)">Tanpura resonance</td><td>600ms harmonic drone: Sa fundamental + fifth overtone, fade out</td><td style="color:var(--ice)">MUSIC — raga resolution</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 03 — HERO (UPDATED IN v2) -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="hero">
+    <div class="section-label">[03] HERO — THE BOOT SEQUENCE <span class="diff-changed diff-badge">UPDATED IN v2</span></div>
+    <div class="section-title">CAMERA BOOT. NOT COMPUTER BOOT.</div>
+    <p class="section-intro">In v1 the hero booted like a server terminal. In v2 it boots like a camera powering on — sensor calibration, focal metadata, aperture state. The language is system metadata, but the vocabulary is photographic. Nobody reads the label. The photographer recognizes the metadata format immediately.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com</span>
+      </div>
+      <div class="screen-body" style="min-height:420px">
+        <div class="hero-nav-mock">
+          <div class="hero-nav-logo">N/A</div>
+          <div class="hero-nav-links">
+            <span class="hero-nav-link">ENGINE</span>
+            <span class="hero-nav-link">BLUEPRINT</span>
+            <span class="hero-nav-link" style="color:var(--muted2)">
+              <!-- aperture ring icon suggestion -->
+              ⊙
+            </span>
+            <span class="hero-nav-cta">[CONTACT]</span>
+          </div>
+        </div>
+        <div class="hero-inner">
+          <!-- Updated boot lines: camera metadata instead of server terminal -->
+          <div class="hero-terminal">
+            <div class="term-line">NIELLESS/CAM — SENSOR CALIBRATING...</div>
+            <div class="term-line meta">FOCAL LENGTH: VARIABLE &nbsp;·&nbsp; APERTURE: f/LOGIC &nbsp;·&nbsp; ISO: MINIMUM</div>
+            <div class="term-line ok">SENSOR READY. SHUTTER ARMED.</div>
+          </div>
+          <div class="hero-headline">ORDER.<br>LOGIC.<br><span class="accent">AMOR FATI.</span></div>
+          <div class="hero-sub">Full-Stack Engineer. AI-native builder. Backend-first. Systems that hold under load — or are rebuilt until they do.</div>
+          <div class="hero-cta"><span class="hero-cta-text">[ COMPILE → ]</span></div>
+<div class="hero-ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <div class="ticker-item">NODE.JS</div>
+    <div class="ticker-item">POSTGRESQL</div>
+    <div class="ticker-item">TYPESCRIPT</div>
+    <div class="ticker-item">AWS</div>
+    <div class="ticker-item">NEXT.JS</div>
+    <div class="ticker-item">LLM AGENTS</div>
+    <!-- duplicated for seamless loop -->
+    <div class="ticker-item">NODE.JS</div>
+    <div class="ticker-item">POSTGRESQL</div>
+    <div class="ticker-item">TYPESCRIPT</div>
+    <div class="ticker-item">AWS</div>
+    <div class="ticker-item">NEXT.JS</div>
+    <div class="ticker-item">LLM AGENTS</div>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note new">
+      <div class="interaction-note-label">v2 CHANGE — BOOT LINES</div>
+      <div class="interaction-note-body">The terminal boot lines are now camera metadata format: <code>FOCAL LENGTH: VARIABLE</code>, <code>APERTURE: f/LOGIC</code>, <code>SENSOR READY. SHUTTER ARMED.</code> — This is not explained, not labeled as "camera reference." A photographer sees camera EXIF metadata and feels recognition. Everyone else reads it as evocative system metadata and feels the same precision. The signal is legible at two frequencies simultaneously.</div>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">BOOT ANIMATION SEQUENCE (UPDATED)</div>
+      <ul class="bullet-list">
+        <li><strong>0ms</strong> — Void black. Film grain layer active from frame 0.</li>
+        <li><strong>200ms</strong> — Camera metadata lines type in one by one. "SENSOR CALIBRATING..." first, in muted. "FOCAL LENGTH / APERTURE / ISO" in brass. "SENSOR READY." in signal green.</li>
+        <li><strong>800ms</strong> — "ORDER." arrives. It does not fade. It <strong>develops</strong> — like silver halide on photographic paper. Starts at 10% opacity in a slightly warm sepia tone, develops to full <code>--dust</code> in 200ms. The development curve is logarithmic, not linear.</li>
+        <li><strong>1000ms / 1200ms</strong> — "LOGIC." then "AMOR FATI." develop in turn.</li>
+        <li><strong>1400ms</strong> — Subtext (Crimson Pro) arrives with musical timing — at beat 2.5 of a silent count from 1200ms.</li>
+        <li><strong>1600ms</strong> — <code>[ COMPILE → ]</code> fades in. Aperture ring nav appears on the left edge and begins in the f/11 (tight) state.</li>
+      </ul>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">THE COMPILE GATE</div>
+      <ul class="bullet-list">
+        <li>On hover: border transitions <code>--brass-dim → --brass-bright</code> (120ms). Pre-engage solenoid sound fires (autofocus confirmation tone).</li>
+        <li>On click: 80ms intentional delay (resistance). Then: shutter release sound + fullscreen horizontal brass-line wipe (the shutter). Scroll lock releases. Aperture ring starts rotating.</li>
+        <li>This 80ms delay is the diesel signal — mechanical resistance before action. The system does not respond instantly. It responds deliberately.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 04 — ENGINE (UPDATED IN v2) -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="engine">
+    <div class="section-label">[04] THE ENGINE — SYSTEM SCHEMATICS <span class="diff-changed diff-badge">UPDATED IN v2</span></div>
+    <div class="section-title">PROJECTS AS BLUEPRINTS</div>
+    <p class="section-intro">Projects are not portfolio cards. They are system schematics. In v2, two updates: cards have viewfinder focus brackets on hover (camera signal), and visualizations are tuned to analog references without labeling them.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com/#engine</span>
+      </div>
+      <div class="screen-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[03] THE ENGINE</div>
+            <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">SYSTEM SCHEMATICS</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--border2);text-align:right;line-height:1.8">5 SYSTEMS<br>PRODUCTION GRADE</div>
+        </div>
+
+        <div class="engine-grid">
+          <!-- ORION -->
+          <div class="engine-card viewfinder-card">
+            <span class="vf-tl" aria-hidden="true"></span>
+            <span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span>
+            <span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_001</div><div class="card-title">ORION</div></div>
+              <div style="width:28px;height:28px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:var(--brass);border-radius:50%"></div></div>
+            </div>
+            <div class="card-visual">
+              <div class="waveform">
+                <!-- Waveform bars tuned to approximate Sa-Re-Ga Hindustani harmonic distribution -->
+                <div class="waveform-bar" style="height:8px"></div><div class="waveform-bar" style="height:18px"></div>
+                <div class="waveform-bar" style="height:26px;opacity:1"></div><div class="waveform-bar" style="height:28px;opacity:1"></div>
+                <div class="waveform-bar" style="height:22px"></div><div class="waveform-bar" style="height:12px"></div>
+                <div class="waveform-bar" style="height:20px"></div><div class="waveform-bar" style="height:24px"></div>
+                <div class="waveform-bar" style="height:16px"></div><div class="waveform-bar" style="height:10px"></div>
+                <div class="waveform-bar" style="height:22px;opacity:1"></div><div class="waveform-bar" style="height:14px"></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--border2);margin-top:4px">VOICE PIPELINE SIGNAL</div>
+            </div>
+            <div class="card-desc">Voice-native AI assistant.<br>End-to-end agent orchestration layer.</div>
+            <div class="card-tags"><span class="tag">WHISPER</span><span class="tag-arrow">→</span><span class="tag">GROQ</span><span class="tag-arrow">→</span><span class="tag">TTS</span></div>
+            <div class="badge-row"><span class="badge badge-muted">REACT NATIVE</span><span class="badge badge-muted">NODE.JS</span><span class="badge badge-muted">POSTGRESQL</span></div>
+          </div>
+
+          <!-- REPWISE -->
+          <div class="engine-card viewfinder-card">
+            <span class="vf-tl" aria-hidden="true"></span>
+            <span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span>
+            <span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_002</div><div class="card-title">REPWISE</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-visual">
+              <div class="metric-bar">
+                <div class="metric-label">80% PR AUTOMATION · 0 MANUAL CODE</div>
+                <div class="bar-track"><div class="bar-fill-brass" style="width:80%"></div></div>
+              </div>
+              <div class="metric-bar" style="margin-top:8px">
+                <div class="metric-label">AGENTIC SDLC COVERAGE</div>
+                <div class="bar-track"><div class="bar-fill-muted" style="width:95%"></div></div>
+              </div>
+            </div>
+            <div class="card-desc">AI-architected workout logger.<br>Agentic SDLC from schema → deploy.</div>
+            <div class="card-tags"><span class="tag">NEXT.JS</span><span class="tag-arrow">+</span><span class="tag">SUPABASE</span><span class="tag-arrow">+</span><span class="tag">VERCEL</span></div>
+            <div class="badge-row"><span class="badge badge-muted">TYPESCRIPT</span><span class="badge badge-muted">TAILWIND</span></div>
+          </div>
+
+          <!-- AGENTIC SYSTEMS -->
+          <div class="engine-card viewfinder-card">
+            <span class="vf-tl" aria-hidden="true"></span>
+            <span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span>
+            <span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_003</div><div class="card-title">AGENTIC SYS.</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-visual" style="padding:8px 0">
+              <div class="fanout">
+                <div class="fanout-node-src"></div>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;align-items:center;gap:4px"><div class="fanout-tick"></div><div class="fanout-node-w"></div></div>
+                  <div style="display:flex;align-items:center;gap:4px"><div class="fanout-tick"></div><div class="fanout-node-w"></div></div>
+                  <div style="display:flex;align-items:center;gap:4px"><div class="fanout-tick"></div><div class="fanout-node-w"></div></div>
+                </div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin:0 4px">→</div>
+                <div class="fanout-node-agg"></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--border2);margin-top:6px">PROMISE.ALL FAN-OUT / FAN-IN</div>
+            </div>
+            <div class="card-desc">Multi-agent Node.js orchestration.<br>Handoff + parallel execution patterns.</div>
+            <div class="card-tags"><span class="tag">NODE.JS</span><span class="tag-arrow">+</span><span class="tag">TYPESCRIPT</span><span class="tag-arrow">+</span><span class="tag">GROQ</span></div>
+          </div>
+
+          <!-- UHC -->
+          <div class="engine-card viewfinder-card">
+            <span class="vf-tl" aria-hidden="true"></span>
+            <span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span>
+            <span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PRODUCTION_001</div><div class="card-title">UHC</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-visual">
+              <div class="metric-bar">
+                <div class="metric-label">100K+ SESSIONS / MONTH</div>
+                <div class="bar-track"><div class="bar-fill-brass" style="width:75%"></div></div>
+              </div>
+              <div class="metric-bar" style="margin-top:8px">
+                <div class="metric-label">95%+ UNIT TEST COVERAGE</div>
+                <div class="bar-track"><div class="bar-fill-muted" style="width:95%"></div></div>
+              </div>
+            </div>
+            <div class="card-desc">E-commerce store from greenfield. Canary<br>pipeline. LSA/HSA payment integrations.</div>
+            <div class="card-tags"><span class="tag">NEXT.JS</span><span class="tag-arrow">→</span><span class="tag">REDUX</span><span class="tag-arrow">→</span><span class="tag">AWS</span><span class="tag-arrow">→</span><span class="tag">GH ACTIONS</span></div>
+            <div class="badge-row"><span class="badge badge-ice">NEXT.JS</span><span class="badge badge-muted">COPILOT</span></div>
+            <div class="card-watermark">@PUBLICIS</div>
+          </div>
+        </div>
+
+        <!-- WCI full width -->
+        <div class="engine-card-full viewfinder-card">
+          <span class="vf-tl" aria-hidden="true"></span>
+          <span class="vf-tr" aria-hidden="true"></span>
+          <span class="vf-bl" aria-hidden="true"></span>
+          <span class="vf-br" aria-hidden="true"></span>
+          <div class="wci-inner">
+            <div>
+              <div class="card-counter">PRODUCTION_002</div>
+              <div class="card-title">WCI — CARBON TRADING</div>
+              <div class="card-desc" style="margin-top:8px">Legacy Python/DynamoDB → Node.js/PostgreSQL. Carbon Emissions Cap-and-Trade allocation APIs. 10% annual corporate carbon cap reduction enforced via PostgreSQL transactions.</div>
+              <div class="badge-row" style="margin-top:12px"><span class="badge badge-hot">REGULATED</span><span class="badge badge-muted">ZERO DOWNTIME</span><span class="badge badge-ice">AWS</span></div>
+              <div class="card-tags" style="margin-top:10px"><span class="tag">NODE.JS</span><span class="tag-arrow">→</span><span class="tag">POSTGRESQL</span><span class="tag-arrow">+</span><span class="tag">PYTHON</span><span class="tag-arrow">+</span><span class="tag">AWS RDS</span></div>
+              <div class="card-watermark">@PUBLICIS</div>
+            </div>
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:14px">MIGRATION SCHEMATIC</div>
+              <div class="migration">
+                <div style="text-align:center"><div class="mig-label dead">PYTHON</div><div class="mig-label dead">DYNAMODB</div><div class="mig-sub">LEGACY</div></div>
+                <div class="mig-arrow"><div style="font-family:var(--mono);font-size:9px;color:var(--brass);letter-spacing:0.08em;margin-bottom:4px">RE-ARCH</div><div class="mig-line"></div><div class="mig-arrowhead">▶</div><div class="mig-confirm">100% CONSISTENCY</div></div>
+                <div style="text-align:center"><div class="mig-label live">NODE.JS</div><div class="mig-label live">POSTGRESQL</div><div class="mig-sub" style="color:var(--signal)">PRODUCTION</div></div>
+              </div>
+              <div style="margin-top:16px;font-family:var(--mono);font-size:9px;color:var(--muted2);line-height:2">3 MICROSERVICES MIGRATED<br>PRIVILEGE MGMT + USERS + ACTION LOGGING<br>ZERO-DOWNTIME CUTOVER<br>STRICT AUDIT COMPLIANCE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note new">
+      <div class="interaction-note-label">v2 CHANGE — VIEWFINDER FOCUS BRACKETS</div>
+      <div class="interaction-note-body">On hover, each card shows DSLR viewfinder corner brackets — four 14px L-shaped lines in <code>--brass</code>, positioned at the four card corners, transitioning from <code>opacity: 0</code> to <code>opacity: 1</code> (200ms ease). This is the focus-confirmation overlay of a DSLR. Implemented via <code>::before</code> and <code>::after</code> pseudo-elements. The label "focus brackets" is never shown anywhere. A photographer sees their camera's focus confirmation box. Everyone else sees a subtle, precise hover state.</div>
+    </div>
+    <div class="interaction-note new" style="margin-top:8px">
+      <div class="interaction-note-label">v2 CHANGE — TIMELINE DEPTH OF FIELD</div>
+      <div class="interaction-note-body">Timeline entries decrease in visual sharpness as they recede into the past. The most recent entry (NOW → ACTIVE) is rendered at full opacity and full color. Each step back in time reduces opacity by 12% and adds a <code>filter: blur(0.3px)</code> increment. The oldest entry (BITS PILANI) is rendered at ~52% opacity with 0.9px blur. This is photographic depth of field — the present is in focus, the past softens. Not retro, not grainy: the precise optical quality of a shallow depth lens pulling focus forward.</div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 05 — BLUEPRINT (UPDATED IN v2) -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="blueprint">
+    <div class="section-label">[05] THE BLUEPRINT — DEPLOYMENT HISTORY <span class="diff-changed diff-badge">UPDATED IN v2</span></div>
+    <div class="section-title">DEPTH OF FIELD TIMELINE</div>
+    <p class="section-intro">A timeline as deployment history. In v2 the visual treatment changes: past entries recede into photographic defocus. No section label, no explanation. The visitor simply notices that the present is sharper than the past.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com/#blueprint</span>
+      </div>
+      <div class="screen-body">
+        <div style="margin-bottom:32px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[04] THE BLUEPRINT</div>
+          <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">DEPLOYMENT HISTORY</div>
+        </div>
+
+        <div class="timeline">
+          <div class="timeline-entry">
+            <div class="timeline-dot active"></div>
+            <div class="timeline-ts active">NOW → ACTIVE</div>
+            <div class="timeline-title active">PRODUCT ENGINEERING MODE</div>
+            <div class="timeline-desc" style="filter:blur(0px);opacity:1">Building AI-native systems with full ownership. Exiting the consultancy model. Targeting international remote product roles — systems that are owned, not delivered.</div>
+          </div>
+          <div class="timeline-entry">
+            <div class="timeline-dot past"></div>
+            <div class="timeline-ts past">JUL 2022 → PRESENT</div>
+            <div class="timeline-title past" style="filter:blur(0px);opacity:0.88">PUBLICIS SAPIENT — 4 YOE</div>
+            <div class="timeline-desc" style="filter:blur(0.3px);opacity:0.76">Full-Stack Software Engineer. Node.js/PostgreSQL. UHC 100K+ sessions. WCI carbon cap APIs. Canary pipeline. Zero-downtime DB migration.</div>
+          </div>
+          <div class="timeline-entry">
+            <div class="timeline-dot past"></div>
+            <div class="timeline-ts past" style="opacity:0.7">FEB 2022 → JUN 2022</div>
+            <div class="timeline-title past" style="filter:blur(0.5px);opacity:0.72">PAYPAL INDIA — INTERN</div>
+            <div class="timeline-desc" style="filter:blur(0.5px);opacity:0.60">Rapid Emerging Markets Team. Interoperability Dashboard. REST APIs + React. First exposure to production-scale distributed payments.</div>
+          </div>
+          <div class="timeline-entry">
+            <div class="timeline-dot old"></div>
+            <div class="timeline-ts old" style="opacity:0.5">2018 → 2022</div>
+            <div class="timeline-title old" style="filter:blur(0.9px);opacity:0.52">BITS PILANI — B.E. CS</div>
+            <div class="timeline-desc old" style="filter:blur(0.9px);opacity:0.40">Hyderabad Campus. CGPA 7.44. The foundation.</div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--grid);padding:16px 18px;margin-top:20px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:0.1em;margin-bottom:10px">$ current --stack</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span class="stack-tag normal">NODE.JS</span><span class="stack-tag normal">TYPESCRIPT</span><span class="stack-tag normal">POSTGRESQL</span>
+            <span class="stack-tag normal">NEXT.JS</span><span class="stack-tag ai">[LLM AGENTS]</span><span class="stack-tag ai">[AGENTIC SDLC]</span>
+            <span class="stack-tag normal">AWS</span><span class="stack-tag normal">DOCKER</span><span class="stack-tag normal">PYTHON</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note new">
+      <div class="interaction-note-label">v2 CHANGE — DEPTH-OF-FIELD REVEAL</div>
+      <ul class="bullet-list">
+        <li><strong>Scroll-triggered:</strong> As the timeline scrolls into view, entries reveal with tabla cadence — 40ms stagger between each. They don't all appear at once.</li>
+        <li><strong>DoF treatment:</strong> NOW → full sharpness, 100% opacity. Publicis → blur(0.3px), 76% opacity. PayPal → blur(0.5px), 60% opacity. BITS → blur(0.9px), 40% opacity. The present is sharp. The past is soft. Not grainy. Not faded. Optically defocused — like pulling focus on a 50mm lens.</li>
+        <li><strong>On hover:</strong> Any past entry can be hovered to bring it to full focus (0.3s ease, blur removes, opacity 100%). The focus is temporary. On mouse-off, it softens again. This is intentional — the past can be examined, but the present is where focus rests naturally.</li>
+        <li><strong>Aperture ring:</strong> At this scroll depth the ring is near f/1.4 — wide open. The shallowest depth of field. The timeline visual treatment and the nav ring are in harmony without being coordinated.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 06 — MICRO-DETAILS (UPDATED IN v2) -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="interactions">
+    <div class="section-label">[06] MICRO-DETAILS & INTERACTIONS <span class="diff-changed diff-badge">UPDATED IN v2</span></div>
+    <div class="section-title">EVERY SURFACE HAS A SIGNAL</div>
+
+    <div class="interactions-grid">
+      <div class="interact-card">
+        <div class="interact-title">CUSTOM CURSOR</div>
+        <div class="interact-body">
+          Default: 12×12 brass ring, no fill, 1px stroke in <code>--brass-dim</code>.<br><br>
+          On interactive hover: ring fills to <code>--brass</code> solid (120ms). On cards with viewfinder class: the cursor ring <em>also</em> shows a faint crosshair (2px horizontal + vertical lines, 6px long, <code>--brass-dim</code>) — like a DSLR center focus point.<br><br>
+          On click: scale burst 1.0 → 1.4 → 1.0 (120ms). Over text: collapses to 2px I-beam in brass.
+        </div>
+      </div>
+      <div class="interact-card">
+        <div class="interact-title">APERTURE RING (LEFT EDGE)</div>
+        <div class="interact-body">
+          SVG aperture ring, 36px wide, fixed left edge 24px, vertically centered.<br><br>
+          Rotates clockwise: <code>rotate(scrollY / totalHeight * 270deg)</code><br>
+          Opens: aperture radius scales from <code>r: 3px</code> to <code>r: 16px</code> over full scroll.<br><br>
+          At each section boundary: 20ms scale pulse (ring briefly goes 1.0 → 1.08 → 1.0) + section detent click sound. This is the aperture ring clicking to a stop. Never labeled.
+        </div>
+      </div>
+      <div class="interact-card">
+        <div class="interact-title">SECTION TRANSITIONS</div>
+        <div class="interact-body">
+          A brass 1px horizontal line sweeps left→right (180ms) accompanied by the shutter sweep sound. Not a standard opacity fade. A film gate wipe.<br><br>
+          Scroll-triggered reveals: Taal cadence (heading → description → tags, staggered by beat intervals, not linear).<br><br>
+          Parallax on hero text only: max 20px vertical shift.
+        </div>
+      </div>
+      <div class="interact-card">
+        <div class="interact-title">FOOTER</div>
+        <div class="interact-body">
+          Left: <code>N/A :: nielless.com</code> in brass mono.<br>
+          Center: build timestamp in <code>#2E2E31</code>.<br>
+          Right: GitHub + LinkedIn as monoline SVG icons.<br><br>
+          When footer loads: tanpura resonance sound (600ms harmonic drone, Sa + fifth overtone) fades in if sound is active. This is a raga resolution — the piece ending on the Sa.<br><br>
+          Bottom line (Crimson Pro italic): <em>"Build until it holds."</em>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-wrap" style="margin-top:14px">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com — bottom</span>
+      </div>
+      <div class="footer-mock">
+        <div class="footer-mock-grid">
+          <div class="footer-mock-sig">N/A :: nielless.com</div>
+          <div class="footer-mock-build">BUILD 2025.XX.XX</div>
+          <div class="footer-mock-icons"><span class="footer-mock-icon">GH</span><span class="footer-mock-icon">LI</span></div>
+        </div>
+        <div class="footer-mock-quote">"Build until it holds."</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 07 — ARCHITECTURE (UPDATED IN v2) -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="architecture">
+    <div class="section-label">[07] NEXT.JS BUILD ARCHITECTURE <span class="diff-changed diff-badge">UPDATED IN v2</span></div>
+    <div class="section-title">THE STACK & FILE STRUCTURE</div>
+
+    <div class="arch-block">
+      <div class="ds-label">TECH STACK</div>
+      <div class="arch-code"><span class="hl">Framework:</span>   <span class="norm">Next.js 14 (App Router)</span>
+<span class="hl">Language:</span>    <span class="norm">TypeScript (strict mode)</span>
+<span class="hl">Animation:</span>   <span class="norm">Framer Motion (useInView, useScroll, useTransform)</span>
+<span class="hl">Sound:</span>       <span class="norm">Web Audio API — raw oscillators, no library</span>
+<span class="hl">Styling:</span>     <span class="norm">CSS Custom Properties + CSS Modules</span>
+<span class="hl">Texture:</span>     <span class="norm">SVG feTurbulence noise, requestAnimationFrame re-seed</span>
+<span class="hl">Scroll:</span>      <span class="norm">CSS scroll-snap + Framer Motion useScroll for aperture</span>
+<span class="hl">Fonts:</span>       <span class="norm">Self-hosted WOFF2 (Google Fonts subset)</span>
+<span class="hl">Deploy:</span>      <span class="norm">Vercel</span>
+<span class="hl">Performance:</span> <span class="norm">Target Lighthouse 95+ across all metrics</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">FILE STRUCTURE (v2 — UPDATED)</div>
+      <div class="arch-code"><span class="hl">nielless.com/</span>
+├── <span class="dim">app/</span>
+│   ├── <span class="norm">page.tsx</span>              <span class="comment">← Hero + compile gate</span>
+│   ├── <span class="dim">layout.tsx</span>            <span class="comment">← Cursor + audio provider + film grain layer</span>
+│   └── <span class="dim">globals.css</span>           <span class="comment">← Full token system + diesel idle animation</span>
+├── <span class="dim">components/</span>
+│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera metadata boot + develop animation</span>
+│   ├── <span class="norm">Nav.tsx</span>               <span class="comment">← Sticky top nav + ApertureRing.tsx</span>
+│   ├── <span class="norm">ApertureRing.tsx</span>      <span class="comment">← SVG aperture, scroll-driven rotation + open ★ NEW</span>
+│   ├── <span class="norm">SchematicCard.tsx</span>     <span class="comment">← Engine cards with viewfinder brackets ★ UPDATED</span>
+│   ├── <span class="norm">EngineSection.tsx</span>     <span class="comment">← Section container</span>
+│   ├── <span class="norm">Timeline.tsx</span>          <span class="comment">← DoF blur treatment, taal reveal ★ UPDATED</span>
+│   ├── <span class="norm">FilmGrain.tsx</span>         <span class="comment">← SVG feTurbulence layer, rAF re-seed ★ NEW</span>
+│   ├── <span class="norm">CustomCursor.tsx</span>      <span class="comment">← Brass ring + focus crosshair state ★ UPDATED</span>
+│   └── <span class="norm">AudioEngine.ts</span>        <span class="comment">← Web Audio API singleton — full global map</span>
+├── <span class="dim">lib/</span>
+│   ├── <span class="norm">sounds.ts</span>             <span class="comment">← All oscillator presets (8 sounds)</span>
+│   └── <span class="norm">scroll.ts</span>             <span class="comment">← Scroll utilities (section detection, aperture calc) ★ NEW</span>
+├── <span class="dim">data/</span>
+│   └── <span class="norm">projects.ts</span>           <span class="comment">← Schematic card data (typed)</span>
+└── <span class="dim">public/fonts/</span>          <span class="comment">← Self-hosted Bebas Neue, JetBrains Mono, Crimson Pro</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">IMPLEMENTATION ORDER (v2 — UPDATED)</div>
+      <ol class="order-list">
+        <li class="order-item"><span class="order-num">01</span><div><code>globals.css</code> — <span>Lock all tokens. Add diesel-idle animation and color temperature arc gradient. This is the foundation everything else sits on.</span></div></li>
+        <li class="order-item"><span class="order-num">02</span><div><code>FilmGrain.tsx</code> + <code>AudioEngine.ts</code> — <span>Build both ambient layers first. FilmGrain goes into layout.tsx globally. Test the diesel sub-bass entry pulse. If the ambient layer is wrong, every section built on top of it is wrong.</span></div></li>
+        <li class="order-item"><span class="order-num">03</span><div><code>ApertureRing.tsx</code> — <span>Build the aperture SVG and wire it to Framer Motion's useScroll + useTransform. Get the rotation and open/close working before any section content exists. This is the nervous system of the experience.</span></div></li>
+        <li class="order-item"><span class="order-num">04</span><div><code>CustomCursor.tsx</code> — <span>Install globally, verify all states (default, hover, click, text, viewfinder-card). The focus crosshair state needs the viewfinder-card class to be established first.</span></div></li>
+        <li class="order-item"><span class="order-num">05</span><div><code>HeroBoot.tsx</code> — <span>Camera metadata boot lines, develop animation (logarithmic opacity curve), COMPILE resistance delay. Test the full boot sequence end-to-end before moving on.</span></div></li>
+        <li class="order-item"><span class="order-num">06</span><div><code>SchematicCard.tsx</code> — <span>Build with viewfinder brackets as default. Wire the lens-mount click sound on click. Test hover states for both border and bracket transitions.</span></div></li>
+        <li class="order-item"><span class="order-num">07</span><div><code>Timeline.tsx</code> — <span>Implement DoF blur treatment with hover-to-focus restore. Wire taal cadence stagger (40ms per entry, logarithmic, not linear).</span></div></li>
+        <li class="order-item"><span class="order-num">08</span><div><strong>Performance + Grain pass</strong> — <span>Font subsetting, Lighthouse audit, verify grain layer has zero layout impact, verify aperture ring has zero main-thread cost (transform only, no layout).</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- 08 — MOBILE -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section">
+    <div class="section-label">[08] MOBILE CONSIDERATIONS</div>
+    <div class="mobile-grid">
+      <div class="mobile-card">
+        <div class="mobile-context">APERTURE RING</div>
+        <div class="mobile-rule">Replaced by a 4px × 32px vertical progress bar in brass, fixed right edge. Grows from 0 to 100% height as user scrolls. No rotation, no iris animation — clean, minimal signal.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">FILM GRAIN</div>
+        <div class="mobile-rule">Grain layer stays active but rAF re-seed interval increases from 150ms → 500ms. Grain "moves" slower — preserves battery on mobile. Opacity reduced from 3.5% → 2.5%.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">DIESEL IDLE</div>
+        <div class="mobile-rule">Sub-bass entry pulse disabled on mobile (no subwoofer to feel it through). Body opacity pulse stays — 4s cycle is imperceptible power impact. Grid breathe stays.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">ENGINE GRID</div>
+        <div class="mobile-rule">2-column → 1-column stack. Viewfinder brackets remain on touch-press (active state). WCI full-width card stays full-width. Migration arrow reflows vertically.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">HERO</div>
+        <div class="mobile-rule">Font scales 62px → 40px Bebas. Camera boot lines condense to 2: metadata line + "SENSOR READY." Ticker hidden. Develop animation preserves.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">DOF TIMELINE</div>
+        <div class="mobile-rule">DoF blur treatment stays — it's CSS-only, zero performance cost. Hover-to-focus becomes tap-to-focus. Second tap returns to soft state.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">SOUND</div>
+        <div class="mobile-rule">All audio disabled by default on touch. Sub-bass and tanpura disabled entirely on mobile (not meaningful through phone speakers). Click sounds remain available via toggle.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">CURSOR</div>
+        <div class="mobile-rule">Disabled on touch. No custom cursor. Falls back to native. Viewfinder brackets become active-state-only (tap-press) instead of hover-state.</div>
+      </div>
+    </div>
+  </section>
+
+<footer class="spec-footer">
+  <div class="footer-left">N/A :: DESIGN SPEC — REV 2.0</div>
+  <div style="font-size:9px;color:var(--border2);text-align:center;letter-spacing:0.08em">nielless.com</div>
+  <div class="footer-right">
+    <a href="https://github.com/nielless" class="footer-icon-link" aria-label="GitHub" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+      </svg>
+    </a>
+    <a href="https://linkedin.com/in/nielless" class="footer-icon-link" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+        <rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+      </svg>
+    </a>
+  </div>
+</footer>
+<div class="footer-quote">"Build until it holds."</div>
+
+</div>
+</body>
+</html>

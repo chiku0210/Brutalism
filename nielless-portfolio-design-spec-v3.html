@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIELLESS.COM — Design Specification v3.0 (Vintage DSLR Interface)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --void: #060608;
+    --surface: #0E0E10;
+    --surface2: #161618;
+    --grid: #1A1A1C;
+    --border: #2E2E31;
+    --border2: #3A3A3D;
+    --brass: #C8A96E;
+    --brass-dim: #8A7249;
+    --brass-bright: #E2C48A;
+    --signal: #39FF14;
+    --hot: #FF4D1A;
+    --ice: #A8C8E8;
+    --dust: #E8E2D5;
+    --muted: #606068;
+    --muted2: #404044;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --serif: 'Crimson Pro', serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--dust);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Global grain layer (specimen) */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ── SKIP LINK ── */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--void);
+    color: var(--brass);
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--brass);
+    z-index: 10000;
+    text-decoration: none;
+  }
+  .skip-link:focus { top: 0; outline: none; }
+
+  /* ── LAYOUT ── */
+  .page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 36px 100px; position: relative; z-index: 1; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6,6,8,0.96);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 36px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .topbar-logo { font-family: var(--mono); font-size: 11px; color: var(--brass); letter-spacing: 0.15em; }
+  .topbar-nav { display: flex; gap: 32px; align-items: center; }
+  .topbar-nav a { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .topbar-nav a:hover { color: var(--dust); }
+  .topbar-nav a:focus-visible { outline: 1px solid var(--brass); outline-offset: 3px; }
+  .topbar-nav .cta { border: 1px solid var(--brass-dim); color: var(--brass); padding: 4px 12px; transition: border-color 0.15s, color 0.15s; }
+  .topbar-nav .cta:hover { border-color: var(--brass-bright); color: var(--brass-bright); }
+
+  /* ── DOCUMENT HEADER ── */
+  .doc-header { padding: 56px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 56px; }
+  .doc-rev { font-size: 10px; color: var(--brass); letter-spacing: 0.15em; margin-bottom: 10px; }
+  .doc-title { font-family: var(--display); font-size: 52px; letter-spacing: 0.05em; color: var(--dust); line-height: 1; }
+  .doc-sub { font-family: var(--serif); font-size: 16px; font-style: italic; color: var(--muted); margin-top: 12px; }
+
+  /* ── SECTIONS ── */
+  .spec-section { margin-bottom: 72px; }
+  .section-label { font-size: 10px; color: var(--brass); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title { font-family: var(--display); font-size: 40px; letter-spacing: 0.04em; color: var(--dust); margin-bottom: 24px; }
+  .section-intro { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); line-height: 1.8; margin-bottom: 28px; max-width: 720px; }
+
+  /* ── PRINCIPLES ── */
+  .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .principle { background: var(--surface); border: 1px solid var(--border); padding: 16px 20px; border-left: 2px solid var(--brass); }
+  .principle-text { font-size: 12px; color: var(--dust); line-height: 1.7; }
+
+  /* ── DESIGN SYSTEM ── */
+  .ds-block { background: var(--surface); border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; }
+  .ds-label { font-size: 9px; color: var(--brass); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; }
+  .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .color-swatch { border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .swatch-fill { height: 40px; }
+  .swatch-info { background: var(--surface2); padding: 8px 10px; }
+  .swatch-token { font-size: 9px; color: var(--brass); letter-spacing: 0.08em; }
+  .swatch-hex { font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .swatch-use { font-size: 8px; color: var(--muted2); margin-top: 2px; line-height: 1.4; }
+
+  .font-preview { font-family: var(--display); font-size: 28px; letter-spacing: 0.04em; color: var(--dust); }
+  .font-preview-mono { font-family: var(--mono); font-size: 13px; color: var(--dust); margin-top: 4px; }
+  .font-preview-serif { font-family: var(--serif); font-size: 17px; font-style: italic; color: var(--dust); margin-top: 4px; }
+
+  .spacing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .spacing-item { background: var(--surface2); padding: 14px; }
+  .spacing-value { font-size: 20px; color: var(--dust); font-family: var(--display); letter-spacing: 0.05em; }
+  .spacing-desc { font-size: 9px; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; }
+
+  /* ── MOCKUP CHROME ── */
+  .screen-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+  .screen-chrome { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+  .chrome-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .chrome-url { font-family: var(--mono); font-size: 10px; color: var(--muted2); margin-left: 10px; letter-spacing: 0.05em; }
+  .screen-body { background: var(--void); padding: 40px; position: relative; }
+
+  /* ── NOTES ── */
+  .interaction-note { background: var(--surface); border-left: 2px solid var(--brass-dim); padding: 16px 20px; margin-top: 12px; }
+  .interaction-note-label { font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 8px; }
+  .interaction-note-body { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .interaction-note-body code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+  .bullet-list { list-style: none; padding: 0; }
+  .bullet-list li { font-size: 11px; color: var(--muted); line-height: 1.9; padding-left: 14px; position: relative; }
+  .bullet-list li::before { content: '▸'; position: absolute; left: 0; color: var(--brass); font-size: 8px; top: 4px; }
+  .bullet-list li strong { color: var(--dust); font-weight: 500; }
+  .bullet-list li code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+
+  /* ── CAMERA EXPERIENCE LAYER ── */
+  .mechanism-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .mechanism-card { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; }
+  .mechanism-title { font-size: 9px; color: var(--brass); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+  .mechanism-body { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .mechanism-body code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+
+  /* ── HERO MOCKUP ── */
+  .hero-mock-inner { position: relative; }
+  .hero-terminal { font-family: var(--mono); margin-bottom: 36px; }
+  .term-line { font-size: 11px; color: var(--muted2); line-height: 2.2; }
+  .term-line.ok { color: var(--signal); }
+  .term-line.meta { color: var(--brass); }
+  .hero-headline { font-family: var(--display); font-size: 62px; letter-spacing: 0.04em; color: var(--dust); line-height: 0.95; margin-bottom: 20px; }
+  .hero-headline .accent { color: var(--brass); }
+  .hero-sub { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); max-width: 400px; line-height: 1.8; margin-bottom: 36px; }
+  .hero-cta { display: inline-block; border: 1px solid var(--brass-dim); padding: 12px 28px; cursor: pointer; position: relative; }
+  .hero-cta:active { top: 1px; }
+  .hero-cta-text { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--brass); }
+
+  /* Shutter overlay mockup */
+  .shutter-overlay {
+    position: absolute; inset: 0; z-index: 50; background: var(--void);
+    transform: scaleX(0); transform-origin: left center;
+    pointer-events: none;
+  }
+  .shutter-overlay.active { animation: shutter-sweep 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  @keyframes shutter-sweep { to { transform: scaleX(1); } }
+
+  /* ── APERTURE RING (left edge specimen) ── */
+  .aperture-specimen {
+    position: fixed; left: 24px; top: 50%; transform: translateY(-50%);
+    width: 36px; height: 36px; z-index: 90;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .aperture-specimen svg { width: 100%; height: 100%; overflow: visible; }
+  .aperture-specimen .ring-outer { fill: none; stroke: var(--brass-dim); stroke-width: 1.5; }
+  .aperture-specimen .ring-blade { fill: none; stroke: var(--brass); stroke-width: 0.8; opacity: 0.7; }
+
+  /* ── VIEWFINDER BRACKETS ── */
+  .vf-card { position: relative; border: 1px solid var(--border); background: var(--surface); padding: 20px; transition: border-color 0.15s; cursor: default; }
+  .vf-card:hover, .vf-card:focus-visible { border-color: var(--brass-dim); }
+  .vf-tl, .vf-tr, .vf-bl, .vf-br {
+    position: absolute; width: 14px; height: 14px; opacity: 0; transition: opacity 0.2s ease; pointer-events: none;
+  }
+  .vf-tl { top: 8px; left: 8px; border-top: 1px solid var(--brass); border-left: 1px solid var(--brass); }
+  .vf-tr { top: 8px; right: 8px; border-top: 1px solid var(--brass); border-right: 1px solid var(--brass); }
+  .vf-bl { bottom: 8px; left: 8px; border-bottom: 1px solid var(--brass); border-left: 1px solid var(--brass); }
+  .vf-br { bottom: 8px; right: 8px; border-bottom: 1px solid var(--brass); border-right: 1px solid var(--brass); }
+  .vf-card:hover .vf-tl, .vf-card:hover .vf-tr, .vf-card:hover .vf-bl, .vf-card:hover .vf-br,
+  .vf-card:focus-visible .vf-tl, .vf-card:focus-visible .vf-tr, .vf-card:focus-visible .vf-bl, .vf-card:focus-visible .vf-br { opacity: 1; }
+
+  /* ── ENGINE CARDS ── */
+  .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .engine-card-full { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
+  .card-counter { font-family: var(--mono); font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 4px; }
+  .card-title { font-family: var(--display); font-size: 26px; letter-spacing: 0.06em; color: var(--dust); margin-bottom: 14px; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .badge { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border: 1px solid; letter-spacing: 0.06em; white-space: nowrap; }
+  .badge-live { color: var(--signal); border-color: #1a4a1a; background: rgba(57,255,20,0.06); }
+  .badge-hot { color: var(--hot); border-color: #4a1a10; background: rgba(255,77,26,0.06); }
+  .badge-ice { color: var(--ice); border-color: #1a2a3a; background: rgba(168,200,232,0.06); }
+  .badge-muted { color: var(--muted2); border-color: var(--border); }
+  .card-desc { font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+  .card-tags { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .tag { font-family: var(--mono); font-size: 9px; color: var(--muted2); border: 1px solid var(--border); padding: 2px 7px; }
+  .tag-arrow { font-size: 9px; color: var(--brass); }
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .card-watermark { font-family: var(--mono); font-size: 9px; color: var(--border2); letter-spacing: 0.1em; margin-top: 8px; }
+
+  /* ── BLUEPRINT / CONTACT SHEET ── */
+  .contact-sheet { border-left: 1px solid var(--border); padding-left: 20px; }
+  .film-frame { position: relative; padding: 18px 0 18px 28px; border-bottom: 1px solid var(--grid); transition: opacity 0.2s, font-weight 0.2s; cursor: default; }
+  .film-frame::before {
+    content: '';
+    position: absolute; left: -24px; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 24px;
+    background-image: repeating-linear-gradient(to bottom, var(--border) 0, var(--border) 3px, transparent 3px, transparent 6px);
+    opacity: 0.4;
+  }
+  .film-frame .frame-ts { font-size: 9px; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .film-frame .frame-title { font-family: var(--display); font-size: 20px; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .film-frame .frame-desc { font-size: 10px; line-height: 1.7; }
+  .film-frame .frame-desc code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
+
+  /* DoF classes */
+  .frame-near  { opacity: 1; }
+  .frame-near .frame-title { color: var(--dust); }
+  .frame-mid   { opacity: 0.82; }
+  .frame-mid .frame-title { color: var(--dust); font-weight: 400; }
+  .frame-far   { opacity: 0.60; }
+  .frame-far .frame-title { color: var(--muted); font-weight: 300; }
+  .frame-past  { opacity: 0.40; }
+  .frame-past .frame-title { color: var(--muted2); font-weight: 300; }
+
+  .film-frame:hover, .film-frame:focus-visible {
+    opacity: 1 !important;
+  }
+  .film-frame:hover .frame-title, .film-frame:focus-visible .frame-title {
+    color: var(--dust) !important; font-weight: 400 !important;
+  }
+
+  /* ── MOBILE ── */
+  .mobile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mobile-card { background: var(--surface); border: 1px solid var(--border); padding: 16px; }
+  .mobile-context { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; margin-bottom: 8px; }
+  .mobile-rule { font-size: 11px; color: var(--muted); line-height: 1.8; }
+
+  /* ── ARCHITECTURE ── */
+  .arch-block { background: var(--surface); border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; }
+  .arch-code { font-family: var(--mono); font-size: 11px; line-height: 2; background: var(--void); padding: 18px 20px; border: 1px solid var(--grid); border-radius: 4px; overflow-x: auto; white-space: pre; }
+  .arch-code .hl { color: var(--brass); }
+  .arch-code .dim { color: var(--muted2); }
+  .arch-code .norm { color: var(--dust); }
+  .arch-code .comment { color: var(--border2); }
+  .order-list { list-style: none; padding: 0; }
+  .order-item { display: flex; gap: 14px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--grid); font-size: 11px; color: var(--muted); line-height: 1.7; }
+  .order-num { font-size: 9px; color: var(--brass); letter-spacing: 0.1em; min-width: 20px; margin-top: 2px; }
+  .order-item code { font-family: var(--mono); color: var(--dust); font-size: 10px; }
+
+  /* ── FOOTER ── */
+  .spec-footer { border-top: 1px solid var(--border); margin-top: 80px; padding-top: 32px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-left { font-size: 10px; color: var(--brass); letter-spacing: 0.1em; }
+  .footer-right { font-size: 10px; color: var(--muted2); letter-spacing: 0.1em; }
+  .footer-quote { font-family: var(--serif); font-size: 13px; font-style: italic; color: var(--muted2); text-align: center; margin-top: 20px; }
+
+  /* Global focus-visible */
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 1px solid var(--brass); outline-offset: 3px; }
+
+  .callout {
+    border: 1px solid var(--brass-dim);
+    background: rgba(200,169,110,0.04);
+    padding: 18px 22px;
+    margin: 20px 0;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .callout strong { color: var(--brass); font-weight: 500; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; }
+
+  /* ── RESPONSIVE ── */
+  .rule { border: none; border-top: 1px solid var(--border); margin: 0 0 56px; }
+
+  @media (max-width: 768px) {
+    .page-wrap { padding: 0 20px 80px; }
+    .mechanism-grid, .engine-grid, .mobile-grid { grid-template-columns: 1fr; }
+    .hero-headline { font-size: 40px; }
+    .aperture-specimen { display: none; }
+    .topbar { padding: 12px 20px; flex-wrap: wrap; gap: 8px; }
+    .topbar-nav { gap: 16px; flex-wrap: wrap; }
+  }
+
+  @media (max-width: 360px) {
+    .hero-headline { font-size: 32px; word-break: break-word; }
+    .screen-body { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<nav class="topbar" role="navigation" aria-label="Specification">
+  <div class="topbar-logo">N/A — SPEC v3.0</div>
+  <div class="topbar-nav">
+    <a href="#philosophy">PHILOSOPHY</a>
+    <a href="#design-system">SYSTEM</a>
+    <a href="#experience">EXPERIENCE</a>
+    <a href="#hero">HERO</a>
+    <a href="#engine">ENGINE</a>
+    <a href="#blueprint">BLUEPRINT</a>
+    <a href="#interactions">INTERACTIONS</a>
+    <a href="#mobile">MOBILE</a>
+    <a href="#architecture">ARCH</a>
+  </div>
+</nav>
+
+<!-- Fixed aperture ring specimen for the spec page itself -->
+<div class="aperture-specimen" aria-hidden="true">
+  <svg viewBox="0 0 36 36" fill="none">
+    <circle cx="18" cy="18" r="16" class="ring-outer"/>
+    <line x1="18" y1="2" x2="18" y2="10" class="ring-blade"/>
+    <line x1="18" y1="26" x2="18" y2="34" class="ring-blade"/>
+    <line x1="2" y1="18" x2="10" y2="18" class="ring-blade"/>
+    <line x1="26" y1="18" x2="34" y2="18" class="ring-blade"/>
+  </svg>
+</div>
+
+<div class="page-wrap" id="main">
+
+  <header class="doc-header">
+    <div class="doc-rev">DESIGN SPECIFICATION — REV 3.0 &nbsp;·&nbsp; VINTAGE DSLR INTERFACE</div>
+    <div class="doc-title">NIELLESS.COM</div>
+    <div class="doc-sub">Precision instrument. Optical interface. The portfolio is the camera.</div>
+    <div style="margin-top:20px;font-size:10px;color:var(--muted2);line-height:2">
+      <span style="color:var(--brass)">THESIS:</span>&nbsp;
+      The site is not decorated with camera iconography. It is rebuilt as an optical instrument.
+      Scroll progress is mapped to aperture rotation. Interactive states trigger viewfinder focus confirmation.
+      Section transitions are shutter actuations. The surface is emulsion.
+    </div>
+  </header>
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [00] PHILOSOPHY -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="philosophy">
+    <div class="section-label">[00] DESIGN PHILOSOPHY</div>
+    <p class="section-intro">The portfolio is a precision tool. It does not perform; it operates. Every element is machined to a function. The vintage DSLR metaphor is the only metaphor. There is no idle pulse, no background drone, no narrative voiceover. The mechanism speaks for itself.</p>
+    <div class="principles">
+      <div class="principle"><div class="principle-text">A camera is a light-tight box that records truth. The portfolio is a logic-tight system that records capability. Both require correct alignment of elements before the shutter fires.</div></div>
+      <div class="principle"><div class="principle-text">Negative space is not a design trend. It is the necessary darkness between exposures. Without it, the image (the work) is blown out and unreadable.</div></div>
+      <div class="principle"><div class="principle-text"><strong style="color:var(--brass)">The interface is the instrument.</strong> The aperture ring rotates. The shutter wipes. The focus brackets confirm. There are no decorative analogies.</div></div>
+      <div class="principle"><div class="principle-text">Sound is mechanical, not musical. Aperture detents. Shutter curtains. Film advance levers. All audio is opt-in, triggered by user action, and synthesized via raw oscillators.</div></div>
+      <div class="principle"><div class="principle-text">Accessibility is a technical specification, not a feature. Respect reduced motion. Convey state through weight and opacity, not motion alone.</div></div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [01] DESIGN SYSTEM -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="design-system">
+    <div class="section-label">[01] DESIGN SYSTEM</div>
+    <div class="section-title">TOKENS, TYPE & GRID</div>
+
+    <div class="ds-block">
+      <div class="ds-label">COLOR TOKENS</div>
+      <div class="color-grid">
+        <div class="color-swatch"><div class="swatch-fill" style="background:#060608;border-bottom:1px solid #2E2E31"></div><div class="swatch-info"><div class="swatch-token">--void</div><div class="swatch-hex">#060608</div><div class="swatch-use">Page / body</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#0E0E10"></div><div class="swatch-info"><div class="swatch-token">--surface</div><div class="swatch-hex">#0E0E10</div><div class="swatch-use">Card backgrounds</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#161618"></div><div class="swatch-info"><div class="swatch-token">--surface2</div><div class="swatch-hex">#161618</div><div class="swatch-use">Nested containers</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#2E2E31"></div><div class="swatch-info"><div class="swatch-token">--border</div><div class="swatch-hex">#2E2E31</div><div class="swatch-use">Default borders</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#C8A96E"></div><div class="swatch-info"><div class="swatch-token">--brass</div><div class="swatch-hex">#C8A96E</div><div class="swatch-use">Primary accent — mechanical</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#8A7249"></div><div class="swatch-info"><div class="swatch-token">--brass-dim</div><div class="swatch-hex">#8A7249</div><div class="swatch-use">Inactive mechanical parts</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#E2C48A"></div><div class="swatch-info"><div class="swatch-token">--brass-bright</div><div class="swatch-hex">#E2C48A</div><div class="swatch-use">Hover / engagement</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#39FF14"></div><div class="swatch-info"><div class="swatch-token">--signal</div><div class="swatch-hex">#39FF14</div><div class="swatch-use">LIVE / armed indicator</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#FF4D1A"></div><div class="swatch-info"><div class="swatch-token">--hot</div><div class="swatch-hex">#FF4D1A</div><div class="swatch-use">Regulated / warning</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#A8C8E8"></div><div class="swatch-info"><div class="swatch-token">--ice</div><div class="swatch-hex">#A8C8E8</div><div class="swatch-use">Cloud infrastructure</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#E8E2D5"></div><div class="swatch-info"><div class="swatch-token">--dust</div><div class="swatch-hex">#E8E2D5</div><div class="swatch-use">Primary text</div></div></div>
+        <div class="color-swatch"><div class="swatch-fill" style="background:#606068"></div><div class="swatch-info"><div class="swatch-token">--muted</div><div class="swatch-hex">#606068</div><div class="swatch-use">Secondary text</div></div></div>
+      </div>
+    </div>
+
+    <div class="ds-block">
+      <div class="ds-label">TYPOGRAPHY — THREE FONTS, THREE VOICES</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">DISPLAY</div>
+          <div class="font-preview">ORDER.</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">Bebas Neue — headings, hero, project titles. Brutalist. Industrial. Zero warmth.</div>
+        </div>
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">MONO</div>
+          <div class="font-preview-mono">nielless:~$ calibrate</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">JetBrains Mono — UI labels, nav, tags, code. The voice of the machine.</div>
+        </div>
+        <div style="background:var(--surface2);padding:16px">
+          <div style="font-size:9px;color:var(--brass);letter-spacing:0.1em;margin-bottom:10px">SERIF</div>
+          <div class="font-preview-serif">"Optical truth over simulation."</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:8px">Crimson Pro italic — philosophy, project descriptions. The emulsion layer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-block">
+      <div class="ds-label">SPACING & GRID</div>
+      <div class="spacing-grid">
+        <div class="spacing-item"><div class="spacing-value">8PX</div><div class="spacing-desc">BASE UNIT</div></div>
+        <div class="spacing-item"><div class="spacing-value">36PX</div><div class="spacing-desc">PAGE PADDING</div></div>
+        <div class="spacing-item"><div class="spacing-value">80PX</div><div class="spacing-desc">SECTION GAP</div></div>
+        <div class="spacing-item"><div class="spacing-value">20PX</div><div class="spacing-desc">CARD PADDING</div></div>
+        <div class="spacing-item"><div class="spacing-value">2-COL</div><div class="spacing-desc">ENGINE GRID</div></div>
+        <div class="spacing-item"><div class="spacing-value">1100PX</div><div class="spacing-desc">MAX WIDTH</div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [02] CAMERA EXPERIENCE LAYER -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="experience">
+    <div class="section-label">[02] CAMERA EXPERIENCE LAYER</div>
+    <div class="section-title">THE INTERFACE IS THE INSTRUMENT</div>
+    <p class="section-intro">Every interaction is mapped to a mechanical camera operation. There are no decorative embellishments. The metaphor is complete: if a component cannot be described as a camera function, it is removed.</p>
+
+    <div class="mechanism-grid">
+      <div class="mechanism-card">
+        <div class="mechanism-title">Aperture Ring (Ambient Progress)</div>
+        <div class="mechanism-body">
+          Fixed to the left edge of the viewport (desktop), vertically centered. A 36px SVG assembly of aperture blades. Scroll position drives clockwise rotation via a CSS custom property <code>--aperture-rotation</code> updated through a lightweight scroll listener (no animation library). Aperture opens from f/16 (scroll 0%) to f/1.4 (scroll 100%). Each major section boundary triggers a 20ms detent scale pulse (1.0 → 1.06 → 1.0) via CSS transition, not JS animation. The ring is purely ambient; it has no click targets.
+          <br><br>
+          <code>aria-hidden="true"</code>. The scroll position is already available via the scrollbar and the content itself.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Viewfinder Focus Brackets</div>
+        <div class="mechanism-body">
+          Interactive project cards and the contact form carry four corner brackets (14px L-shapes, 1px brass). On hover and <code>:focus-visible</code>, opacity transitions from 0 to 1 in 200ms. This is the DSLR focus confirmation overlay. It does not use box-shadow or outline. It uses four discrete absolutely-positioned border fragments. On touch devices, brackets appear on <code>:active</code> state.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Shutter Wipe Transition</div>
+        <div class="mechanism-body">
+          A fixed full-screen overlay <code>div</code> sits at <code>z-index: 200</code>, <code>pointer-events: none</code>. Default state: <code>transform: scaleX(0)</code>, <code>transform-origin: left</code>. On section change or primary CTA trigger, it receives an <code>.active</code> class that fires a 180ms <code>@keyframes</code> sweep to <code>scaleX(1)</code>. A second keyframe handles the re-open. All hardware-accelerated. No clip-path. No blur.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Film Grain (Surface Emulsion)</div>
+        <div class="mechanism-body">
+          A single static <code>body::after</code> pseudo-element layers an SVG <code>feTurbulence</code> noise tile across the entire viewport at 3% opacity. <code>pointer-events: none; position: fixed; inset: 0; z-index: 9999;</code>. No JavaScript. No re-seed. The grain is the emulsion layer of the screen. On <code>prefers-reduced-motion</code>, the grain remains (it is static) but any other animated textures are disabled.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Exposure Meter (Scroll Depth)</div>
+        <div class="mechanism-body">
+          A 2px-wide vertical brass bar fixed adjacent to the aperture ring. Height scales from 0 to 100% proportional to scroll depth. It is a passive analog meter, not an interactive element. Implemented as a single <code>div</code> with <code>transform: scaleY()</code> driven by the same scroll listener as the aperture ring.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Mode Dial (Navigation)</div>
+        <div class="mechanism-body">
+          The sticky top navigation is conceptualized as a mode dial: <strong>P</strong> (Program — Hero), <strong>A</strong> (Aperture Priority — Engine), <strong>M</strong> (Manual — Blueprint), and <strong>ISO</strong> (Contact). Each mode is a text label in mono. The active mode is indicated by a brass underline (1px, 80% width, centered) rather than a background color.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Hot Shoe (Primary CTA)</div>
+        <div class="mechanism-body">
+          The main conversion action — [ RELEASE SHUTTER ] — is positioned at the top-center of the hero, analogous to a flash hot shoe. It is a raised brass-bordered button. On engagement, it triggers the shutter wipe and a 200ms mechanical delay before routing to the contact form. The delay models the mechanical shutter curtain deployment.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Audio — Mechanical Only</div>
+        <div class="mechanism-body">
+          All sounds are opt-in via a small "SOUND: OFF/ON" toggle in the nav. Uses a lazy-instantiated Web Audio API context. Sounds: aperture detent (20ms, 240Hz transient), shutter curtain (80ms, 90Hz body + 3kHz transient), film advance lever (100ms mechanical ratchet). No ambient loops. No music.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>GRAIN IMPLEMENTATION:</strong>
+      <code style="display:block;margin-top:8px;color:var(--muted2)">body::after {<br>
+        &nbsp;&nbsp;content: ""; position: fixed; inset: 0; z-index: 9999;<br>
+        &nbsp;&nbsp;pointer-events: none; opacity: 0.03;<br>
+        &nbsp;&nbsp;background-image: url("data:image/svg+xml,...feTurbulence...");<br>
+        &nbsp;&nbsp;background-size: 200px;<br>
+      }</code>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [03] HERO MOCKUP -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="hero">
+    <div class="section-label">[03] HERO — SENSOR CALIBRATION</div>
+    <div class="section-title">BOOT LIKE A CAMERA, NOT A SERVER</div>
+    <p class="section-intro">The hero sequence mimics a cold-start power-on of a professional DSLR. Lines of metadata type in. The sensor self-checks. The shutter arms. Only then is the operator permitted to advance. There is no typed "developer" joke. Only optical engineering.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com</span>
+      </div>
+      <div class="screen-body">
+        <div class="hero-mock-inner">
+          <!-- Boot terminal -->
+          <div class="hero-terminal">
+            <div class="term-line">NIELLESS OPTICAL SYSTEMS</div>
+            <div class="term-line meta">SENSOR: 35MM FULL-FRAME · MOUNT: AI-NATIVE</div>
+            <div class="term-line meta">APERTURE: f/LOGIC · ISO: MINIMUM</div>
+            <div class="term-line ok">SHUTTER: ARMED</div>
+          </div>
+          <div class="hero-headline">ORDER.<br>LOGIC.<br><span class="accent">AMOR FATI.</span></div>
+          <div class="hero-sub">Full-Stack Engineer. AI-native builder. Backend-first. Systems that hold under load — or are rebuilt until they do.</div>
+          <button class="hero-cta" aria-label="Release shutter and open contact form">
+            <span class="hero-cta-text">[ RELEASE SHUTTER ]</span>
+          </button>
+          <div class="shutter-overlay" id="shutterDemo" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note">
+      <div class="interaction-note-label">BOOT SEQUENCE</div>
+      <ul class="bullet-list">
+        <li><strong>0ms:</strong> Void. Grain active.</li>
+        <li><strong>200ms:</strong> <code>SENSOR:</code> line types in. Mono, muted.</li>
+        <li><strong>400ms:</strong> <code>APERTURE / ISO</code> line. Brass meta.</li>
+        <li><strong>600ms:</strong> <code>SHUTTER: ARMED</code> in signal green.</li>
+        <li><strong>800ms:</strong> Headline arrives via <code>opacity</code> + <code>transform: translateY(8px)</code>, 200ms. No blur.</li>
+        <li><strong>1000ms:</strong> Subtext (Crimson Pro) develops.</li>
+        <li><strong>1200ms:</strong> Hot shoe CTA fades in. Aperture ring nav appears in f/16 (tight) state.</li>
+      </ul>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">SHUTTER RELEASE GATE</div>
+      <ul class="bullet-list">
+        <li>Hover: border <code>--brass-dim → --brass-bright</code> (120ms).</li>
+        <li>Click: 200ms mechanical delay before route change. During delay, shutter overlay fires sweep animation (scaleX 0→1).</li>
+        <li>On route complete, overlay sweeps open (scaleX 1→0). Total transition: 360ms.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [04] ENGINE MOCKUP -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="engine">
+    <div class="section-label">[04] THE ENGINE — SCHEMATIC CARDS</div>
+    <div class="section-title">PROJECTS AS VIEWFINDER SUBJECTS</div>
+    <p class="section-intro">Projects are not cards. They are subjects framed in the viewfinder. Each schematic card carries the same metadata: project name, one-line function, technology stack, and operational status. On hover or keyboard focus, the viewfinder brackets engage.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com/#engine</span>
+      </div>
+      <div class="screen-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[03] SYSTEM SCHEMATICS</div>
+            <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">ENGINE</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--border2);text-align:right;line-height:1.8">5 SYSTEMS<br>PRODUCTION GRADE</div>
+        </div>
+
+        <div class="engine-grid">
+          <!-- ORION -->
+          <div class="vf-card" tabindex="0" role="article" aria-label="Orion project">
+            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_001</div><div class="card-title">ORION</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-desc">Voice-native AI assistant. End-to-end agent orchestration layer.</div>
+            <div class="card-tags"><span class="tag">WHISPER</span><span class="tag-arrow">→</span><span class="tag">GROQ</span><span class="tag-arrow">→</span><span class="tag">TTS</span></div>
+            <div class="badge-row"><span class="badge badge-muted">REACT NATIVE</span><span class="badge badge-muted">NODE.JS</span><span class="badge badge-muted">POSTGRESQL</span></div>
+          </div>
+
+          <!-- REPWISE -->
+          <div class="vf-card" tabindex="0" role="article" aria-label="Repwise project">
+            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_002</div><div class="card-title">REPWISE</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-desc">AI-architected workout logger. Agentic SDLC from schema to deploy.</div>
+            <div class="card-tags"><span class="tag">NEXT.JS</span><span class="tag-arrow">+</span><span class="tag">SUPABASE</span><span class="tag-arrow">+</span><span class="tag">VERCEL</span></div>
+            <div class="badge-row"><span class="badge badge-muted">TYPESCRIPT</span><span class="badge badge-muted">TAILWIND</span></div>
+          </div>
+
+          <!-- UHC -->
+          <div class="vf-card" tabindex="0" role="article" aria-label="UHC production system">
+            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PRODUCTION_001</div><div class="card-title">UHC</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-desc">E-commerce engine. 100K+ sessions/month. Canary pipeline. LSA/HSA payments.</div>
+            <div class="card-tags"><span class="tag">NEXT.JS</span><span class="tag-arrow">→</span><span class="tag">REDUX</span><span class="tag-arrow">→</span><span class="tag">AWS</span></div>
+            <div class="badge-row"><span class="badge badge-ice">AWS</span><span class="badge badge-muted">COPILOT</span></div>
+            <div class="card-watermark">@PUBLICIS</div>
+          </div>
+
+          <!-- AGENTIC SYSTEMS -->
+          <div class="vf-card" tabindex="0" role="article" aria-label="Agentic Systems project">
+            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
+            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
+            <div class="card-header">
+              <div><div class="card-counter">PROJECT_003</div><div class="card-title">AGENTIC SYS.</div></div>
+              <span class="badge badge-live">LIVE</span>
+            </div>
+            <div class="card-desc">Multi-agent Node.js orchestration. Handoff and parallel execution patterns.</div>
+            <div class="card-tags"><span class="tag">NODE.JS</span><span class="tag-arrow">+</span><span class="tag">TYPESCRIPT</span><span class="tag-arrow">+</span><span class="tag">GROQ</span></div>
+          </div>
+        </div>
+
+        <div class="engine-card-full vf-card" tabindex="0" role="article" aria-label="WCI Carbon Trading production system">
+          <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
+          <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
+          <div class="card-counter">PRODUCTION_002</div>
+          <div class="card-title" style="margin-top:4px">WCI — CARBON TRADING</div>
+          <div class="card-desc" style="margin-top:8px">Legacy Python/DynamoDB → Node.js/PostgreSQL. Carbon cap-and-trade allocation APIs. 10% annual corporate carbon cap reduction enforced via PostgreSQL transactions. Zero-downtime migration.</div>
+          <div class="badge-row" style="margin-top:12px"><span class="badge badge-hot">REGULATED</span><span class="badge badge-muted">ZERO DOWNTIME</span><span class="badge badge-ice">AWS RDS</span></div>
+          <div class="card-tags" style="margin-top:10px"><span class="tag">NODE.JS</span><span class="tag-arrow">→</span><span class="tag">POSTGRESQL</span><span class="tag-arrow">+</span><span class="tag">PYTHON</span><span class="tag-arrow">+</span><span class="tag">AWS RDS</span></div>
+          <div class="card-watermark">@PUBLICIS</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note">
+      <div class="interaction-note-label">SCHEMATIC CARD SPEC</div>
+      <ul class="bullet-list">
+        <li>All cards are static HTML; hover/focus states are CSS-only.</li>
+        <li>The viewfinder brackets are <strong>not</strong> SVG. They are four absolutely-positioned border fragments to ensure sub-pixel precision and zero layout cost.</li>
+        <li>Each card carries <code>role="article"</code> and an <code>aria-label</code> summarizing the project.</li>
+        <li>On <code>prefers-reduced-motion</code>, the bracket transition is instant (<code>transition: none</code>).</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [05] BLUEPRINT MOCKUP -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="blueprint">
+    <div class="section-label">[05] THE BLUEPRINT — CONTACT SHEET</div>
+    <div class="section-title">FILM STRIP DEPLOYMENT HISTORY</div>
+    <p class="section-intro">Career history is presented as a contact sheet: a vertical strip of film frames. The present frame retains full optical density. Past frames lose exposure — not via blur, but via computed opacity and reduced typographic weight. The visitor can hover or focus any frame to bring it back to full density.</p>
+
+    <div class="screen-wrap">
+      <div class="screen-chrome">
+        <div class="chrome-dot" style="background:#FF5F56"></div>
+        <div class="chrome-dot" style="background:#FFBD2E"></div>
+        <div class="chrome-dot" style="background:#27C93F"></div>
+        <span class="chrome-url">nielless.com/#blueprint</span>
+      </div>
+      <div class="screen-body">
+        <div style="margin-bottom:32px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[04] DEPLOYMENT HISTORY</div>
+          <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">CONTACT SHEET</div>
+        </div>
+
+        <div class="contact-sheet">
+          <div class="film-frame frame-near" tabindex="0">
+            <div class="frame-ts" style="color:var(--brass)">NOW — ACTIVE</div>
+            <div class="frame-title">PRODUCT ENGINEERING MODE</div>
+            <div class="frame-desc">Building AI-native systems with full ownership. Exiting the consultancy model. Targeting international remote product roles.</div>
+          </div>
+          <div class="film-frame frame-mid" tabindex="0">
+            <div class="frame-ts">JUL 2022 — PRESENT</div>
+            <div class="frame-title">PUBLICIS SAPIENT — 4 YOE</div>
+            <div class="frame-desc">Full-Stack Software Engineer. Node.js/PostgreSQL. UHC 100K+ sessions. WCI carbon cap APIs. Canary pipeline. Zero-downtime DB migration.</div>
+          </div>
+          <div class="film-frame frame-far" tabindex="0">
+            <div class="frame-ts">FEB 2022 — JUN 2022</div>
+            <div class="frame-title">PAYPAL INDIA — INTERN</div>
+            <div class="frame-desc">Rapid Emerging Markets Team. Interoperability Dashboard. REST APIs + React. First exposure to production-scale distributed payments.</div>
+          </div>
+          <div class="film-frame frame-past" tabindex="0">
+            <div class="frame-ts">2018 — 2022</div>
+            <div class="frame-title">BITS PILANI — B.E. CS</div>
+            <div class="frame-desc">Hyderabad Campus. CGPA 7.44. The foundation.</div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--grid);padding:16px 18px;margin-top:20px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:0.1em;margin-bottom:10px">$ current --stack</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span class="tag">NODE.JS</span><span class="tag">TYPESCRIPT</span><span class="tag">POSTGRESQL</span>
+            <span class="tag">NEXT.JS</span><span class="tag" style="color:var(--brass);border-color:var(--brass-dim)">[LLM AGENTS]</span>
+            <span class="tag" style="color:var(--brass);border-color:var(--brass-dim)">[AGENTIC SDLC]</span>
+            <span class="tag">AWS</span><span class="tag">DOCKER</span><span class="tag">PYTHON</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interaction-note">
+      <div class="interaction-note-label">DEPTH-OF-FIELD SPECIFICATION</div>
+      <ul class="bullet-list">
+        <li><strong>frame-near:</strong> opacity 1.0, font-weight 400, color <code>--dust</code>. The present is fully exposed.</li>
+        <li><strong>frame-mid:</strong> opacity 0.82, font-weight 400, color <code>--dust</code>. Slight recession.</li>
+        <li><strong>frame-far:</strong> opacity 0.60, font-weight 300, color <code>--muted</code>. Analogous to pull-focus.</li>
+        <li><strong>frame-past:</strong> opacity 0.40, font-weight 300, color <code>--muted2</code>. Historical archival.</li>
+        <li><strong>Hover / Focus:</strong> All frames override to opacity 1.0, font-weight 400, color <code>--dust</code> on <code>:hover</code> or <code>:focus-visible</code>. No blur() is used anywhere in the pipeline.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [06] MICRO-INTERACTIONS -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="interactions">
+    <div class="section-label">[06] MICRO-INTERACTIONS</div>
+    <div class="section-title">EVERY SURFACE HAS A MECHANICAL FUNCTION</div>
+
+    <div class="mechanism-grid">
+      <div class="mechanism-card">
+        <div class="mechanism-title">Custom Cursor (Reticle)</div>
+        <div class="mechanism-body">
+          The default cursor is replaced by a 12px brass ring (SVG), 1px stroke, no fill. Over interactive elements, a crosshair appears (2px horizontal + vertical lines, 6px length, <code>--brass-dim</code>). Over text, the ring collapses to a 2px I-beam. On click, a scale burst (1.0 → 1.3 → 1.0, 120ms). Disabled on touch. Implementation: a single <code>fixed</code> <code>div</code> updated via minimal JS (setting <code>transform: translate()</code> on rAF). No React state binding on mousemove.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Aperture Ring Mechanics</div>
+        <div class="mechanism-body">
+          Rotation is driven by a scroll listener that writes to a CSS custom property <code>--scroll-deg</code> on the ring container. The blades are absolutely-positioned <code>div</code>s rotated via <code>transform: rotate(calc(var(--i) * 45deg + var(--scroll-deg)))</code>. No SVG path interpolation. No layout. All compositor.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Shutter Release Gate</div>
+        <div class="mechanism-body">
+          The primary CTA is a mechanical release. Mousedown triggers the 200ms hold. During this window, the shutter overlay sweeps shut (scaleX). If the user releases early (mouseout), the action aborts and the overlay sweeps open. On successful hold, the route changes. This is the camera's two-stage shutter: half-press to meter, full press to fire.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Mode Dial Selection</div>
+        <div class="mechanism-body">
+          Top navigation is a mode dial. Active section is marked by a brass indicator, not a background pill. The indicator is a 1px underline rendered with <code>transform: scaleX()</code>, sliding between nav items via CSS transitions triggered by JS position calculation.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Exposure Meter</div>
+        <div class="mechanism-body">
+          A vertical bar adjacent to the aperture ring. Height driven by scroll percentage. Color: <code>--brass</code> at 40% opacity. At section boundaries, the bar briefly flashes full opacity (100ms) — the metering sensor calibrating to new light conditions.
+        </div>
+      </div>
+      <div class="mechanism-card">
+        <div class="mechanism-title">Focus Confirmation</div>
+        <div class="mechanism-body">
+          The viewfinder brackets do not appear on all elements. They are reserved for: project cards, the primary CTA, and form inputs. Standard text links receive a simple brass underline. The brackets are a premium state, indicating "this element is in frame and ready to be captured."
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>ACCESSIBILITY MANDATE:</strong> On <code>prefers-reduced-motion: reduce</code>, all animated transforms are disabled. The aperture ring snaps instantly. The shutter wipe is removed (replaced with an instant opacity cross-fade). The custom cursor is hidden. Focus brackets remain as instant state changes. The exposure meter is static. Grain remains (it is not motion).
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [07] MOBILE ADAPTATIONS -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="mobile">
+    <div class="section-label">[07] MOBILE ADAPTATIONS</div>
+    <div class="section-title">OPTICAL INSTRUMENTS WORK ON ALL FORMATS</div>
+
+    <div class="mobile-grid">
+      <div class="mobile-card">
+        <div class="mobile-context">APERTURE RING</div>
+        <div class="mobile-rule">The left-edge ring is removed. Replaced by a 4px × 32px vertical progress bar fixed to the bottom edge (centered), growing in height proportional to scroll. No rotation. Minimal battery impact.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">VIEWFINDER BRACKETS</div>
+        <div class="mobile-rule">Hover state becomes tap-to-toggle. On touch, brackets appear on <code>:active</code> (finger down) and persist for 200ms after release. On keyboard navigation (voiceover, bluetooth keyboard), <code>:focus-visible</code> still triggers brackets.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">FILM GRAIN</div>
+        <div class="mobile-rule">Remains active. Static overlay has zero performance cost. No changes.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">SHUTTER TRANSITION</div>
+        <div class="mobile-rule">Horizontal wipe is replaced by a simple vertical slide (transform: translateY) on low-power devices. On devices with <code>prefers-reduced-motion</code>, an instant opacity swap is used.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">HERO BOOT</div>
+        <div class="mobile-rule">Font scales 62px → 38px Bebas. Boot lines condense to two: metadata + armed status. Grain preserved. Aperture bar appears at bottom.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">ENGINE GRID</div>
+        <div class="mobile-rule">2-column → 1-column stack. Card padding increases to 24px for thumb reach. Touch targets are min 44×44px. Badges stack below tags.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">CONTACT SHEET</div>
+        <div class="mobile-rule">Vertical film strip maintained. Sprocket holes hidden to save horizontal space. DoF recession remains (opacity/weight only). Tap-to-focus works as hover substitute.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">SOUND / CURSOR</div>
+        <div class="mobile-rule">All audio disabled by default on mobile (no earphones assumption). Toggle hidden. Custom cursor disabled. Native tap highlights removed via <code>-webkit-tap-highlight-color: transparent</code>.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">FOLDABLE / 320PX</div>
+        <div class="mobile-rule">At 320px (Galaxy Fold cover screen), hero headline drops to 28px. Engine grid stacks. Page padding reduces to 16px. All mechanisms reflow without horizontal scroll.</div>
+      </div>
+      <div class="mobile-card">
+        <div class="mobile-context">REDUCED MOTION</div>
+        <div class="mobile-rule">If <code>prefers-reduced-motion</code> is active, all transforms and transitions are gutted. The site becomes a static, high-contrast document with brass focus indicators. No exceptions.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ────────────────────────────────────────── -->
+  <!-- [08] ARCHITECTURE -->
+  <!-- ────────────────────────────────────────── -->
+  <section class="spec-section" id="architecture">
+    <div class="section-label">[08] NEXT.JS ARCHITECTURE</div>
+    <div class="section-title">THE STACK & FILE STRUCTURE</div>
+
+    <div class="arch-block">
+      <div class="ds-label">TECH STACK</div>
+      <div class="arch-code"><span class="hl">Framework:</span>   <span class="norm">Next.js 14 (App Router)</span>
+<span class="hl">Language:</span>    <span class="norm">TypeScript (strict mode)</span>
+<span class="hl">Animation:</span>   <span class="norm">CSS @keyframes + Web Animation API (timing only)</span>
+<span class="hl">Styling:</span>     <span class="norm">CSS Modules + CSS Custom Properties</span>
+<span class="hl">Texture:</span>     <span class="norm">SVG feTurbulence via body::after (static)</span>
+<span class="hl">Scroll:</span>      <span class="norm">Native scroll + CSS custom property writer (throttled)</span>
+<span class="hl">Audio:</span>       <span class="norm">Web Audio API — raw oscillators, lazy-loaded context</span>
+<span class="hl">Fonts:</span>       <span class="norm">Self-hosted WOFF2 (Google Fonts subset)</span>
+<span class="hl">Deploy:</span>      <span class="norm">Vercel</span>
+<span class="hl">Performance:</span> <span class="norm">Target Lighthouse 95+ across all metrics</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">FILE STRUCTURE</div>
+      <div class="arch-code"><span class="hl">nielless.com/</span>
+├── <span class="dim">app/</span>
+│   ├── <span class="norm">page.tsx</span>              <span class="comment">← Hero + shutter gate</span>
+│   ├── <span class="dim">layout.tsx</span>            <span class="comment">← Grain layer + skip link + cursor root</span>
+│   └── <span class="dim">globals.css</span>           <span class="comment">← Tokens + keyframes + reduced-motion</span>
+├── <span class="dim">components/</span>
+│   ├── <span class="norm">ApertureRing.tsx</span>      <span class="comment">← CSS custom property scroll linkage</span>
+│   ├── <span class="norm">ExposureMeter.tsx</span>     <span class="comment">← Scroll height indicator</span>
+│   ├── <span class="norm">ViewfinderCard.tsx</span>    <span class="comment">← Bracket shell + hover/focus logic</span>
+│   ├── <span class="norm">ShutterOverlay.tsx</span>    <span class="comment">← Fixed wipe layer</span>
+│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera boot sequence</span>
+│   ├── <span class="norm">SchematicGrid.tsx</span>     <span class="comment">← Engine section container</span>
+│   ├── <span class="norm">ContactSheet.tsx</span>      <span class="comment">← Timeline with DoF classes</span>
+│   ├── <span class="norm">CustomCursor.tsx</span>      <span class="comment">← Fixed reticle div</span>
+│   └── <span class="norm">AudioToggle.tsx</span>       <span class="comment">← Lazy AudioContext toggle</span>
+├── <span class="dim">hooks/</span>
+│   ├── <span class="norm">useScrollProgress.ts</span>  <span class="comment">← Throttled scroll => CSS variable</span>
+│   └── <span class="norm">useReducedMotion.ts</span>   <span class="comment">← prefers-reduced-motion listener</span>
+├── <span class="dim">lib/</span>
+│   ├── <span class="norm">audio.ts</span>              <span class="comment">← Oscillator presets (3 sounds)</span>
+│   └── <span class="norm">scroll.ts</span>             <span class="comment">← Section boundary calculator</span>
+└── <span class="dim">public/fonts/</span>            <span class="comment">← Self-hosted Bebas, JetBrains, Crimson</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">IMPLEMENTATION ORDER</div>
+      <ol class="order-list">
+        <li class="order-item"><span class="order-num">01</span><div><code>globals.css</code> — <span>Lock all tokens. Define shutter wipe keyframes, bracket transitions, and reduced-motion overrides. Build the static grain layer.</span></div></li>
+        <li class="order-item"><span class="order-num">02</span><div><code>ShutterOverlay.tsx</code> — <span>Fixed root overlay. Test active/inactive states. Ensure it covers the full viewport without affecting layout.</span></div></li>
+        <li class="order-item"><span class="order-num">03</span><div><code>ApertureRing.tsx</code> + <code>ExposureMeter.tsx</code> — <span>Build the left-edge ring and meter. Wire a throttled scroll listener (16ms min) to a CSS custom property. Verify zero main-thread jank.</span></div></li>
+        <li class="order-item"><span class="num">04</span><div><code>ViewfinderCard.tsx</code> — <span>Establish the bracket shell. Ensure :focus-visible works identically to :hover. Test with keyboard only.</span></div></li>
+        <li class="order-item"><span class="order-num">05</span><div><code>HeroBoot.tsx</code> — <span>Camera boot lines, develop animation (logarithmic opacity curve), hot shoe CTA. Test the two-stage shutter release.</span></div></li>
+        <li class="order-item"><span class="order-num">06</span><div><code>SchematicGrid.tsx</code> — <span>Populate project schematics. Verify all badges, tags, and bracket states.</span></div></li>
+        <li class="order-item"><span class="order-num">07</span><div><code>ContactSheet.tsx</code> — <span>Implement DoF classes (near/mid/far/past). Add tap-to-focus for mobile. No blur().</span></div></li>
+        <li class="order-item"><span class="order-num">08</span><div><code>CustomCursor.tsx</code> — <span>Reticle div. Track position via rAF. Disable on touch + reduced-motion.</span></div></li>
+        <li class="order-item"><span class="order-num">09</span><div><code>AudioToggle.tsx</code> + <code>lib/audio.ts</code> — <span>Lazy Web Audio Context. Synthesize three mechanical sounds. Verify all audio is gated behind user opt-in.</span></div></li>
+        <li class="order-item"><span class="order-num">10</span><div><strong>Performance + Accessibility Pass</strong> — <span>Lighthouse audit. Verify grain has zero layout impact. Verify aperture ring uses transform only. Test with screen reader. Test at 320px width.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <footer class="spec-footer">
+    <div class="footer-left">N/A :: SPEC v3.0</div>
+    <div class="footer-right">nielless.com</div>
+  </footer>
+  <div class="footer-quote">"Build until it holds."</div>
+
+</div>
+
+<script>
+  // Minimal demo: activate shutter wipe on hero CTA click for the spec page itself
+  document.querySelector('.hero-cta').addEventListener('click', () => {
+    const shutter = document.getElementById('shutterDemo');
+    shutter.classList.add('active');
+    setTimeout(() => shutter.classList.remove('active'), 400);
+  });
+</script>
+
+</body>
+</html>
