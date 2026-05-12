@@ -220,6 +220,22 @@ body::after {
   }
 }
 
+/* ── VIEWFINDER LANDING — root container warp ── */
+.vf-phase-blurred #root-container {
+  animation: vf-zoom-blur 1120ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, filter;
+}
+.vf-phase-focused #root-container,
+.vf-phase-done #root-container {
+  transform: scale(1);
+  filter: blur(0px) brightness(1);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+@keyframes vf-zoom-blur {
+  0%   { transform: scale(1.06); filter: blur(8px) brightness(0.7); }
+  100% { transform: scale(1);    filter: blur(0px) brightness(1);   }
+}
+
 /* ── REDUCED MOTION — Full override block ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -232,5 +248,11 @@ body::after {
   /* Brackets remain — instant state change only */
   .vf-tl, .vf-tr, .vf-bl, .vf-br {
     transition: none;
+  }
+  /* Viewfinder landing skipped entirely via useReducedMotion hook */
+  .vf-phase-blurred #root-container {
+    animation: none;
+    transform: scale(1);
+    filter: none;
   }
 }

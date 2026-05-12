@@ -7,6 +7,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { Nav } from "@/components/Nav";
 import { ApertureRing } from "@/components/ApertureRing";
 import { ExposureMeter } from "@/components/ExposureMeter";
+import { ViewfinderLanding } from "@/components/ViewfinderLanding";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -41,11 +42,14 @@ export default function RootLayout({
       <body
         className={`${bebasNeue.variable} ${jetbrainsMono.variable} ${crimsonPro.variable} antialiased`}
       >
-        {/* Skip link — a11y spec requirement */}
+        {/* Skip link — a11y */}
         <a href="#main" className="skip-link">Skip to content</a>
 
         <AudioProvider>
           <CustomCursor />
+
+          {/* Viewfinder landing effect — zoom+blur focus-pull on first visit */}
+          <ViewfinderLanding />
 
           {/* Ambient scroll instruments */}
           <ApertureRing />
