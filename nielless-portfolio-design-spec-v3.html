@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NIELLESS.COM — Design Specification v3.0 (Vintage DSLR Interface)</title>
+<title>NIELLESS.COM — Design Specification v3.1 (Vintage DSLR Interface)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -31,7 +31,12 @@
     --serif: 'Crimson Pro', serif;
   }
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+  }
 
   body {
     background: var(--void);
@@ -40,6 +45,11 @@
     font-size: 13px;
     line-height: 1.6;
     min-height: 100vh;
+    min-height: 100dvh; /* Use dynamic viewport height for mobile */
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 
   /* Global grain layer (specimen) */
@@ -138,11 +148,11 @@
   .spacing-desc { font-size: 9px; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; }
 
   /* ── MOCKUP CHROME ── */
-  .screen-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
-  .screen-chrome { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+  .screen-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: visible; margin-bottom: 20px; position: relative; }
+  .screen-chrome { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; }
   .chrome-dot { width: 9px; height: 9px; border-radius: 50%; }
   .chrome-url { font-family: var(--mono); font-size: 10px; color: var(--muted2); margin-left: 10px; letter-spacing: 0.05em; }
-  .screen-body { background: var(--void); padding: 40px; position: relative; }
+  .screen-body { background: var(--void); padding: 40px; position: relative; z-index: 1; }
 
   /* ── NOTES ── */
   .interaction-note { background: var(--surface); border-left: 2px solid var(--brass-dim); padding: 16px 20px; margin-top: 12px; }
@@ -163,7 +173,7 @@
   .mechanism-body code { font-family: var(--mono); color: var(--brass); font-size: 10px; }
 
   /* ── HERO MOCKUP ── */
-  .hero-mock-inner { position: relative; }
+  .hero-mock-inner { position: relative; z-index: 1; }
   .hero-terminal { font-family: var(--mono); margin-bottom: 36px; }
   .term-line { font-size: 11px; color: var(--muted2); line-height: 2.2; }
   .term-line.ok { color: var(--signal); }
@@ -171,18 +181,556 @@
   .hero-headline { font-family: var(--display); font-size: 62px; letter-spacing: 0.04em; color: var(--dust); line-height: 0.95; margin-bottom: 20px; }
   .hero-headline .accent { color: var(--brass); }
   .hero-sub { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); max-width: 400px; line-height: 1.8; margin-bottom: 36px; }
-  .hero-cta { display: inline-block; border: 1px solid var(--brass-dim); padding: 12px 28px; cursor: pointer; position: relative; }
-  .hero-cta:active { top: 1px; }
-  .hero-cta-text { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--brass); }
 
-  /* Shutter overlay mockup */
-  .shutter-overlay {
-    position: absolute; inset: 0; z-index: 50; background: var(--void);
-    transform: scaleX(0); transform-origin: left center;
+  /* ── SCROLL-TO-DSLR TRANSFORMATION ── */
+  /* The hero transforms into a top-view DSLR as user scrolls */
+  .scroll-transform-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 150;
     pointer-events: none;
+    opacity: 0;
+    transform: perspective(1000px) rotateX(0deg);
+    transition: opacity 0.1s linear;
+    margin: 0;
+    padding: 0;
   }
-  .shutter-overlay.active { animation: shutter-sweep 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-  @keyframes shutter-sweep { to { transform: scaleX(1); } }
+
+  .scroll-transform-container.visible {
+    opacity: 1;
+  }
+
+  /* Phase 1: Hero content fades and rotates as scroll begins */
+  .hero-phase {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    isolation: isolate;
+    background: var(--void);
+    margin: 0;
+    padding: 0;
+    transition: transform 0.1s linear, opacity 0.1s linear;
+  }
+
+  .hero-phase.rotating {
+    transform: perspective(1000px) rotateX(-45deg) scale(0.8);
+    opacity: calc(1 - var(--scroll-progress, 0) * 2);
+  }
+
+  /* Ensure hero content stays visible initially */
+  .hero-phase:not(.rotating) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Phase 2: DSLR Top View emerges */
+  .dslr-phase {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 190;
+    isolation: isolate;
+    background: var(--void);
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: perspective(1000px) rotateX(90deg) translateZ(-200px);
+    transition: transform 0.1s linear, opacity 0.1s linear;
+  }
+
+  .dslr-phase.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: perspective(1000px) rotateX(0deg) translateZ(0);
+  }
+
+  /* DSLR Top View Body */
+  .dslr-body {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    background: linear-gradient(145deg, #1a1a1c 0%, #0e0e10 50%, #161618 100%);
+    border-radius: 12px;
+    border: 2px solid var(--border2);
+    box-shadow:
+      inset 0 2px 4px rgba(255,255,255,0.02),
+      inset 0 -2px 4px rgba(0,0,0,0.3),
+      0 20px 60px rgba(0,0,0,0.5);
+    transform-style: preserve-3d;
+  }
+
+  /* Grip texture */
+  .dslr-grip {
+    position: absolute;
+    right: 20px;
+    top: 30px;
+    width: 60px;
+    height: 140px;
+    background: repeating-linear-gradient(
+      to bottom,
+      #161618 0px,
+      #161618 3px,
+      #1e1e20 3px,
+      #1e1e20 6px
+    );
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* Mode dial */
+  .dslr-mode-dial {
+    position: absolute;
+    left: 30px;
+    top: 25px;
+    width: 50px;
+    height: 50px;
+    background: conic-gradient(
+      from 0deg,
+      #2e2e31 0deg,
+      #1a1a1c 90deg,
+      #2e2e31 180deg,
+      #161618 270deg,
+      #2e2e31 360deg
+    );
+    border-radius: 50%;
+    border: 3px solid var(--border2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  .dslr-mode-dial::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: var(--brass);
+    border-radius: 1px;
+  }
+
+  /* Hot shoe mount */
+  .dslr-hot-shoe {
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 12px;
+    background: linear-gradient(to bottom, #2e2e31, #1a1a1c);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  /* Lens mount (top view) */
+  .dslr-mount {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, #060608 30%, #2e2e31 31%, #2e2e31 35%, #161618 36%);
+    border-radius: 50%;
+    border: 3px solid var(--border2);
+  }
+
+  .dslr-mount::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background: var(--void);
+    border-radius: 50%;
+    border: 2px solid var(--brass-dim);
+  }
+
+  /* SHUTTER BUTTON - The main interaction element */
+  .dslr-shutter-btn {
+    position: absolute;
+    right: 40px;
+    top: 50px;
+    width: 36px;
+    height: 36px;
+    background: radial-gradient(circle at 30% 30%, #3a3a3d, #1a1a1c);
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    box-shadow:
+      0 4px 8px rgba(0,0,0,0.4),
+      inset 0 1px 2px rgba(255,255,255,0.05);
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  /* Shutter button ring (brass accent) */
+  .dslr-shutter-btn::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid var(--brass-dim);
+    opacity: 0.5;
+  }
+
+  /* Shutter button inner detail */
+  .dslr-shutter-btn::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, var(--brass), var(--brass-dim));
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  /* Shutter button pressed state */
+  .dslr-shutter-btn.pressed {
+    transform: translateZ(-4px) scale(0.95);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.4),
+      inset 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .dslr-shutter-btn.pressed::after {
+    background: var(--signal);
+    box-shadow: 0 0 8px 2px rgba(57, 255, 20, 0.5);
+  }
+
+  /* Shutter status text */
+  .shutter-status {
+    position: absolute;
+    right: 25px;
+    top: 95px;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-align: center;
+    width: 70px;
+  }
+
+  .shutter-status.ready {
+    color: var(--signal);
+  }
+
+  /* FLASH OVERLAY */
+  .flash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .flash-overlay.active {
+    animation: camera-flash 800ms ease-out forwards;
+  }
+
+  @keyframes camera-flash {
+    0% {
+      opacity: 0;
+    }
+    5% {
+      opacity: 1;
+    }
+    30% {
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 0.3;
+    }
+    70% {
+      opacity: 0.1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Progress indicator for scroll */
+  .scroll-progress-bar {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+    z-index: 250;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .scroll-progress-bar.visible {
+    opacity: 1;
+  }
+
+  .scroll-progress-fill {
+    height: 100%;
+    background: var(--brass);
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  /* Main content (revealed after flash) */
+  .main-content {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 600ms ease, transform 600ms ease;
+  }
+
+  .main-content.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── CAMERA FOCUS ANIMATION ── */
+  /* Simulates camera turning on and hunting for focus on the headline */
+  .camera-focus-frame {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* The headline starts blurry and out of focus, then sharpens */
+  .hero-headline.camera-focus {
+    animation: camera-focus-hunt 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Focus hunting - simulates lens trying to find focus */
+  @keyframes camera-focus-hunt {
+    0% {
+      opacity: 0.3;
+      filter: blur(8px);
+      transform: translateY(4px) scale(0.98);
+      letter-spacing: 0.06em;
+    }
+    15% {
+      opacity: 0.5;
+      filter: blur(5px);
+      transform: translateY(2px) scale(0.99);
+    }
+    30% {
+      opacity: 0.4;
+      filter: blur(6px);
+      transform: translateY(3px) scale(0.985);
+    }
+    45% {
+      opacity: 0.6;
+      filter: blur(3px);
+      transform: translateY(1px) scale(0.995);
+    }
+    60% {
+      opacity: 0.5;
+      filter: blur(4px);
+      transform: translateY(2px) scale(0.99);
+    }
+    75% {
+      opacity: 0.8;
+      filter: blur(1px);
+      transform: translateY(0.5px) scale(0.998);
+    }
+    90% {
+      opacity: 0.95;
+      filter: blur(0.5px);
+      transform: translateY(0) scale(0.999);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0) scale(1);
+      letter-spacing: 0.04em;
+    }
+  }
+
+  /* Camera Viewfinder Focus Indicator */
+  .focus-brackets-hero {
+    position: absolute;
+    top: -20px;
+    left: -24px;
+    right: -24px;
+    bottom: -20px;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .focus-brackets-hero.active {
+    animation: focus-brackets-appear 400ms ease-out 2.2s forwards;
+  }
+
+  @keyframes focus-brackets-appear {
+    to { opacity: 1; }
+  }
+
+  /* L-shaped corner brackets - typical SLR viewfinder style */
+  .focus-brackets-hero .bracket-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--brass);
+    border-style: solid;
+    border-width: 0;
+    opacity: 0.7;
+  }
+
+  .focus-brackets-hero.active .bracket-corner {
+    border-width: 1px;
+  }
+
+  /* Top Left L-bracket */
+  .focus-brackets-hero .bracket-corner.tl {
+    top: 0;
+    left: 0;
+    border-top-width: 1px;
+    border-left-width: 1px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  /* Top Right L-bracket */
+  .focus-brackets-hero .bracket-corner.tr {
+    top: 0;
+    right: 0;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-left: none;
+    border-bottom: none;
+  }
+
+  /* Bottom Left L-bracket */
+  .focus-brackets-hero .bracket-corner.bl {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-top: none;
+    border-right: none;
+  }
+
+  /* Bottom Right L-bracket */
+  .focus-brackets-hero .bracket-corner.br {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+    border-top: none;
+    border-left: none;
+  }
+
+  /* Center Crosshair - 20px arms with 1px lines */
+  .crosshair-h,
+  .crosshair-v {
+    position: absolute;
+    background: var(--brass);
+    opacity: 0.6;
+  }
+
+  .focus-brackets-hero.active .crosshair-h,
+  .focus-brackets-hero.active .crosshair-v {
+    opacity: 0.6;
+  }
+
+  /* Horizontal line */
+  .crosshair-h {
+    width: 40px;
+    height: 1px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Vertical line */
+  .crosshair-v {
+    width: 1px;
+    height: 40px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Center dot - 3px with glow animation */
+  .focus-dot {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: var(--brass);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.3;
+    box-shadow: 0 0 0 0 rgba(200, 169, 110, 0);
+    transition: opacity 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Glows bright when focus is acquired (at end of animation) */
+  .focus-brackets-hero.active .focus-dot {
+    animation: focus-dot-acquire 1s ease-out 2.3s forwards;
+  }
+
+  @keyframes focus-dot-acquire {
+    0% {
+      opacity: 0.3;
+      background: var(--brass);
+      box-shadow: 0 0 0 0 rgba(200, 169, 110, 0);
+    }
+    30% {
+      opacity: 1;
+      background: var(--signal);
+      box-shadow: 0 0 8px 2px rgba(57, 255, 20, 0.6), 0 0 16px 4px rgba(57, 255, 20, 0.3);
+    }
+    60% {
+      opacity: 1;
+      background: var(--signal);
+      box-shadow: 0 0 6px 1px rgba(57, 255, 20, 0.5), 0 0 12px 2px rgba(57, 255, 20, 0.2);
+    }
+    100% {
+      opacity: 0.5;
+      background: var(--brass);
+      box-shadow: 0 0 2px 0 rgba(200, 169, 110, 0.3);
+    }
+  }
+
+  /* Reduced motion - disable focus animation */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-headline.camera-focus {
+      animation: none;
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+    .focus-brackets-hero {
+      display: none;
+    }
+  }
 
   /* ── APERTURE RING (left edge specimen) ── */
   .aperture-specimen {
@@ -318,7 +866,7 @@
 <a href="#main" class="skip-link">Skip to content</a>
 
 <nav class="topbar" role="navigation" aria-label="Specification">
-  <div class="topbar-logo">N/A — SPEC v3.0</div>
+  <div class="topbar-logo">N/A — SPEC v3.1</div>
   <div class="topbar-nav">
     <a href="#philosophy">PHILOSOPHY</a>
     <a href="#design-system">SYSTEM</a>
@@ -346,7 +894,7 @@
 <div class="page-wrap" id="main">
 
   <header class="doc-header">
-    <div class="doc-rev">DESIGN SPECIFICATION — REV 3.0 &nbsp;·&nbsp; VINTAGE DSLR INTERFACE</div>
+    <div class="doc-rev">DESIGN SPECIFICATION — REV 3.1 &nbsp;·&nbsp; VINTAGE DSLR INTERFACE</div>
     <div class="doc-title">NIELLESS.COM</div>
     <div class="doc-sub">Precision instrument. Optical interface. The portfolio is the camera.</div>
     <div style="margin-top:20px;font-size:10px;color:var(--muted2);line-height:2">
@@ -517,6 +1065,61 @@
     <div class="section-title">BOOT LIKE A CAMERA, NOT A SERVER</div>
     <p class="section-intro">The hero sequence mimics a cold-start power-on of a professional DSLR. Lines of metadata type in. The sensor self-checks. The shutter arms. Only then is the operator permitted to advance. There is no typed "developer" joke. Only optical engineering.</p>
 
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress-bar" id="scrollProgress">
+      <div class="scroll-progress-fill" id="scrollProgressFill"></div>
+    </div>
+
+    <!-- Phase 1: Hero Content with Focus Animation -->
+    <div class="hero-phase" id="heroPhase">
+      <!-- Boot terminal -->
+      <div class="hero-terminal">
+        <div class="term-line">NIELLESS OPTICAL SYSTEMS</div>
+        <div class="term-line meta">SENSOR: 35MM FULL-FRAME · MOUNT: AI-NATIVE</div>
+        <div class="term-line meta">APERTURE: f/LOGIC · ISO: MINIMUM</div>
+        <div class="term-line ok">SHUTTER: ARMED</div>
+      </div>
+      <div class="camera-focus-frame">
+        <div class="hero-headline camera-focus">ORDER.<br>LOGIC.<br><span class="accent">AMOR FATI.</span></div>
+        <div class="focus-brackets-hero active">
+          <!-- L-shaped corner brackets -->
+          <div class="bracket-corner tl"></div>
+          <div class="bracket-corner tr"></div>
+          <div class="bracket-corner bl"></div>
+          <div class="bracket-corner br"></div>
+          <!-- Center crosshair -->
+          <div class="crosshair-h"></div>
+          <div class="crosshair-v"></div>
+          <!-- Center focus dot -->
+          <div class="focus-dot"></div>
+        </div>
+      </div>
+      <div class="hero-sub">Full-Stack Engineer. AI-native builder. Backend-first. Systems that hold under load — or are rebuilt until they do.</div>
+      <div class="hero-cta-text" style="margin-top:24px;font-size:10px;color:var(--muted);letter-spacing:0.1em">[ SCROLL TO ACTIVATE ]</div>
+    </div>
+
+    <!-- Phase 2: DSLR Top View (emerges on scroll) -->
+    <div class="dslr-phase" id="dslrPhase">
+      <div class="dslr-body">
+        <div class="dslr-hot-shoe"></div>
+        <div class="dslr-mode-dial"></div>
+        <div class="dslr-mount"></div>
+        <div class="dslr-grip"></div>
+        <div class="dslr-shutter-btn" id="shutterBtn"></div>
+        <div class="shutter-status" id="shutterStatus">READY</div>
+      </div>
+    </div>
+
+    <!-- Flash Overlay -->
+    <div class="flash-overlay" id="flashOverlay" aria-hidden="true"></div>
+
+    <!-- Phase 3: Main Content (revealed after flash) -->
+    <div class="main-content" id="mainContent" style="display:none">
+      <div class="term-line meta" style="margin-bottom:20px">[03] SYSTEM SCHEMATICS</div>
+      <div class="section-title" style="font-size:42px">ENGINE</div>
+      <!-- Project cards would render here -->
+    </div>
+
     <div class="screen-wrap">
       <div class="screen-chrome">
         <div class="chrome-dot" style="background:#FF5F56"></div>
@@ -526,19 +1129,7 @@
       </div>
       <div class="screen-body">
         <div class="hero-mock-inner">
-          <!-- Boot terminal -->
-          <div class="hero-terminal">
-            <div class="term-line">NIELLESS OPTICAL SYSTEMS</div>
-            <div class="term-line meta">SENSOR: 35MM FULL-FRAME · MOUNT: AI-NATIVE</div>
-            <div class="term-line meta">APERTURE: f/LOGIC · ISO: MINIMUM</div>
-            <div class="term-line ok">SHUTTER: ARMED</div>
-          </div>
-          <div class="hero-headline">ORDER.<br>LOGIC.<br><span class="accent">AMOR FATI.</span></div>
-          <div class="hero-sub">Full-Stack Engineer. AI-native builder. Backend-first. Systems that hold under load — or are rebuilt until they do.</div>
-          <button class="hero-cta" aria-label="Release shutter and open contact form">
-            <span class="hero-cta-text">[ RELEASE SHUTTER ]</span>
-          </button>
-          <div class="shutter-overlay" id="shutterDemo" aria-hidden="true"></div>
+          <p style="color:var(--muted);font-size:11px;text-align:center;padding:40px">[ Scroll animation preview — hero transforms to DSLR on scroll, flash reveals content ]</p>
         </div>
       </div>
     </div>
@@ -550,17 +1141,31 @@
         <li><strong>200ms:</strong> <code>SENSOR:</code> line types in. Mono, muted.</li>
         <li><strong>400ms:</strong> <code>APERTURE / ISO</code> line. Brass meta.</li>
         <li><strong>600ms:</strong> <code>SHUTTER: ARMED</code> in signal green.</li>
-        <li><strong>800ms:</strong> Headline arrives via <code>opacity</code> + <code>transform: translateY(8px)</code>, 200ms. No blur.</li>
-        <li><strong>1000ms:</strong> Subtext (Crimson Pro) develops.</li>
-        <li><strong>1200ms:</strong> Hot shoe CTA fades in. Aperture ring nav appears in f/16 (tight) state.</li>
+        <li><strong>800ms:</strong> Headline arrives via focus hunt animation: blur oscillates 8px→5px→6px→3px→0px over 2.5s, simulating lens AF hunting before locking.</li>
+        <li><strong>2200ms:</strong> L-brackets and crosshair fade in. Viewfinder focus indicator complete.</li>
+        <li><strong>2300ms:</strong> Center dot flashes signal green with glow - focus confirmation.</li>
+        <li><strong>2500ms:</strong> Boot complete. System ready for scroll interaction.</li>
       </ul>
     </div>
     <div class="interaction-note" style="margin-top:8px">
-      <div class="interaction-note-label">SHUTTER RELEASE GATE</div>
+      <div class="interaction-note-label">SCROLL-TO-DSLR TRANSFORMATION</div>
       <ul class="bullet-list">
-        <li>Hover: border <code>--brass-dim → --brass-bright</code> (120ms).</li>
-        <li>Click: 200ms mechanical delay before route change. During delay, shutter overlay fires sweep animation (scaleX 0→1).</li>
-        <li>On route complete, overlay sweeps open (scaleX 1→0). Total transition: 360ms.</li>
+        <li><strong>Scroll 0-33% (Phase 1):</strong> Hero content rotates in 3D space with <code>perspective(1000px) rotateX(-45deg)</code>, opacity fades to 0.2. Progress bar fills to 33%.</li>
+        <li><strong>Scroll 33-66% (Phase 2):</strong> DSLR top view emerges from rotation <code>rotateX(90deg) → rotateX(0deg)</code>. 300px body with grip texture, mode dial, hot shoe, and lens mount. Shutter button glows increasingly as scroll approaches 66%.</li>
+        <li><strong>Scroll 66-100% (Phase 3):</strong> Shutter button press animation triggers (translateZ(-4px), scale 0.95). Button illuminates signal green. 150ms mechanical delay.</li>
+        <li><strong>Flash Trigger:</strong> Full-screen white flash (800ms) simulates xenon flash tube discharge. DSLR body fades during flash peak.</li>
+        <li><strong>Content Reveal:</strong> Flash clears to reveal ENGINE section with project schematics. Scroll position resets to 0. Total scroll distance: 3x viewport height.</li>
+      </ul>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">DSLR TOP VIEW SPECIFICATION</div>
+      <ul class="bullet-list">
+        <li><strong>Body:</strong> 300×200px rounded rectangle with gradient <code>#1a1a1c → #0e0e10 → #161618</code>. Beveled edges via <code>box-shadow</code> insets.</li>
+        <li><strong>Grip:</strong> 60×140px repeating linear gradient texture (3px stripes), right side.</li>
+        <li><strong>Mode Dial:</strong> 50px conic gradient circle with 8px brass indicator square.</li>
+        <li><strong>Hot Shoe:</strong> 40×12px centered mount at top edge.</li>
+        <li><strong>Lens Mount:</strong> 120px radial gradient - void center, brass-dim ring, dark outer.</li>
+        <li><strong>Shutter Button:</strong> 36px raised button with brass ring accent. Radial gradient highlight. Press state: depressed with signal green center glow.</li>
       </ul>
     </div>
   </section>
@@ -858,10 +1463,12 @@
       <div class="ds-label">TECH STACK</div>
       <div class="arch-code"><span class="hl">Framework:</span>   <span class="norm">Next.js 14 (App Router)</span>
 <span class="hl">Language:</span>    <span class="norm">TypeScript (strict mode)</span>
-<span class="hl">Animation:</span>   <span class="norm">CSS @keyframes + Web Animation API (timing only)</span>
+<span class="hl">Animation:</span>   <span class="norm">CSS @keyframes + 3D transforms (perspective, rotateX, translateZ)</span>
+<span class="hl">3D Engine:</span>   <span class="norm">CSS transform-style: preserve-3d, perspective(1000px)</span>
+<span class="hl">Scroll:</span>      <span class="norm">Native scroll 300vh container, rAF-throttled phase detection</span>
 <span class="hl">Styling:</span>     <span class="norm">CSS Modules + CSS Custom Properties</span>
 <span class="hl">Texture:</span>     <span class="norm">SVG feTurbulence via body::after (static)</span>
-<span class="hl">Scroll:</span>      <span class="norm">Native scroll + CSS custom property writer (throttled)</span>
+<span class="hl">Flash:</span>        <span class="norm">CSS @keyframes flash-overlay 800ms white burst</span>
 <span class="hl">Audio:</span>       <span class="norm">Web Audio API — raw oscillators, lazy-loaded context</span>
 <span class="hl">Fonts:</span>       <span class="norm">Self-hosted WOFF2 (Google Fonts subset)</span>
 <span class="hl">Deploy:</span>      <span class="norm">Vercel</span>
@@ -872,7 +1479,7 @@
       <div class="ds-label">FILE STRUCTURE</div>
       <div class="arch-code"><span class="hl">nielless.com/</span>
 ├── <span class="dim">app/</span>
-│   ├── <span class="norm">page.tsx</span>              <span class="comment">← Hero + shutter gate</span>
+│   ├── <span class="norm">page.tsx</span>              <span class="comment">← Scroll-to-DSLR transformation + flash reveal</span>
 │   ├── <span class="dim">layout.tsx</span>            <span class="comment">← Grain layer + skip link + cursor root</span>
 │   └── <span class="dim">globals.css</span>           <span class="comment">← Tokens + keyframes + reduced-motion</span>
 ├── <span class="dim">components/</span>
@@ -880,33 +1487,39 @@
 │   ├── <span class="norm">ExposureMeter.tsx</span>     <span class="comment">← Scroll height indicator</span>
 │   ├── <span class="norm">ViewfinderCard.tsx</span>    <span class="comment">← Bracket shell + hover/focus logic</span>
 │   ├── <span class="norm">ShutterOverlay.tsx</span>    <span class="comment">← Fixed wipe layer</span>
-│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera boot sequence</span>
+│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera boot sequence with focus hunt</span>
+│   ├── <span class="norm">ScrollTransform.tsx</span>   <span class="comment">← Scroll-to-DSLR 3D transformation</span>
+│   ├── <span class="norm">DslrTopView.tsx</span>       <span class="comment">← DSLR body, shutter button, flash</span>
 │   ├── <span class="norm">SchematicGrid.tsx</span>     <span class="comment">← Engine section container</span>
 │   ├── <span class="norm">ContactSheet.tsx</span>      <span class="comment">← Timeline with DoF classes</span>
 │   ├── <span class="norm">CustomCursor.tsx</span>      <span class="comment">← Fixed reticle div</span>
 │   └── <span class="norm">AudioToggle.tsx</span>       <span class="comment">← Lazy AudioContext toggle</span>
 ├── <span class="dim">hooks/</span>
 │   ├── <span class="norm">useScrollProgress.ts</span>  <span class="comment">← Throttled scroll => CSS variable</span>
-│   └── <span class="norm">useReducedMotion.ts</span>   <span class="comment">← prefers-reduced-motion listener</span>
+│   ├── <span class="norm">useScrollPhase.ts</span>     <span class="comment">← Phase detection (hero/dslr/content)</span>
+│   ├── <span class="norm">useReducedMotion.ts</span>   <span class="comment">← prefers-reduced-motion listener</span>
+│   └── <span class="norm">useFlashTrigger.ts</span>   <span class="comment">← Flash animation + content reveal</span>
 ├── <span class="dim">lib/</span>
 │   ├── <span class="norm">audio.ts</span>              <span class="comment">← Oscillator presets (3 sounds)</span>
-│   └── <span class="norm">scroll.ts</span>             <span class="comment">← Section boundary calculator</span>
+│   ├── <span class="norm">scroll.ts</span>             <span class="comment">← Section boundary calculator</span>
+│   └── <span class="norm">transform.ts</span>          <span class="comment">← 3D transform calculations</span>
 └── <span class="dim">public/fonts/</span>            <span class="comment">← Self-hosted Bebas, JetBrains, Crimson</span></div>
     </div>
 
     <div class="arch-block">
       <div class="ds-label">IMPLEMENTATION ORDER</div>
       <ol class="order-list">
-        <li class="order-item"><span class="order-num">01</span><div><code>globals.css</code> — <span>Lock all tokens. Define shutter wipe keyframes, bracket transitions, and reduced-motion overrides. Build the static grain layer.</span></div></li>
-        <li class="order-item"><span class="order-num">02</span><div><code>ShutterOverlay.tsx</code> — <span>Fixed root overlay. Test active/inactive states. Ensure it covers the full viewport without affecting layout.</span></div></li>
-        <li class="order-item"><span class="order-num">03</span><div><code>ApertureRing.tsx</code> + <code>ExposureMeter.tsx</code> — <span>Build the left-edge ring and meter. Wire a throttled scroll listener (16ms min) to a CSS custom property. Verify zero main-thread jank.</span></div></li>
-        <li class="order-item"><span class="num">04</span><div><code>ViewfinderCard.tsx</code> — <span>Establish the bracket shell. Ensure :focus-visible works identically to :hover. Test with keyboard only.</span></div></li>
-        <li class="order-item"><span class="order-num">05</span><div><code>HeroBoot.tsx</code> — <span>Camera boot lines, develop animation (logarithmic opacity curve), hot shoe CTA. Test the two-stage shutter release.</span></div></li>
-        <li class="order-item"><span class="order-num">06</span><div><code>SchematicGrid.tsx</code> — <span>Populate project schematics. Verify all badges, tags, and bracket states.</span></div></li>
-        <li class="order-item"><span class="order-num">07</span><div><code>ContactSheet.tsx</code> — <span>Implement DoF classes (near/mid/far/past). Add tap-to-focus for mobile. No blur().</span></div></li>
-        <li class="order-item"><span class="order-num">08</span><div><code>CustomCursor.tsx</code> — <span>Reticle div. Track position via rAF. Disable on touch + reduced-motion.</span></div></li>
-        <li class="order-item"><span class="order-num">09</span><div><code>AudioToggle.tsx</code> + <code>lib/audio.ts</code> — <span>Lazy Web Audio Context. Synthesize three mechanical sounds. Verify all audio is gated behind user opt-in.</span></div></li>
-        <li class="order-item"><span class="order-num">10</span><div><strong>Performance + Accessibility Pass</strong> — <span>Lighthouse audit. Verify grain has zero layout impact. Verify aperture ring uses transform only. Test with screen reader. Test at 320px width.</span></div></li>
+        <li class="order-item"><span class="order-num">01</span><div><code>globals.css</code> — <span>Lock all tokens. Define focus-hunt keyframes, flash animation, bracket transitions, and reduced-motion overrides. Build the static grain layer.</span></div></li>
+        <li class="order-item"><span class="order-num">02</span><div><code>HeroBoot.tsx</code> — <span>Focus hunt animation on headline (blur oscillation 8px→0px over 2.5s). L-bracket viewfinder with crosshair and center dot. Dot flashes signal green at 2.3s for focus confirmation.</span></div></li>
+        <li class="order-item"><span class="order-num">03</span><div><code>DslrTopView.tsx</code> — <span>300×200px camera body with grip texture (repeating-linear-gradient), mode dial (conic gradient), hot shoe, lens mount, and functional shutter button with press animation.</span></div></li>
+        <li class="order-item"><span class="order-num">04</span><div><code>ScrollTransform.tsx</code> — <span>3-phase scroll animation: (1) Hero rotates away with perspective(1000px) rotateX, (2) DSLR emerges from 90deg rotation, (3) Shutter press triggers at 66% scroll with glow buildup. Total scroll distance: 3x viewport height.</span></div></li>
+        <li class="order-item"><span class="order-num">05</span><div><code>useScrollPhase.ts</code> — <span>Detect scroll percentage (0-33%, 33-66%, 66-100%) and map to animation phases. Throttled to rAF. Clean up on flash trigger.</span></div></li>
+        <li class="order-item"><span class="order-num">06</span><div><code>useFlashTrigger.ts</code> — <span>800ms flash animation: white screen 0-5%, hold 30%, decay to 0% at 100%. During flash peak (5%), hide DSLR and reveal main content. Reset scroll position after flash completes.</span></div></li>
+        <li class="order-item"><span class="order-num">07</span><div><code>ApertureRing.tsx</code> + <code>ExposureMeter.tsx</code> — <span>Left-edge ring and meter. Wire throttled scroll listener to CSS custom property. Verify zero main-thread jank.</span></div></li>
+        <li class="order-item"><span class="order-num">08</span><div><code>ViewfinderCard.tsx</code> — <span>Establish the bracket shell. Ensure :focus-visible works identically to :hover. Test with keyboard only.</span></div></li>
+        <li class="order-item"><span class="order-num">09</span><div><code>SchematicGrid.tsx</code> — <span>Populate project schematics. Verify all badges, tags, and bracket states.</span></div></li>
+        <li class="order-item"><span class="order-num">10</span><div><code>ContactSheet.tsx</code> — <span>Implement DoF classes (near/mid/far/past). Add tap-to-focus for mobile. No blur().</span></div></li>
+        <li class="order-item"><span class="order-num">11</span><div><strong>Performance + Accessibility Pass</strong> — <span>Lighthouse audit. Verify 3D transforms use GPU (transform-style: preserve-3d). Test flash animation respects prefers-reduced-motion (instant cut). Test scroll jank at 60fps. Test at 320px width.</span></div></li>
       </ol>
     </div>
   </section>
@@ -914,7 +1527,7 @@
   <hr class="rule">
 
   <footer class="spec-footer">
-    <div class="footer-left">N/A :: SPEC v3.0</div>
+    <div class="footer-left">N/A :: SPEC v3.1</div>
     <div class="footer-right">nielless.com</div>
   </footer>
   <div class="footer-quote">"Build until it holds."</div>
@@ -922,11 +1535,172 @@
 </div>
 
 <script>
+  // SCROLL-BASED DSLR TRANSFORMATION
+  (function initScrollTransform() {
+    const heroPhase = document.getElementById('heroPhase');
+    const dslrPhase = document.getElementById('dslrPhase');
+    const shutterBtn = document.getElementById('shutterBtn');
+    const shutterStatus = document.getElementById('shutterStatus');
+    const flashOverlay = document.getElementById('flashOverlay');
+    const scrollProgress = document.getElementById('scrollProgress');
+    const scrollProgressFill = document.getElementById('scrollProgressFill');
+    const mainContent = document.getElementById('mainContent');
+
+    if (!heroPhase || !dslrPhase) return;
+
+    let hasFlashed = false;
+    let isInDslrPhase = false;
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      // Skip animation, show content directly
+      heroPhase.style.display = 'none';
+      dslrPhase.style.display = 'none';
+      if (mainContent) {
+        mainContent.style.display = 'block';
+        mainContent.classList.add('revealed');
+      }
+      return;
+    }
+
+    // Create a scrollable container for the transformation
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 300vh;
+      z-index: 80;
+      pointer-events: none;
+    `;
+    document.body.appendChild(scrollContainer);
+
+    // Ensure hero is visible on load
+    if (heroPhase) {
+      heroPhase.style.opacity = '1';
+      heroPhase.style.transform = 'none';
+    }
+
+    function updateScrollTransform() {
+      if (hasFlashed) return;
+
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const scrollPercent = Math.min(scrollY / windowHeight, 3); // 3x window height for full sequence
+
+      // Show progress bar after user starts scrolling
+      if (scrollProgress && scrollY > 10) {
+        scrollProgress.classList.add('visible');
+      }
+
+      // Phase 1: 0-100% scroll - Hero rotates away (0-1.0 scrollPercent)
+      if (scrollPercent < 1 && scrollPercent > 0) {
+        const phase1Progress = scrollPercent;
+        heroPhase.style.opacity = 1 - (phase1Progress * 0.8);
+        heroPhase.style.transform = `perspective(1000px) rotateX(${-phase1Progress * 45}deg) scale(${1 - phase1Progress * 0.2})`;
+
+        // Update progress bar
+        if (scrollProgressFill) {
+          scrollProgressFill.style.width = `${phase1Progress * 33}%`;
+        }
+      } else if (scrollPercent <= 0) {
+        // Reset hero to fully visible when at top
+        heroPhase.style.opacity = '1';
+        heroPhase.style.transform = 'none';
+      }
+
+      // Phase 2: 100-200% scroll - DSLR emerges (1.0-2.0 scrollPercent)
+      if (scrollPercent >= 0.8 && scrollPercent < 2) {
+        const phase2Progress = Math.min((scrollPercent - 0.8) / 1.2, 1);
+        dslrPhase.classList.add('visible');
+        isInDslrPhase = true;
+
+        // Shutter button glows brighter as we approach trigger point
+        if (shutterBtn && phase2Progress > 0.7) {
+          const glowIntensity = (phase2Progress - 0.7) / 0.3;
+          shutterBtn.style.boxShadow = `
+            0 4px 8px rgba(0,0,0,0.4),
+            inset 0 1px 2px rgba(255,255,255,0.05),
+            0 0 ${20 * glowIntensity}px ${5 * glowIntensity}px rgba(57, 255, 20, ${0.3 * glowIntensity})
+          `;
+        }
+
+        if (scrollProgressFill) {
+          scrollProgressFill.style.width = `${33 + phase2Progress * 33}%`;
+        }
+      }
+
+      // Phase 3: 200%+ scroll - Shutter press and flash trigger (2.0+ scrollPercent)
+      if (scrollPercent >= 2 && !hasFlashed) {
+        hasFlashed = true;
+
+        // Press shutter button
+        if (shutterBtn) {
+          shutterBtn.classList.add('pressed');
+        }
+        if (shutterStatus) {
+          shutterStatus.textContent = 'CAPTURE';
+          shutterStatus.classList.add('ready');
+        }
+
+        // Trigger flash after brief delay (mechanical shutter delay)
+        setTimeout(() => {
+          if (flashOverlay) {
+            flashOverlay.classList.add('active');
+          }
+
+          // Hide DSLR phase during flash
+          if (dslrPhase) {
+            dslrPhase.style.opacity = '0';
+          }
+
+          // Show main content after flash peak
+          setTimeout(() => {
+            heroPhase.style.display = 'none';
+            dslrPhase.style.display = 'none';
+            scrollProgress.style.display = 'none';
+
+            if (mainContent) {
+              mainContent.style.display = 'block';
+              // Small delay for flash to still be visible
+              setTimeout(() => {
+                mainContent.classList.add('revealed');
+              }, 100);
+            }
+
+            // Remove scroll container after transition
+            scrollContainer.remove();
+            window.scrollTo(0, 0);
+          }, 150);
+        }, 150);
+      }
+    }
+
+    // Throttled scroll listener
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateScrollTransform();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // Initial call
+    updateScrollTransform();
+  })();
+
   // Minimal demo: activate shutter wipe on hero CTA click for the spec page itself
-  document.querySelector('.hero-cta').addEventListener('click', () => {
+  document.querySelector('.hero-cta')?.addEventListener('click', () => {
     const shutter = document.getElementById('shutterDemo');
-    shutter.classList.add('active');
-    setTimeout(() => shutter.classList.remove('active'), 400);
+    if (shutter) {
+      shutter.classList.add('active');
+      setTimeout(() => shutter.classList.remove('active'), 400);
+    }
   });
 </script>
 
