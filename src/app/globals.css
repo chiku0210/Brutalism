@@ -15,6 +15,11 @@
   --muted: #606068;
   --muted2: #404044;
 
+  /* Font fallbacks (Next.js injects these as CSS vars too) */
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Bebas Neue', sans-serif;
+  --serif: 'Crimson Pro', serif;
+
   /* Spacing */
   --base-unit: 8px;
   --page-padding: 36px;
@@ -44,14 +49,44 @@ html {
 body {
   background: var(--void);
   color: var(--dust);
-  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-family: var(--font-mono), var(--mono);
   font-size: 13px;
   line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* ── FILM GRAIN — body::after emulsion layer ── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* ── SKIP LINK ── */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--void);
+  color: var(--brass);
+  padding: 8px 12px;
+  font-family: var(--font-mono), var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--brass);
+  z-index: 10000;
+  text-decoration: none;
+}
+.skip-link:focus { top: 0; outline: none; }
 
 /* ── LAYOUT ── */
 .page-wrap {
@@ -61,7 +96,7 @@ body {
 }
 
 .section-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-mono), var(--mono);
   font-size: 10px;
   color: var(--brass);
   letter-spacing: 0.15em;
@@ -80,7 +115,7 @@ body {
 }
 
 .section-title {
-  font-family: var(--font-display);
+  font-family: var(--font-display), var(--display);
   font-size: 40px;
   letter-spacing: 0.04em;
   color: var(--dust);
@@ -95,9 +130,9 @@ body {
 }
 
 /* ── UTILITIES ── */
-.font-display { font-family: var(--font-display); }
-.font-mono { font-family: var(--font-mono); }
-.font-serif { font-family: var(--font-serif); }
+.font-display { font-family: var(--font-display), var(--display); }
+.font-mono { font-family: var(--font-mono), var(--mono); }
+.font-serif { font-family: var(--font-serif), var(--serif); }
 .italic { font-style: italic; }
 .uppercase { text-transform: uppercase; }
 
@@ -107,6 +142,65 @@ body {
 .text-muted2 { color: var(--muted2); }
 .text-border2 { color: var(--border2); }
 
+/* ── SHUTTER WIPE KEYFRAMES ── */
+@keyframes shutter-sweep-in {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes shutter-sweep-out {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* ── VIEWFINDER BRACKETS ── */
+.vf-tl, .vf-tr, .vf-bl, .vf-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.vf-tl { top: 8px; left: 8px; border-top: 1px solid var(--brass); border-left: 1px solid var(--brass); }
+.vf-tr { top: 8px; right: 8px; border-top: 1px solid var(--brass); border-right: 1px solid var(--brass); }
+.vf-bl { bottom: 8px; left: 8px; border-bottom: 1px solid var(--brass); border-left: 1px solid var(--brass); }
+.vf-br { bottom: 8px; right: 8px; border-bottom: 1px solid var(--brass); border-right: 1px solid var(--brass); }
+
+/* ── CONTACT SHEET / FILM STRIP ── */
+.film-frame {
+  position: relative;
+  padding: 18px 0 18px 28px;
+  border-bottom: 1px solid var(--grid);
+  transition: opacity 0.2s, color 0.2s;
+  cursor: default;
+}
+.film-frame::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 24px;
+  background-image: repeating-linear-gradient(to bottom, var(--border) 0, var(--border) 3px, transparent 3px, transparent 6px);
+  opacity: 0.4;
+}
+.frame-near  { opacity: 1; }
+.frame-near .frame-title { color: var(--dust); font-weight: 400; }
+.frame-mid   { opacity: 0.82; }
+.frame-mid .frame-title { color: var(--dust); font-weight: 400; }
+.frame-far   { opacity: 0.60; }
+.frame-far .frame-title { color: var(--muted); font-weight: 300; }
+.frame-past  { opacity: 0.40; }
+.frame-past .frame-title { color: var(--muted2); font-weight: 300; }
+.film-frame:hover, .film-frame:focus-visible {
+  opacity: 1 !important;
+}
+.film-frame:hover .frame-title, .film-frame:focus-visible .frame-title {
+  color: var(--dust) !important;
+  font-weight: 400 !important;
+}
+
 /* Custom Selection */
 ::selection {
   background: var(--brass);
@@ -114,35 +208,51 @@ body {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--void);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--brass-dim);
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+::-webkit-scrollbar-thumb:hover { background: var(--brass-dim); }
 
 /* Project Grid Desktop */
 @media (min-width: 1024px) {
-    .project-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-    }
+  .project-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
 }
-.page-wipe {
-  position: fixed;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: var(--brass);
-  z-index: 1000;
-  pointer-events: none;
+
+/* ── VIEWFINDER LANDING — root container warp ── */
+.vf-phase-blurred #root-container {
+  animation: vf-zoom-blur 1120ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, filter;
+}
+.vf-phase-focused #root-container,
+.vf-phase-done #root-container {
+  transform: scale(1);
+  filter: blur(0px) brightness(1);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+@keyframes vf-zoom-blur {
+  0%   { transform: scale(1.06); filter: blur(8px) brightness(0.7); }
+  100% { transform: scale(1);    filter: blur(0px) brightness(1);   }
+}
+
+/* ── REDUCED MOTION — Full override block ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Grain remains — it is static, not motion */
+  /* Brackets remain — instant state change only */
+  .vf-tl, .vf-tr, .vf-bl, .vf-br {
+    transition: none;
+  }
+  /* Viewfinder landing skipped entirely via useReducedMotion hook */
+  .vf-phase-blurred #root-container {
+    animation: none;
+    transform: scale(1);
+    filter: none;
+  }
 }
