@@ -26,7 +26,7 @@ The site operates as a **system boot sequence**, not a greeting. The visitor doe
 | `--void` | `#060608` | Page background, deepest surfaces |
 | `--surface` | `#0E0E10` | Card backgrounds, elevated panels |
 | `--surface2` | `#161618` | Nested containers, code blocks |
-| `--grid` | `#222224` | Subtle grid lines, dividers |
+| `--grid` | `#1A1A1C` | Film grain, grid lines, dividers, legacy/dead elements |
 | `--border` | `#2E2E31` | Card borders (default) |
 | `--border2` | `#3A3A3D` | Card borders (hover state) |
 | `--brass` | `#C8A96E` | Primary accent — active states, labels, CTA |

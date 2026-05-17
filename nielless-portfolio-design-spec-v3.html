@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- SPEC ONLY: Google Fonts CDN for browser preview. Production uses self-hosted WOFF2 in /public/fonts — no fonts.googleapis.com in layout.tsx -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NIELLESS.COM — Design Specification v3.1 (Vintage DSLR Interface)</title>
+<title>NIELLESS.COM — Design Specification v3.3 (Vintage DSLR Interface)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -57,7 +58,7 @@
     content: "";
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: 50;
     pointer-events: none;
     opacity: 0.03;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -755,7 +756,81 @@
   .vf-card:hover .vf-tl, .vf-card:hover .vf-tr, .vf-card:hover .vf-bl, .vf-card:hover .vf-br,
   .vf-card:focus-visible .vf-tl, .vf-card:focus-visible .vf-tr, .vf-card:focus-visible .vf-bl, .vf-card:focus-visible .vf-br { opacity: 1; }
 
-  /* ── ENGINE CARDS ── */
+  /* ── DARKROOM / FILM NEGATIVE REEL (v3.3) ── */
+  .scroll-hint-mock {
+    position: absolute; right: 14px; bottom: 14px;
+    font-family: var(--mono); font-size: 9px; color: var(--muted2);
+    letter-spacing: 0.12em; pointer-events: none; z-index: 5;
+  }
+  .darkroom-viewport {
+    position: relative; overflow: hidden;
+    border: 1px solid var(--border); background: var(--void);
+    min-height: 200px; padding: 20px 0;
+  }
+  .darkroom-viewport::before,
+  .darkroom-viewport::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 10px; z-index: 2;
+    background: repeating-linear-gradient(90deg, var(--grid) 0, var(--grid) 6px, transparent 6px, transparent 12px);
+    opacity: 0.35; pointer-events: none;
+  }
+  .darkroom-viewport::before { top: 0; }
+  .darkroom-viewport::after { bottom: 0; }
+  .film-reel {
+    display: flex; gap: 12px; padding: 8px 20px; align-items: stretch;
+    transform: translateX(-80px);
+  }
+  .film-negative {
+    flex: 0 0 clamp(200px, 32vw, 300px);
+    background: #1a1208; border: 1px solid var(--brass-dim);
+    padding: 14px 16px; position: relative;
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.4);
+  }
+  .film-negative::before,
+  .film-negative::after {
+    content: ''; position: absolute; left: 8px; right: 8px; height: 6px;
+    background-image: repeating-linear-gradient(90deg, var(--border) 0, var(--border) 4px, transparent 4px, transparent 8px);
+    opacity: 0.35;
+  }
+  .film-negative::before { top: 4px; }
+  .film-negative::after { bottom: 4px; }
+  .neg-counter { font-family: var(--mono); font-size: 9px; color: var(--brass-dim); letter-spacing: 0.12em; margin-bottom: 4px; }
+  .neg-title { font-family: var(--display); font-size: 22px; letter-spacing: 0.05em; color: #c4b8a0; margin-bottom: 8px; }
+  .neg-summary { font-family: var(--mono); font-size: 10px; color: #8a8070; line-height: 1.65; margin-bottom: 12px; }
+  .neg-cta {
+    font-family: var(--mono); font-size: 9px; color: var(--brass);
+    border: 1px solid var(--brass-dim); padding: 6px 10px;
+    letter-spacing: 0.1em; background: rgba(200,169,110,0.06);
+    display: inline-block; cursor: default;
+  }
+  .leader-tape {
+    flex: 0 0 140px; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+    border: 1px dashed var(--border); background: var(--surface);
+    padding: 12px; gap: 4px;
+  }
+  .leader-tape .leader-label { font-family: var(--mono); font-size: 9px; color: var(--brass); letter-spacing: 0.14em; }
+  .leader-tape .leader-sub { font-family: var(--mono); font-size: 8px; color: var(--muted2); letter-spacing: 0.08em; line-height: 1.6; }
+  .print-modal-mock {
+    margin-top: 28px; position: relative;
+    border: 1px solid var(--brass-dim);
+    background: rgba(6,6,8,0.96); padding: 24px 28px;
+    max-width: 520px;
+  }
+  .print-modal-mock::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--brass); opacity: 0.9;
+  }
+  .print-wipe-note {
+    font-family: var(--mono); font-size: 9px; color: var(--brass-dim);
+    letter-spacing: 0.08em; margin-bottom: 16px;
+  }
+  .print-title { font-family: var(--display); font-size: 28px; color: var(--dust); letter-spacing: 0.05em; margin-bottom: 6px; }
+  .print-period { font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; margin-bottom: 14px; }
+  .print-bullets { list-style: none; padding: 0; margin: 0 0 16px; }
+  .print-bullets li { font-size: 10px; color: var(--muted); line-height: 1.75; padding: 4px 0; border-bottom: 1px solid var(--grid); }
+  .print-bullets li::before { content: '— '; color: var(--brass); }
+  .darkroom-legacy-note { font-size: 10px; color: var(--muted2); margin-top: 12px; }
+  /* Legacy schematic card tokens (reference / contact) */
   .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
   .engine-card-full { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
   .card-counter { font-family: var(--mono); font-size: 9px; color: var(--brass); letter-spacing: 0.12em; margin-bottom: 4px; }
@@ -849,6 +924,9 @@
   @media (max-width: 768px) {
     .page-wrap { padding: 0 20px 80px; }
     .mechanism-grid, .engine-grid, .mobile-grid { grid-template-columns: 1fr; }
+    .film-reel { transform: none; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 12px; }
+    .film-negative { flex: 0 0 min(85vw, 320px); scroll-snap-align: start; }
+    .leader-tape { flex: 0 0 min(85vw, 280px); scroll-snap-align: center; }
     .hero-headline { font-size: 40px; }
     .aperture-specimen { display: none; }
     .topbar { padding: 12px 20px; flex-wrap: wrap; gap: 8px; }
@@ -866,13 +944,13 @@
 <a href="#main" class="skip-link">Skip to content</a>
 
 <nav class="topbar" role="navigation" aria-label="Specification">
-  <div class="topbar-logo">N/A — SPEC v3.1</div>
+  <div class="topbar-logo">N/A — SPEC v3.3</div>
   <div class="topbar-nav">
     <a href="#philosophy">PHILOSOPHY</a>
     <a href="#design-system">SYSTEM</a>
     <a href="#experience">EXPERIENCE</a>
     <a href="#hero">HERO</a>
-    <a href="#engine">ENGINE</a>
+    <a href="#darkroom">DARKROOM</a>
     <a href="#blueprint">BLUEPRINT</a>
     <a href="#interactions">INTERACTIONS</a>
     <a href="#mobile">MOBILE</a>
@@ -894,7 +972,7 @@
 <div class="page-wrap" id="main">
 
   <header class="doc-header">
-    <div class="doc-rev">DESIGN SPECIFICATION — REV 3.1 &nbsp;·&nbsp; VINTAGE DSLR INTERFACE</div>
+    <div class="doc-rev">DESIGN SPECIFICATION — REV 3.3 &nbsp;·&nbsp; VINTAGE DSLR INTERFACE</div>
     <div class="doc-title">NIELLESS.COM</div>
     <div class="doc-sub">Precision instrument. Optical interface. The portfolio is the camera.</div>
     <div style="margin-top:20px;font-size:10px;color:var(--muted2);line-height:2">
@@ -975,9 +1053,21 @@
         <div class="spacing-item"><div class="spacing-value">36PX</div><div class="spacing-desc">PAGE PADDING</div></div>
         <div class="spacing-item"><div class="spacing-value">80PX</div><div class="spacing-desc">SECTION GAP</div></div>
         <div class="spacing-item"><div class="spacing-value">20PX</div><div class="spacing-desc">CARD PADDING</div></div>
-        <div class="spacing-item"><div class="spacing-value">2-COL</div><div class="spacing-desc">ENGINE GRID</div></div>
+        <div class="spacing-item"><div class="spacing-value">H-STRIP</div><div class="spacing-desc">FILM REEL</div></div>
         <div class="spacing-item"><div class="spacing-value">1100PX</div><div class="spacing-desc">MAX WIDTH</div></div>
       </div>
+    </div>
+    <div class="ds-block">
+      <div class="ds-label">Z-INDEX TOKENS (v3.3 PRODUCTION)</div>
+      <div class="spacing-grid">
+        <div class="spacing-item"><div class="spacing-value">10000</div><div class="spacing-desc">SKIP LINK</div></div>
+        <div class="spacing-item"><div class="spacing-value">500</div><div class="spacing-desc">PRINT MODAL</div></div>
+        <div class="spacing-item"><div class="spacing-value">100</div><div class="spacing-desc">SITE HEADER</div></div>
+        <div class="spacing-item"><div class="spacing-value">90</div><div class="spacing-desc">SCROLL HINT</div></div>
+        <div class="spacing-item"><div class="spacing-value">50</div><div class="spacing-desc">FILM GRAIN</div></div>
+        <div class="spacing-item"><div class="spacing-value">1</div><div class="spacing-desc">PAGE CONTENT</div></div>
+      </div>
+      <p style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:12px;line-height:1.7">Grain is passive (<code>pointer-events: none</code>). Never <code>9999</code> — that paints over the modal. Deferred hero flash overlay may use 9999 in this spec HTML only.</p>
     </div>
   </section>
 
@@ -1001,9 +1091,9 @@
         </div>
       </div>
       <div class="mechanism-card">
-        <div class="mechanism-title">Viewfinder Focus Brackets</div>
+        <div class="mechanism-title">The Darkroom — Film Negative Reel</div>
         <div class="mechanism-body">
-          Interactive project cards and the contact form carry four corner brackets (14px L-shapes, 1px brass). On hover and <code>:focus-visible</code>, opacity transitions from 0 to 1 in 200ms. This is the DSLR focus confirmation overlay. It does not use box-shadow or outline. It uses four discrete absolutely-positioned border fragments. On touch devices, brackets appear on <code>:active</code> state.
+          Projects live on a horizontal 35mm negative strip in <code>#darkroom</code>. Desktop: vertical scroll scrubs the strip via JS (<code>translate3d</code>). Each frame shows <code>negativeSummary</code>; <code>[ DEVELOP ]</code> opens a positive print modal (brass gate wipe, 180ms). Mobile: horizontal swipe on the strip — no sticky scrub. Legacy <code>#engine</code> redirects here.
         </div>
       </div>
       <div class="mechanism-card">
@@ -1015,7 +1105,7 @@
       <div class="mechanism-card">
         <div class="mechanism-title">Film Grain (Surface Emulsion)</div>
         <div class="mechanism-body">
-          A single static <code>body::after</code> pseudo-element layers an SVG <code>feTurbulence</code> noise tile across the entire viewport at 3% opacity. <code>pointer-events: none; position: fixed; inset: 0; z-index: 9999;</code>. No JavaScript. No re-seed. The grain is the emulsion layer of the screen. On <code>prefers-reduced-motion</code>, the grain remains (it is static) but any other animated textures are disabled.
+          A single static <code>body::after</code> pseudo-element layers an SVG <code>feTurbulence</code> noise tile across the entire viewport at 3% opacity. <code>pointer-events: none; position: fixed; inset: 0; z-index: 50;</code> (below header 100, modal 500 — see [08] z-index stack). No JavaScript. No re-seed. The grain is the emulsion layer of the screen. On <code>prefers-reduced-motion</code>, the grain remains (it is static) but any other animated textures are disabled.
         </div>
       </div>
       <div class="mechanism-card">
@@ -1047,7 +1137,7 @@
     <div class="callout">
       <strong>GRAIN IMPLEMENTATION:</strong>
       <code style="display:block;margin-top:8px;color:var(--muted2)">body::after {<br>
-        &nbsp;&nbsp;content: ""; position: fixed; inset: 0; z-index: 9999;<br>
+        &nbsp;&nbsp;content: ""; position: fixed; inset: 0; z-index: 50;<br>
         &nbsp;&nbsp;pointer-events: none; opacity: 0.03;<br>
         &nbsp;&nbsp;background-image: url("data:image/svg+xml,...feTurbulence...");<br>
         &nbsp;&nbsp;background-size: 200px;<br>
@@ -1116,8 +1206,8 @@
     <!-- Phase 3: Main Content (revealed after flash) -->
     <div class="main-content" id="mainContent" style="display:none">
       <div class="term-line meta" style="margin-bottom:20px">[03] SYSTEM SCHEMATICS</div>
-      <div class="section-title" style="font-size:42px">ENGINE</div>
-      <!-- Project cards would render here -->
+      <div class="section-title" style="font-size:42px">DARKROOM</div>
+      <!-- Film negative reel renders here (deferred scroll-to-DSLR path) -->
     </div>
 
     <div class="screen-wrap">
@@ -1154,7 +1244,7 @@
         <li><strong>Scroll 33-66% (Phase 2):</strong> DSLR top view emerges from rotation <code>rotateX(90deg) → rotateX(0deg)</code>. 300px body with grip texture, mode dial, hot shoe, and lens mount. Shutter button glows increasingly as scroll approaches 66%.</li>
         <li><strong>Scroll 66-100% (Phase 3):</strong> Shutter button press animation triggers (translateZ(-4px), scale 0.95). Button illuminates signal green. 150ms mechanical delay.</li>
         <li><strong>Flash Trigger:</strong> Full-screen white flash (800ms) simulates xenon flash tube discharge. DSLR body fades during flash peak.</li>
-        <li><strong>Content Reveal:</strong> Flash clears to reveal ENGINE section with project schematics. Scroll position resets to 0. Total scroll distance: 3x viewport height.</li>
+        <li><strong>Content Reveal:</strong> Flash clears to reveal DARKROOM section with project negatives (legacy docs may say ENGINE). Scroll position resets to 0. Total scroll distance: 3x viewport height.</li>
       </ul>
     </div>
     <div class="interaction-note" style="margin-top:8px">
@@ -1173,103 +1263,162 @@
   <hr class="rule">
 
   <!-- ────────────────────────────────────────── -->
-  <!-- [04] ENGINE MOCKUP -->
+  <!-- [04] THE DARKROOM — FILM NEGATIVE REEL -->
   <!-- ────────────────────────────────────────── -->
-  <section class="spec-section" id="engine">
-    <div class="section-label">[04] THE ENGINE — SCHEMATIC CARDS</div>
-    <div class="section-title">PROJECTS AS VIEWFINDER SUBJECTS</div>
-    <p class="section-intro">Projects are not cards. They are subjects framed in the viewfinder. Each schematic card carries the same metadata: project name, one-line function, technology stack, and operational status. On hover or keyboard focus, the viewfinder brackets engage.</p>
+  <section class="spec-section" id="darkroom">
+    <div class="section-label">[04] THE DARKROOM — CAMERA NEGATIVE REEL</div>
+    <div class="section-title">NEGATIVES ON STRIP · DEVELOP TO PRINT</div>
+    <p class="section-intro">Projects are not portfolio cards. They are <strong>original camera negatives</strong> on a horizontal 35mm reel. Scrolling down advances the strip leftward. Each frame shows a concise <code>negativeSummary</code>. The operator hits <code>[ DEVELOP ]</code> to project the negative onto paper — a full-screen positive print with role bullets, stack, period, and links. Legacy <code>#engine</code> redirects to <code>#darkroom</code>.</p>
+
+    <div class="callout">
+      <strong>PHOTOGRAPHIC METAPHOR</strong><br>
+      Negative on strip → enlarger / contact print (<code>[ DEVELOP ]</code>) → positive print on paper (modal). The darkroom is where development happens.
+    </div>
 
     <div class="screen-wrap">
       <div class="screen-chrome">
         <div class="chrome-dot" style="background:#FF5F56"></div>
         <div class="chrome-dot" style="background:#FFBD2E"></div>
         <div class="chrome-dot" style="background:#27C93F"></div>
-        <span class="chrome-url">nielless.com/#engine</span>
+        <span class="chrome-url">nielless.com/#darkroom</span>
       </div>
-      <div class="screen-body">
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px">
+      <div class="screen-body" style="position:relative">
+        <span class="scroll-hint-mock" aria-hidden="true">scroll down</span>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
           <div>
-            <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[03] SYSTEM SCHEMATICS</div>
-            <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">ENGINE</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[04] THE DARKROOM</div>
+            <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">DARKROOM</div>
           </div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--border2);text-align:right;line-height:1.8">5 SYSTEMS<br>PRODUCTION GRADE</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--border2);text-align:right;line-height:1.8">8 NEGATIVES<br>4 PROD · 4 LAB</div>
         </div>
 
-        <div class="engine-grid">
-          <!-- ORION -->
-          <div class="vf-card" tabindex="0" role="article" aria-label="Orion project">
-            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
-            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
-            <div class="card-header">
-              <div><div class="card-counter">PROJECT_001</div><div class="card-title">ORION</div></div>
-              <span class="badge badge-live">LIVE</span>
+        <div class="darkroom-viewport" aria-label="Film negative strip preview">
+          <div class="film-reel">
+            <article class="film-negative" tabindex="0" role="article" aria-label="UHC Store production negative">
+              <div class="neg-counter">PROD_001</div>
+              <div class="neg-title">UHC STORE</div>
+              <p class="neg-summary">Greenfield UHC storefront + admin (Next.js/Redux). 100K+ monthly sessions; LSA/HSA integrations.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
+            <article class="film-negative" tabindex="0" role="article" aria-label="Canary pipeline negative">
+              <div class="neg-counter">PROD_002</div>
+              <div class="neg-title">CANARY PIPELINE</div>
+              <p class="neg-summary">Canary deployment pipeline for UHC microservices. Phased rollouts cut critical release risk by 40%.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
+            <article class="film-negative" tabindex="0" role="article" aria-label="WCI backend negative">
+              <div class="neg-counter">PROD_003</div>
+              <div class="neg-title">WCI BACKEND APIs</div>
+              <p class="neg-summary">Carbon cap-and-trade allocation APIs. PostgreSQL transactions enforce 10% annual corporate cap cuts.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
+            <article class="film-negative" tabindex="0" role="article" aria-label="WCI migration negative">
+              <div class="neg-counter">PROD_004</div>
+              <div class="neg-title">WCI MIGRATION</div>
+              <p class="neg-summary">Python/DynamoDB → Node.js/PostgreSQL. Zero-downtime regulated cutover; 100% data consistency.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
+            <div class="leader-tape" aria-hidden="true">
+              <span class="leader-label">[ PRODUCTION ]</span>
+              <span class="leader-sub">DEPLOYED<br>SYSTEMS</span>
+              <span class="leader-label" style="margin-top:8px">[ LAB ]</span>
+              <span class="leader-sub">BUILT<br>SYSTEMS</span>
             </div>
-            <div class="card-desc">Voice-native AI assistant. End-to-end agent orchestration layer.</div>
-            <div class="card-tags"><span class="tag">WHISPER</span><span class="tag-arrow">→</span><span class="tag">GROQ</span><span class="tag-arrow">→</span><span class="tag">TTS</span></div>
-            <div class="badge-row"><span class="badge badge-muted">REACT NATIVE</span><span class="badge badge-muted">NODE.JS</span><span class="badge badge-muted">POSTGRESQL</span></div>
-          </div>
-
-          <!-- REPWISE -->
-          <div class="vf-card" tabindex="0" role="article" aria-label="Repwise project">
-            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
-            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
-            <div class="card-header">
-              <div><div class="card-counter">PROJECT_002</div><div class="card-title">REPWISE</div></div>
-              <span class="badge badge-live">LIVE</span>
-            </div>
-            <div class="card-desc">AI-architected workout logger. Agentic SDLC from schema to deploy.</div>
-            <div class="card-tags"><span class="tag">NEXT.JS</span><span class="tag-arrow">+</span><span class="tag">SUPABASE</span><span class="tag-arrow">+</span><span class="tag">VERCEL</span></div>
-            <div class="badge-row"><span class="badge badge-muted">TYPESCRIPT</span><span class="badge badge-muted">TAILWIND</span></div>
-          </div>
-
-          <!-- UHC -->
-          <div class="vf-card" tabindex="0" role="article" aria-label="UHC production system">
-            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
-            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
-            <div class="card-header">
-              <div><div class="card-counter">PRODUCTION_001</div><div class="card-title">UHC</div></div>
-              <span class="badge badge-live">LIVE</span>
-            </div>
-            <div class="card-desc">E-commerce engine. 100K+ sessions/month. Canary pipeline. LSA/HSA payments.</div>
-            <div class="card-tags"><span class="tag">NEXT.JS</span><span class="tag-arrow">→</span><span class="tag">REDUX</span><span class="tag-arrow">→</span><span class="tag">AWS</span></div>
-            <div class="badge-row"><span class="badge badge-ice">AWS</span><span class="badge badge-muted">COPILOT</span></div>
-            <div class="card-watermark">@PUBLICIS</div>
-          </div>
-
-          <!-- AGENTIC SYSTEMS -->
-          <div class="vf-card" tabindex="0" role="article" aria-label="Agentic Systems project">
-            <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
-            <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
-            <div class="card-header">
-              <div><div class="card-counter">PROJECT_003</div><div class="card-title">AGENTIC SYS.</div></div>
-              <span class="badge badge-live">LIVE</span>
-            </div>
-            <div class="card-desc">Multi-agent Node.js orchestration. Handoff and parallel execution patterns.</div>
-            <div class="card-tags"><span class="tag">NODE.JS</span><span class="tag-arrow">+</span><span class="tag">TYPESCRIPT</span><span class="tag-arrow">+</span><span class="tag">GROQ</span></div>
+            <article class="film-negative" tabindex="0" role="article" aria-label="Orion lab negative">
+              <div class="neg-counter">SYSTEM_001</div>
+              <div class="neg-title">ORION</div>
+              <p class="neg-summary">Voice-first AI assistant. End-to-end orchestration for low-latency LLM inference and Whisper STT.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
+            <article class="film-negative" tabindex="0" role="article" aria-label="Repwise lab negative">
+              <div class="neg-counter">SYSTEM_002</div>
+              <div class="neg-title">REPWISE</div>
+              <p class="neg-summary">Full-stack workout tracker. Agentic SDLC automated ~80% of PRs; unified TypeScript across Supabase + UI.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
+            <article class="film-negative" tabindex="0" role="article" aria-label="Gita Reader lab negative">
+              <div class="neg-counter">SYSTEM_003</div>
+              <div class="neg-title">GITA READER</div>
+              <p class="neg-summary">Offline-first React Native app. Python/OCR ingests legacy PDFs; FTS5 search over 700+ verse records.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
+            <article class="film-negative" tabindex="0" role="article" aria-label="Agentic Systems lab negative">
+              <div class="neg-counter">SYSTEM_004</div>
+              <div class="neg-title">AGENTIC SYS.</div>
+              <p class="neg-summary">Multi-agent Node.js system. Handoff + Promise.all fan-out/fan-in for parallel LLM task execution.</p>
+              <span class="neg-cta">[ DEVELOP ]</span>
+            </article>
           </div>
         </div>
+        <p class="darkroom-legacy-note">Mock shows partial strip with <code>translateX(-80px)</code>. Full reel: 4 prod → leader → 4 lab.</p>
 
-        <div class="engine-card-full vf-card" tabindex="0" role="article" aria-label="WCI Carbon Trading production system">
-          <span class="vf-tl" aria-hidden="true"></span><span class="vf-tr" aria-hidden="true"></span>
-          <span class="vf-bl" aria-hidden="true"></span><span class="vf-br" aria-hidden="true"></span>
-          <div class="card-counter">PRODUCTION_002</div>
-          <div class="card-title" style="margin-top:4px">WCI — CARBON TRADING</div>
-          <div class="card-desc" style="margin-top:8px">Legacy Python/DynamoDB → Node.js/PostgreSQL. Carbon cap-and-trade allocation APIs. 10% annual corporate carbon cap reduction enforced via PostgreSQL transactions. Zero-downtime migration.</div>
-          <div class="badge-row" style="margin-top:12px"><span class="badge badge-hot">REGULATED</span><span class="badge badge-muted">ZERO DOWNTIME</span><span class="badge badge-ice">AWS RDS</span></div>
-          <div class="card-tags" style="margin-top:10px"><span class="tag">NODE.JS</span><span class="tag-arrow">→</span><span class="tag">POSTGRESQL</span><span class="tag-arrow">+</span><span class="tag">PYTHON</span><span class="tag-arrow">+</span><span class="tag">AWS RDS</span></div>
-          <div class="card-watermark">@PUBLICIS</div>
+        <div class="print-modal-mock" role="dialog" aria-label="Positive print preview">
+          <div class="print-wipe-note">POSITIVE PRINT — post brass gate wipe (180ms)</div>
+          <div class="print-title">UHC STORE &amp; ADMIN</div>
+          <div class="print-period">JUL 2022 — PRESENT · @PUBLICIS</div>
+          <ul class="print-bullets">
+            <li>Built UnitedHealthCare e-commerce storefront from greenfield (Next.js, Redux).</li>
+            <li>Architected greenfield internal Admin Application for inventory management.</li>
+            <li>Maintained 95%+ unit test coverage on critical UI paths.</li>
+          </ul>
+          <div class="card-tags"><span class="tag">NEXT.JS</span><span class="tag-arrow">→</span><span class="tag">REDUX</span><span class="tag-arrow">→</span><span class="tag">AWS</span></div>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:9px;color:var(--muted2)">[ × ] close · body scroll locked while open</div>
         </div>
       </div>
     </div>
 
     <div class="interaction-note">
-      <div class="interaction-note-label">SCHEMATIC CARD SPEC</div>
+      <div class="interaction-note-label">SCROLL SCRUB MATH (DESKTOP)</div>
       <ul class="bullet-list">
-        <li>All cards are static HTML; hover/focus states are CSS-only.</li>
-        <li>The viewfinder brackets are <strong>not</strong> SVG. They are four absolutely-positioned border fragments to ensure sub-pixel precision and zero layout cost.</li>
-        <li>Each card carries <code>role="article"</code> and an <code>aria-label</code> summarizing the project.</li>
-        <li>On <code>prefers-reduced-motion</code>, the bracket transition is instant (<code>transition: none</code>).</li>
+        <li><strong>Architecture:</strong> JS scroll listener (rAF-throttled) is primary. CSS <code>animation-timeline: scroll()</code> is <em>not</em> used — conflicts with <code>position: sticky</code>.</li>
+        <li><strong>Horizontal:</strong> <code>maxTravel = max(0, stripWidth - viewportWidth)</code> — do not name this <code>trackHeight</code>.</li>
+        <li><strong>Vertical track:</strong> <code>scrollTrackHeight = maxTravel + innerHeight</code>; <code>scrubRange = scrollTrackHeight - innerHeight</code>.</li>
+        <li><strong>Progress:</strong> <code>trackTop = darkroomTrack.getBoundingClientRect().top</code>; <code>progress = clamp(0, 1, (-trackTop) / scrubRange)</code>; <code>translateX = -(progress * maxTravel)</code>; apply via <code>translate3d</code>.</li>
+        <li><strong>Overflow:</strong> strip inside <code>overflow: hidden</code> sticky viewport; no horizontal page scroll. <code>progress === 0</code> → first frame left; <code>progress === 1</code> → last frame in view.</li>
+        <li><strong>Resize:</strong> <code>ResizeObserver</code> recalculates <code>stripWidth</code>, <code>maxTravel</code>, <code>scrollTrackHeight</code>, <code>scrubRange</code>.</li>
+      </ul>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">BRASS GATE WIPE (MODAL OPEN — NOT SHUTTER OVERLAY)</div>
+      <p style="font-size:10px;color:var(--muted);line-height:1.75;margin:0 0 12px"><strong>Behavior (locked):</strong> The modal does <em>not</em> slide in. Overlay + backdrop appear at full size immediately (<code>z-index: 500</code>). Positive print content is mounted beneath the gate at <code>opacity: 0</code>. A <code>.print-wipe</code> layer on top animates a <strong>1px brass bar</strong> sweeping <strong>left → right</strong> via <code>scaleX(0→1)</code> (projector gate), then the gate fades out; content fades in 160ms later. The print is revealed in place — not dragged behind a moving panel.</p>
+      <ul class="bullet-list">
+        <li><strong>Distinct from</strong> Section [02] shutter wipe (section transition). Modal stack: backdrop → content (hidden) → wipe layer (animates once).</li>
+        <li>Line color <code>var(--brass)</code> (#C8A96E); backdrop <code>rgba(6,6,8,0.94)</code>; modal root <code>z-index: 500</code>.</li>
+        <li><strong>Direction:</strong> brass leading edge sweeps <strong>left → right</strong>, then wipe layer <code>opacity → 0</code>; content stays open.</li>
+        <li><strong>Timing:</strong> wipe 180ms <code>ease-out</code>; content fade-in 120ms starting at 160ms delay.</li>
+        <li><code>prefers-reduced-motion</code>: skip wipe; content <code>opacity: 1</code> immediately.</li>
+      </ul>
+      <div class="arch-code" style="margin-top:12px;font-size:10px;line-height:1.7"><span class="comment">/* PositivePrintModal.module.css — production */</span>
+@keyframes brassGateWipe {
+  0%   { transform: scaleX(0); transform-origin: left; opacity: 1; }
+  70%  { transform: scaleX(1); transform-origin: left; opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+.print-wipe {
+  position: absolute; inset: 0; z-index: 2;
+  background: linear-gradient(90deg, var(--brass) 0%, var(--brass) 1px, transparent 1px);
+  animation: brassGateWipe 180ms ease-out forwards;
+}
+.print-content {
+  position: relative; z-index: 1; opacity: 0;
+  animation: printFadeIn 120ms ease 160ms forwards;
+}
+@keyframes printFadeIn { from { opacity: 0; } to { opacity: 1; } }</div>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">MOBILE (≤768px)</div>
+      <ul class="bullet-list">
+        <li><strong>No sticky scrub.</strong> <code>#darkroom</code> track height <code>auto</code>.</li>
+        <li><code>.film-reel</code>: <code>overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch</code>.</li>
+        <li>Frame <code>min(85vw, 320px)</code>; leader tape full-width between prod/lab groups.</li>
+        <li><code>ScrollHint</code>: copy <code>[ swipe → ]</code> below 768px. One scroll axis at a time.</li>
+      </ul>
+    </div>
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">SITEWIDE SCROLL HINT</div>
+      <ul class="bullet-list">
+        <li>Fixed <code>bottom-right</code>; 9–10px mono; <code>color: var(--muted2)</code>; <code>pointer-events: none</code>.</li>
+        <li>Hidden when print modal open. Static only — no pulse.</li>
       </ul>
     </div>
   </section>
@@ -1293,7 +1442,7 @@
       </div>
       <div class="screen-body">
         <div style="margin-bottom:32px">
-          <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[04] DEPLOYMENT HISTORY</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--brass);letter-spacing:0.15em;margin-bottom:6px">[05] DEPLOYMENT HISTORY</div>
           <div style="font-family:var(--display);font-size:42px;letter-spacing:0.04em;color:var(--dust)">CONTACT SHEET</div>
         </div>
 
@@ -1340,7 +1489,8 @@
         <li><strong>frame-far:</strong> opacity 0.60, font-weight 300, color <code>--muted</code>. Analogous to pull-focus.</li>
         <li><strong>frame-past:</strong> opacity 0.40, font-weight 300, color <code>--muted2</code>. Historical archival.</li>
         <li><strong>Hover / Focus:</strong> All frames override to opacity 1.0, font-weight 400, color <code>--dust</code> on <code>:hover</code> or <code>:focus-visible</code>. No blur() is used anywhere in the pipeline.</li>
-      </ul>
+      
+        <li><strong>Stack panel tags:</strong> Only labels wrapped in square brackets (e.g. <code>[LLM AGENTS]</code>, <code>[AGENTIC SDLC]</code>) use brass text + <code>border-color: var(--brass-dim)</code>. Plain tags stay default dust/mono styling.</li></ul>
     </div>
   </section>
 
@@ -1428,8 +1578,8 @@
         <div class="mobile-rule">Font scales 62px → 38px Bebas. Boot lines condense to two: metadata + armed status. Grain preserved. Aperture bar appears at bottom.</div>
       </div>
       <div class="mobile-card">
-        <div class="mobile-context">ENGINE GRID</div>
-        <div class="mobile-rule">2-column → 1-column stack. Card padding increases to 24px for thumb reach. Touch targets are min 44×44px. Badges stack below tags.</div>
+        <div class="mobile-context">DARKROOM FILM REEL</div>
+        <div class="mobile-rule">No sticky scroll-scrub. <code>.film-reel</code> uses horizontal <code>overflow-x: auto</code> + <code>scroll-snap-type: x mandatory</code>. Frame <code>min(85vw, 320px)</code>. Leader tape full-width between prod/lab. Hint: <code>[ swipe → ]</code>. One scroll axis at a time.</div>
       </div>
       <div class="mobile-card">
         <div class="mobile-context">CONTACT SHEET</div>
@@ -1441,7 +1591,7 @@
       </div>
       <div class="mobile-card">
         <div class="mobile-context">FOLDABLE / 320PX</div>
-        <div class="mobile-rule">At 320px (Galaxy Fold cover screen), hero headline drops to 28px. Engine grid stacks. Page padding reduces to 16px. All mechanisms reflow without horizontal scroll.</div>
+        <div class="mobile-rule">At 320px (Galaxy Fold cover screen), hero headline drops to 28px. Darkroom film strip uses horizontal swipe. Page padding reduces to 16px. All mechanisms reflow without horizontal scroll.</div>
       </div>
       <div class="mobile-card">
         <div class="mobile-context">REDUCED MOTION</div>
@@ -1461,73 +1611,96 @@
 
     <div class="arch-block">
       <div class="ds-label">TECH STACK</div>
-      <div class="arch-code"><span class="hl">Framework:</span>   <span class="norm">Next.js 14 (App Router)</span>
+      <div class="arch-code"><span class="hl">Framework:</span>   <span class="norm">Next.js 16 (App Router — existing project version)</span>
 <span class="hl">Language:</span>    <span class="norm">TypeScript (strict mode)</span>
-<span class="hl">Animation:</span>   <span class="norm">CSS @keyframes + 3D transforms (perspective, rotateX, translateZ)</span>
-<span class="hl">3D Engine:</span>   <span class="norm">CSS transform-style: preserve-3d, perspective(1000px)</span>
-<span class="hl">Scroll:</span>      <span class="norm">Native scroll 300vh container, rAF-throttled phase detection</span>
+<span class="hl">Animation:</span>   <span class="norm">CSS @keyframes (hero boot, brass gate wipe); JS scroll scrub (Darkroom)</span>
+<span class="hl">Scroll:</span>      <span class="norm">Native scroll + rAF-throttled useFilmScroll (desktop Darkroom)</span>
 <span class="hl">Styling:</span>     <span class="norm">CSS Modules + CSS Custom Properties</span>
-<span class="hl">Texture:</span>     <span class="norm">SVG feTurbulence via body::after (static)</span>
-<span class="hl">Flash:</span>        <span class="norm">CSS @keyframes flash-overlay 800ms white burst</span>
-<span class="hl">Audio:</span>       <span class="norm">Web Audio API — raw oscillators, lazy-loaded context</span>
+<span class="hl">Texture:</span>     <span class="norm">SVG feTurbulence via body::after (static, z-index 50)</span>
+<span class="hl">Deferred:</span>    <span class="norm">Scroll-to-DSLR, flash, aperture ring, shutter overlay, Web Audio, custom cursor</span>
 <span class="hl">Fonts:</span>       <span class="norm">Self-hosted WOFF2 (Google Fonts subset)</span>
 <span class="hl">Deploy:</span>      <span class="norm">Vercel</span>
-<span class="hl">Performance:</span> <span class="norm">Target Lighthouse 95+ across all metrics</span></div>
+<span class="hl">Performance:</span> <span class="norm">Target Lighthouse ≥ 90 (stretch 95)</span></div>
     </div>
 
     <div class="arch-block">
       <div class="ds-label">FILE STRUCTURE</div>
       <div class="arch-code"><span class="hl">nielless.com/</span>
 ├── <span class="dim">app/</span>
-│   ├── <span class="norm">page.tsx</span>              <span class="comment">← Scroll-to-DSLR transformation + flash reveal</span>
-│   ├── <span class="dim">layout.tsx</span>            <span class="comment">← Grain layer + skip link + cursor root</span>
+│   ├── <span class="norm">page.tsx</span>              <span class="comment">← #hero → #darkroom → #blueprint → #contact</span>
+│   ├── <span class="dim">layout.tsx</span>            <span class="comment">← Metadata, grain, SiteHeader, Footer, skip link</span>
 │   └── <span class="dim">globals.css</span>           <span class="comment">← Tokens + keyframes + reduced-motion</span>
 ├── <span class="dim">components/</span>
-│   ├── <span class="norm">ApertureRing.tsx</span>      <span class="comment">← CSS custom property scroll linkage</span>
-│   ├── <span class="norm">ExposureMeter.tsx</span>     <span class="comment">← Scroll height indicator</span>
-│   ├── <span class="norm">ViewfinderCard.tsx</span>    <span class="comment">← Bracket shell + hover/focus logic</span>
-│   ├── <span class="norm">ShutterOverlay.tsx</span>    <span class="comment">← Fixed wipe layer</span>
-│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera boot sequence with focus hunt</span>
-│   ├── <span class="norm">ScrollTransform.tsx</span>   <span class="comment">← Scroll-to-DSLR 3D transformation</span>
-│   ├── <span class="norm">DslrTopView.tsx</span>       <span class="comment">← DSLR body, shutter button, flash</span>
-│   ├── <span class="norm">SchematicGrid.tsx</span>     <span class="comment">← Engine section container</span>
-│   ├── <span class="norm">ContactSheet.tsx</span>      <span class="comment">← Timeline with DoF classes</span>
-│   ├── <span class="norm">CustomCursor.tsx</span>      <span class="comment">← Fixed reticle div</span>
-│   └── <span class="norm">AudioToggle.tsx</span>       <span class="comment">← Lazy AudioContext toggle</span>
-├── <span class="dim">hooks/</span>
-│   ├── <span class="norm">useScrollProgress.ts</span>  <span class="comment">← Throttled scroll => CSS variable</span>
-│   ├── <span class="norm">useScrollPhase.ts</span>     <span class="comment">← Phase detection (hero/dslr/content)</span>
-│   ├── <span class="norm">useReducedMotion.ts</span>   <span class="comment">← prefers-reduced-motion listener</span>
-│   └── <span class="norm">useFlashTrigger.ts</span>   <span class="comment">← Flash animation + content reveal</span>
+│   ├── <span class="norm">SiteHeader.tsx</span>        <span class="comment">← Text mark + DARKROOM · BLUEPRINT · CONTACT</span>
+│   ├── <span class="norm">SectionShell.tsx</span>      <span class="comment">← Shared section header</span>
+│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera boot sequence</span>
+│   ├── <span class="norm">ScrollHint.tsx</span>        <span class="comment">← Sitewide scroll / swipe hint</span>
+│   ├── <span class="dim">projects/</span>
+│   │   ├── <span class="norm">DarkroomSection.tsx</span> <span class="comment">← #darkroom shell + scroll track</span>
+│   │   ├── <span class="norm">FilmStrip.tsx</span>       <span class="comment">← Horizontal negative reel</span>
+│   │   ├── <span class="norm">FilmNegative.tsx</span>    <span class="comment">← Frame + [ DEVELOP ] CTA</span>
+│   │   ├── <span class="norm">LeaderTape.tsx</span>      <span class="comment">← PRODUCTION / LAB divider</span>
+│   │   ├── <span class="norm">PositivePrintModal.tsx</span> <span class="comment">← Full-screen print + brass wipe</span>
+│   │   └── <span class="norm">useFilmScroll.ts</span>    <span class="comment">← rAF scroll scrub (desktop)</span>
+│   ├── <span class="norm">ContactSheet.tsx</span>      <span class="comment">← Blueprint timeline</span>
+│   └── <span class="norm">Footer.tsx</span>
+├── <span class="dim">data/</span>
+│   ├── <span class="norm">projects.ts</span>           <span class="comment">← negativeSummary + printDetails</span>
+│   └── <span class="norm">timeline.ts</span>           <span class="comment">← TimelineEntry[] + DoF classes</span>
 ├── <span class="dim">lib/</span>
-│   ├── <span class="norm">audio.ts</span>              <span class="comment">← Oscillator presets (3 sounds)</span>
-│   ├── <span class="norm">scroll.ts</span>             <span class="comment">← Section boundary calculator</span>
-│   └── <span class="norm">transform.ts</span>          <span class="comment">← 3D transform calculations</span>
+│   └── <span class="norm">reducedMotion.ts</span>      <span class="comment">← prefers-reduced-motion helper</span>
+│   <span class="comment">← Deferred v3.2+: ApertureRing, ScrollTransform, ViewfinderCard, SchematicGrid</span>
 └── <span class="dim">public/fonts/</span>            <span class="comment">← Self-hosted Bebas, JetBrains, Crimson</span></div>
     </div>
 
+    
     <div class="arch-block">
-      <div class="ds-label">IMPLEMENTATION ORDER</div>
+      <div class="ds-label">SEO METADATA (LOCKED — layout.tsx)</div>
+      <div class="arch-code"><span class="hl">title:</span>        <span class="norm">NIELLESS — Full-Stack Engineer</span>
+<span class="hl">description:</span> <span class="norm">Backend-first engineer building systems that hold. Node.js, PostgreSQL, AWS, AI-native.</span>
+<span class="hl">og:image:</span>    <span class="norm">Deferred — static hero frame export (v3.4)</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">Z-INDEX STACK (v3.3 PRODUCTION)</div>
+      <div class="arch-code"><span class="hl">Skip link:</span>           <span class="norm">10000</span>
+<span class="hl">Print modal:</span>        <span class="norm">500</span>
+<span class="hl">Site header:</span>        <span class="norm">100</span>
+<span class="hl">Scroll hint:</span>        <span class="norm">90</span>
+<span class="hl">Film grain:</span>         <span class="norm">50</span> <span class="comment">← pointer-events: none; never 9999</span>
+<span class="hl">Page content:</span>       <span class="norm">1</span>
+<span class="hl">Deferred (spec):</span>    <span class="norm">Scroll progress 250, DSLR phases 190–200, flash 9999</span></div>
+    </div>
+
+    <div class="arch-block">
+      <div class="ds-label">DATA — timeline.ts</div>
+      <div class="arch-code"><span class="hl">interface</span> <span class="norm">TimelineEntry {</span>
+  <span class="norm">id, period, role, company?, bullets[], dofClass, isCurrent?, sortOrder</span>
+<span class="norm">}</span>
+<span class="hl">DoF:</span> <span class="norm">frame-near | frame-mid | frame-far | frame-past</span>
+<span class="hl">Rule:</span> <span class="norm">opacity/weight only — no filter: blur()</span></div>
+    </div>
+
+<div class="arch-block">
+      <div class="ds-label">IMPLEMENTATION ORDER (v3.3 — M0–M6)</div>
+      <p style="font-size:10px;color:var(--muted);margin:8px 0 16px;line-height:1.7">Matches <code>nielless-v3-build-roadmap.md</code>. Items marked <strong style="color:var(--brass)">DEFERRED</strong> appear in this spec for reference only — do not implement in v3.3.</p>
       <ol class="order-list">
-        <li class="order-item"><span class="order-num">01</span><div><code>globals.css</code> — <span>Lock all tokens. Define focus-hunt keyframes, flash animation, bracket transitions, and reduced-motion overrides. Build the static grain layer.</span></div></li>
-        <li class="order-item"><span class="order-num">02</span><div><code>HeroBoot.tsx</code> — <span>Focus hunt animation on headline (blur oscillation 8px→0px over 2.5s). L-bracket viewfinder with crosshair and center dot. Dot flashes signal green at 2.3s for focus confirmation.</span></div></li>
-        <li class="order-item"><span class="order-num">03</span><div><code>DslrTopView.tsx</code> — <span>300×200px camera body with grip texture (repeating-linear-gradient), mode dial (conic gradient), hot shoe, lens mount, and functional shutter button with press animation.</span></div></li>
-        <li class="order-item"><span class="order-num">04</span><div><code>ScrollTransform.tsx</code> — <span>3-phase scroll animation: (1) Hero rotates away with perspective(1000px) rotateX, (2) DSLR emerges from 90deg rotation, (3) Shutter press triggers at 66% scroll with glow buildup. Total scroll distance: 3x viewport height.</span></div></li>
-        <li class="order-item"><span class="order-num">05</span><div><code>useScrollPhase.ts</code> — <span>Detect scroll percentage (0-33%, 33-66%, 66-100%) and map to animation phases. Throttled to rAF. Clean up on flash trigger.</span></div></li>
-        <li class="order-item"><span class="order-num">06</span><div><code>useFlashTrigger.ts</code> — <span>800ms flash animation: white screen 0-5%, hold 30%, decay to 0% at 100%. During flash peak (5%), hide DSLR and reveal main content. Reset scroll position after flash completes.</span></div></li>
-        <li class="order-item"><span class="order-num">07</span><div><code>ApertureRing.tsx</code> + <code>ExposureMeter.tsx</code> — <span>Left-edge ring and meter. Wire throttled scroll listener to CSS custom property. Verify zero main-thread jank.</span></div></li>
-        <li class="order-item"><span class="order-num">08</span><div><code>ViewfinderCard.tsx</code> — <span>Establish the bracket shell. Ensure :focus-visible works identically to :hover. Test with keyboard only.</span></div></li>
-        <li class="order-item"><span class="order-num">09</span><div><code>SchematicGrid.tsx</code> — <span>Populate project schematics. Verify all badges, tags, and bracket states.</span></div></li>
-        <li class="order-item"><span class="order-num">10</span><div><code>ContactSheet.tsx</code> — <span>Implement DoF classes (near/mid/far/past). Add tap-to-focus for mobile. No blur().</span></div></li>
-        <li class="order-item"><span class="order-num">11</span><div><strong>Performance + Accessibility Pass</strong> — <span>Lighthouse audit. Verify 3D transforms use GPU (transform-style: preserve-3d). Test flash animation respects prefers-reduced-motion (instant cut). Test scroll jank at 60fps. Test at 320px width.</span></div></li>
+        <li class="order-item"><span class="order-num">M0</span><div><strong>Baseline</strong> — <span>Remove banned deps, legacy routes → <code>/#darkroom</code>, <code>npm run build</code> clean.</span></div></li>
+        <li class="order-item"><span class="order-num">M1</span><div><strong>Design system + shell</strong> — <span><code>globals.css</code> tokens + grain (z-index 50); <code>layout.tsx</code> SEO metadata; <code>SiteHeader</code>, <code>SectionShell</code>, skip link.</span></div></li>
+        <li class="order-item"><span class="order-num">M2</span><div><strong>Hero boot</strong> — <span><code>HeroBoot.tsx</code> focus hunt + reduced-motion fallback; CTA → <code>#darkroom</code>. <strong>DEFERRED:</strong> ScrollTransform, DslrTopView, flash.</span></div></li>
+        <li class="order-item"><span class="order-num">M3</span><div><strong>The Darkroom</strong> — <span><code>projects.ts</code>, film strip, <code>useFilmScroll</code>, <code>PositivePrintModal</code> brass wipe, <code>ScrollHint</code>.</span></div></li>
+        <li class="order-item"><span class="order-num">M4</span><div><strong>Blueprint</strong> — <span><code>timeline.ts</code>, <code>ContactSheet</code>, <code>StackPanel</code> (bracketed tags → brass).</span></div></li>
+        <li class="order-item"><span class="order-num">M5</span><div><strong>Contact + footer</strong> — <span>mailto + links only; full single-page wire-up.</span></div></li>
+        <li class="order-item"><span class="order-num">M6</span><div><strong>Release hardening</strong> — <span>a11y, mobile, Lighthouse ≥ 90, tag <code>v3.3.0</code>.</span></div></li>
       </ol>
+      <p style="font-size:9px;color:var(--muted2);margin-top:12px"><strong>DEFERRED v3.4+:</strong> DslrTopView, ScrollTransform, useScrollPhase, useFlashTrigger, ApertureRing, ExposureMeter, ViewfinderCard, SchematicGrid, mode-dial nav, shutter overlay, custom cursor, mechanical audio.</p>
     </div>
   </section>
 
   <hr class="rule">
 
   <footer class="spec-footer">
-    <div class="footer-left">N/A :: SPEC v3.1</div>
+    <div class="footer-left">N/A :: SPEC v3.3</div>
     <div class="footer-right">nielless.com</div>
   </footer>
   <div class="footer-quote">"Build until it holds."</div>
@@ -1535,7 +1708,7 @@
 </div>
 
 <script>
-  // SCROLL-BASED DSLR TRANSFORMATION
+  // SCROLL-BASED DSLR TRANSFORMATION - SPEC ONLY (Needs realistic implementation)
   (function initScrollTransform() {
     const heroPhase = document.getElementById('heroPhase');
     const dslrPhase = document.getElementById('dslrPhase');
