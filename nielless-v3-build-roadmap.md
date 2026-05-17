@@ -218,7 +218,7 @@ src/
 
 **Commit**: `chore(v3.1): baseline cleanup and single-route prep`  
 
-**Verified**: 2026-05-17 — `npm run build`, `npm run lint`, grep gates, single `app/page.tsx`, redirects in `next.config.ts`.
+**Verified**: 2026-05-17 — `npm run build`, `npm run lint`, grep gates, single `app/page.tsx`, redirects in `next.config.ts`. Tracker SHA: `235d372`
 
 ---
 
