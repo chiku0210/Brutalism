@@ -1,3 +1,59 @@
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/BebasNeue-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crimson Pro';
+  src: url('/fonts/CrimsonPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crimson Pro';
+  src: url('/fonts/CrimsonPro-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crimson Pro';
+  src: url('/fonts/CrimsonPro-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --void: #060608;
   --surface: #0E0E10;
@@ -15,22 +71,31 @@
   --muted: #606068;
   --muted2: #404044;
 
+  /* Fonts */
+  --display: 'Bebas Neue', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Crimson Pro', serif;
+
   /* Spacing */
-  --base-unit: 8px;
-  --page-padding: 36px;
+  --page-max: 1100px;
+  --page-pad: 36px;
   --section-gap: 80px;
-  --card-padding: 20px;
-  --max-width: 1100px;
+  --card-pad: 20px;
 }
 
 @media (max-width: 768px) {
   :root {
-    --page-padding: 20px;
-    --section-gap: 56px;
+    --page-pad: 20px;
   }
 }
 
-* {
+@media (max-width: 360px) {
+  :root {
+    --page-pad: 16px;
+  }
+}
+
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -38,111 +103,131 @@
 
 html {
   scroll-behavior: smooth;
-  background-color: var(--void);
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--void);
   color: var(--dust);
-  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-family: var(--mono);
   font-size: 13px;
   line-height: 1.6;
   min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+}
+
+/* Global grain layer */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ── LAYOUT ── */
 .page-wrap {
-  max-width: var(--max-width);
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 var(--page-padding);
+  padding: 0 var(--page-pad) 100px;
+  position: relative;
+  z-index: 1;
 }
 
-.section-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
+.section {
+  margin-bottom: var(--section-gap);
+}
+
+.stub {
+  min-height: 50vh;
+}
+
+/* Focus visible */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 1px solid var(--brass);
+  outline-offset: 3px;
+}
+
+/* ── SKIP LINK ── */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--void);
   color: var(--brass);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--brass);
+  z-index: 10000;
+  text-decoration: none;
 }
-
-.section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.section-title {
-  font-family: var(--font-display);
-  font-size: 40px;
-  letter-spacing: 0.04em;
-  color: var(--dust);
-  margin-bottom: 24px;
-  text-transform: uppercase;
-}
-
-@media (max-width: 768px) {
-  .section-title {
-    font-size: 32px;
-  }
+.skip-link:focus {
+  top: 0;
+  outline: none;
 }
 
 /* ── UTILITIES ── */
-.font-display { font-family: var(--font-display); }
-.font-mono { font-family: var(--font-mono); }
-.font-serif { font-family: var(--font-serif); }
-.italic { font-style: italic; }
-.uppercase { text-transform: uppercase; }
+.badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  border: 1px solid;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.badge-live {
+  color: var(--signal);
+  border-color: #1a4a1a;
+  background: rgba(57,255,20,0.06);
+}
+.badge-hot {
+  color: var(--hot);
+  border-color: #4a1a10;
+  background: rgba(255,77,26,0.06);
+}
+.badge-ice {
+  color: var(--ice);
+  border-color: #1a2a3a;
+  background: rgba(168,200,232,0.06);
+}
+.badge-muted {
+  color: var(--muted2);
+  border-color: var(--border);
+}
 
-.text-brass { color: var(--brass); }
-.text-signal { color: var(--signal); }
-.text-muted { color: var(--muted); }
-.text-muted2 { color: var(--muted2); }
-.text-border2 { color: var(--border2); }
+.tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted2);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+}
+.tag-arrow {
+  font-size: 9px;
+  color: var(--brass);
+}
 
-/* Custom Selection */
 ::selection {
   background: var(--brass);
   color: var(--void);
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--void);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--brass-dim);
-}
-
-/* Project Grid Desktop */
-@media (min-width: 1024px) {
-    .project-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-    }
-}
-.page-wipe {
-  position: fixed;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: var(--brass);
-  z-index: 1000;
-  pointer-events: none;
 }

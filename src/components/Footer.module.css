@@ -1,0 +1,35 @@
+.footer {
+  border-top: 1px solid var(--border);
+  margin-top: 80px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.left, .right {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--brass);
+  letter-spacing: 0.1em;
+}
+
+.right {
+  color: var(--muted2);
+}
+
+.center {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted2);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
