@@ -184,7 +184,7 @@ src/
 
 | Milestone | Deliverable | Status | Commit |
 |-----------|-------------|--------|--------|
-| M0 | Baseline & repo hygiene | ⬜ | |
+| M0 | Baseline & repo hygiene | ✅ | `9ad56ea` |
 | M1 | Design system + layout shell | ⬜ | |
 | M2 | Hero boot (finished) | ⬜ | |
 | M3 | The Darkroom — film negative reel | ⬜ | |
@@ -202,21 +202,23 @@ src/
 
 ### Tasks
 
-- [ ] `npm uninstall framer-motion` (and any other banned deps if present)
-- [ ] Remove unused legacy components: `PageTransition`, `VibrationChamber`, `Visualizations`, `AnalogPanel`, multi-page-only wrappers — or leave files but ensure **nothing in `app/` imports them**
-- [ ] Delete or redirect `/engine` → `/#darkroom` and `/blueprint` → `/#blueprint` (301 or remove `page.tsx` under those folders)
-- [ ] `npm run build` && `npm run lint` pass with zero errors
-- [ ] Grep gates:
+- [x] `npm uninstall framer-motion` (and any other banned deps if present)
+- [x] Remove unused legacy components: `PageTransition`, `VibrationChamber`, `Visualizations`, `AnalogPanel`, multi-page-only wrappers — or leave files but ensure **nothing in `app/` imports them**
+- [x] Delete or redirect `/engine` → `/#darkroom` and `/blueprint` → `/#blueprint` (301 or remove `page.tsx` under those folders)
+- [x] `npm run build` && `npm run lint` pass with zero errors
+- [x] Grep gates:
   - `grep -r "framer-motion\|gsap\|lenis" src/` → empty
   - `grep -r "style={{" src/` → empty (use CSS Modules)
 
 ### Definition of Done
 
-- [ ] Visiting `/` is the only user-facing portfolio route  
-- [ ] `npm run build` succeeds  
-- [ ] No banned dependencies in `package.json`
+- [x] Visiting `/` is the only user-facing portfolio route  
+- [x] `npm run build` succeeds  
+- [x] No banned dependencies in `package.json`
 
-**Commit**: `chore(v3.1): baseline cleanup and single-route prep`
+**Commit**: `chore(v3.1): baseline cleanup and single-route prep`  
+
+**Verified**: 2026-05-17 — `npm run build`, `npm run lint`, grep gates, single `app/page.tsx`, redirects in `next.config.ts`.
 
 ---
 

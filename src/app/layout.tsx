@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, JetBrains_Mono, Crimson_Pro } from "next/font/google";
 import "./globals.css";
-import { AudioProvider } from "@/components/AudioProvider";
-import { CustomCursor } from "@/components/CustomCursor";
-import { PageTransition } from "@/components/PageTransition";
-import { Nav } from "@/components/Nav";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -41,15 +37,7 @@ export default function RootLayout({
       <body
         className={`${bebasNeue.variable} ${jetbrainsMono.variable} ${crimsonPro.variable} antialiased`}
       >
-        <AudioProvider>
-          <CustomCursor />
-          <div id="root-container" className="bg-void min-h-screen">
-            <Nav />
-            <PageTransition>
-                {children}
-            </PageTransition>
-          </div>
-        </AudioProvider>
+        {children}
       </body>
     </html>
   );
