@@ -1,7 +1,7 @@
 # NIELLESS.COM v3.3 — BUILD ROADMAP
 ## Production release: single-page optical portfolio
 
-**Status**: `IN PROGRESS` | **Last updated**: 2026-05-17 | **Owner**: Nielless  
+**Status**: `IN PROGRESS` | **Last updated**: 2026-05-18 | **Owner**: Nielless  
 **Target release**: `v3.3.0` — one URL, every section works, no placeholder mechanics  
 
 **Permanent docs (only these two)**: this file + `nielless-portfolio-design-spec-v3.html`.  
@@ -228,19 +228,19 @@ src/
 
 ### M1.1 `src/app/globals.css`
 
-- [ ] Tokens: `--void` … `--muted2`, `--display`, `--mono`, `--serif`
-- [ ] Layout tokens: `--page-max: 1100px`, `--page-pad: 36px`, `--section-gap: 80px`, `--card-pad: 20px`
-- [ ] `@font-face` for Bebas Neue, JetBrains Mono (300/400/500), Crimson Pro (400/400i/600) — WOFF2 in `public/fonts/`
-- [ ] Global reset + `body` typography (mono 13px, `--dust` on `--void`)
-- [ ] Static grain: `body::after` with SVG `feTurbulence`, `opacity: 0.03`, `z-index: 50`, `pointer-events: none` (see z-index table — not 9999)
-- [ ] `@media (prefers-reduced-motion: reduce)` — collapse animation/transition durations
-- [ ] Shared utilities: `.page-wrap`, `.section`, badge/tag classes used by Engine + Blueprint
-- [ ] Focus: `a:focus-visible, button:focus-visible, [tabindex]:focus-visible` — 1px `--brass`, 3px offset
-- [ ] Mobile: `--page-pad: 20px` at `≤768px`, `16px` at `≤360px`
+- [x] Tokens: `--void` … `--muted2`, `--display`, `--mono`, `--serif`
+- [x] Layout tokens: `--page-max: 1100px`, `--page-pad: 36px`, `--section-gap: 80px`, `--card-pad: 20px`
+- [x] `@font-face` for Bebas Neue, JetBrains Mono (300/400/500), Crimson Pro (400/400i/600) — WOFF2 in `public/fonts/`
+- [x] Global reset + `body` typography (mono 13px, `--dust` on `--void`)
+- [x] Static grain: `body::after` with SVG `feTurbulence`, `opacity: 0.03`, `z-index: 50`, `pointer-events: none` (see z-index table — not 9999)
+- [x] `@media (prefers-reduced-motion: reduce)` — collapse animation/transition durations
+- [x] Shared utilities: `.page-wrap`, `.section`, badge/tag classes used by Engine + Blueprint
+- [x] Focus: `a:focus-visible, button:focus-visible, [tabindex]:focus-visible` — 1px `--brass`, 3px offset
+- [x] Mobile: `--page-pad: 20px` at `≤768px`, `16px` at `≤360px`
 
 ### M1.2 `src/app/layout.tsx`
 
-- [ ] Metadata (locked copy — use verbatim):
+- [x] Metadata (locked copy — use verbatim):
 
 | Field | Value |
 |-------|--------|
@@ -250,23 +250,23 @@ src/
 | `og:description` | Same as description |
 | `og:image` | **Deferred** — static hero frame export for v3.4 |
 
-- [ ] Skip link: `<a href="#main" class="skip-link">Skip to content</a>` (`z-index: 10000`)
-- [ ] Structure: `<SiteHeader />` → `<main id="main">{children}</main>` → `<Footer />`
-- [ ] No Google Fonts CDN links
+- [x] Skip link: `<a href="#main" class="skip-link">Skip to content</a>` (`z-index: 10000`)
+- [x] Structure: `<SiteHeader />` → `<main id="main">{children}</main>` → `<Footer />`
+- [x] No Google Fonts CDN links
 
 ### M1.3 `SiteHeader.tsx` (minimal — **not** mode dial)
 
-- [ ] Sticky top bar: `NIELLESS` (or `N/A`) left, mono 11px brass
-- [ ] **No** P/A/M/ISO dial in v3.3
-- [ ] Optional v3.3: plain text anchor links `DARKROOM` · `BLUEPRINT` · `CONTACT` (`href="#darkroom"` etc.) — underline on hover, no sliding indicator
-- [ ] `aria-label="Site header"`
+- [x] Sticky top bar: `NIELLESS` (or `N/A`) left, mono 11px brass
+- [x] **No** P/A/M/ISO dial in v3.3
+- [x] Optional v3.3: plain text anchor links `DARKROOM` · `BLUEPRINT` · `CONTACT` (`href="#darkroom"` etc.) — underline on hover, no sliding indicator
+- [x] `aria-label="Site header"`
 
 ### M1.4 `SectionShell.tsx`
 
 Shared section header for Darkroom, Blueprint, and Contact.
 
-- [ ] Props: `label` (e.g. `[04] THE DARKROOM`), `title`, optional `meta` (right-aligned mono)
-- [ ] Matches spec typography: label 10px brass, title display 42px desktop / 32px mobile
+- [x] Props: `label` (e.g. `[04] THE DARKROOM`), `title`, optional `meta` (right-aligned mono)
+- [x] Matches spec typography: label 10px brass, title display 42px desktop / 32px mobile
 
 **Markup skeleton** (semantic only — styles in CSS module):
 
@@ -284,9 +284,11 @@ Shared section header for Darkroom, Blueprint, and Contact.
 
 ### Definition of Done
 
-- [ ] Empty `page.tsx` renders header + `page-wrap` + footer with grain visible  
-- [ ] Tab → skip link → main works  
-- [ ] Reduced motion: page still readable, no errors  
+- [x] `page.tsx` renders header + `page-wrap` + footer with grain visible  
+- [x] Tab → skip link → main works  
+- [x] Reduced motion: page still readable, no errors  
+
+**Verified**: 2026-05-18 — `npm run build`, `npm run lint`, grep gates (`next/font/google`, banned animation libs, inline `style={{`). Tracker SHA: `b91bf04`
 
 **Commit**: `feat(v3.1): design tokens, layout shell, minimal header`
 
