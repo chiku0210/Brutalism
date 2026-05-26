@@ -85,7 +85,7 @@
 
 ## Blocked On Nothing
 
-The project has no external dependencies or blockers. M2 can be completed immediately followed by M3–M6 in sequence. All data (project copy, timeline entries) is defined in the roadmap.
+The project has no external dependencies or blockers. M2 can be completed immediately followed by M3–M6 in sequence. Project/timeline implementation details are defined in the roadmap, and professional content copy should be sourced from `assets/resume-content-superset.md`.
 
 ---
 

@@ -98,7 +98,7 @@ export function getAllProjects(): Project[];  // full strip order
 
 #### Print Details (per project)
 
-Fill `period`, `bullets` (1-3), `techTags` from resume data. Example:
+Fill `period`, `bullets` (1-3), `techTags` from `assets/resume-content-superset.md`. Example:
 
 ```typescript
 {

@@ -14,6 +14,7 @@
 | 1 | `nielless-v3-build-roadmap.md` | What ships, build order, scroll math, data models, SEO, z-index |
 | 2 | `nielless-portfolio-design-spec-v3.html` | Visual + interaction reference (do NOT implement deferred items) |
 | 3 | `plan/` (this folder) | Execution-ready breakdown for fast-track agent development |
+| 4 | `assets/resume-content-superset.md` | Source of truth for professional content (summary, experience, production projects, project copy, links) |
 
 ---
 

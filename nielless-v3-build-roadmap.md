@@ -6,6 +6,7 @@
 
 **Permanent docs (only these two)**: this file + `nielless-portfolio-design-spec-v3.html`.  
 `plan/` directory contains execution-ready breakdown for agent development — milestone-per-file structure with ready-to-paste prompts.
+Professional-content source of truth: `assets/resume-content-superset.md`.
 
 ---
 
@@ -16,6 +17,7 @@
 | **This file** | Single source of truth for *what ships* in v3.3, build order (M0–M6), scroll math, data models, SEO copy, z-index |
 | **`nielless-portfolio-design-spec-v3.html`** | Visual + interaction reference (Rev 3.3) — do not implement deferred items because they appear in the spec |
 | **`plan/`** | Execution-ready breakdown for agent development; milestone-per-file structure |
+| **`assets/resume-content-superset.md`** | Source of truth for professional content (summary, experience, production projects, project details, contact links) |
 | **Agents / contributors** | Finish the current milestone’s **Definition of Done** before starting the next. No parallel “half features” |
 
 **Release philosophy**: Ship a **narrow, finished** page. Depth beats breadth. If a mechanic cannot be completed and tested in one milestone, it moves to **Deferred**, not into the active step list.
@@ -65,6 +67,7 @@ Language:      TypeScript strict
 Styling:       CSS Modules + CSS custom properties only
 Animation:     CSS @keyframes (boot, flash, brass gate wipe); JS scroll scrub (useFilmScroll); JS scroll zoom-out (useHeroZoom)
 Data:          src/data/projects.ts (negativeSummary + printDetails), src/data/timeline.ts
+Content:       assets/resume-content-superset.md (professional copy source)
 Deploy:        Vercel
 ```
 
@@ -548,7 +551,7 @@ Exports: `productionProjects`, `petProjects`, `getProjectsByTier()`.
 | `gita-reader` | Offline-first React Native app. Python/OCR ingests legacy PDFs; FTS5 search over 700+ verse records. |
 | `agentic-sys` | Multi-agent Node.js system. Handoff + Promise.all fan-out/fan-in for parallel LLM task execution. |
 
-*(Aligned with `resumes/` — Generalist + AI Engineer variants.)*
+*(Aligned with `assets/resume-content-superset.md`.)*
 
 ### M3.2 Film strip UI (static first, ~2 hr)
 
@@ -655,7 +658,7 @@ interface TimelineEntry {
 ### M5.1 `ContactSection.tsx`
 
 - [ ] `SectionShell`: `[06] CONTACT` / `OPEN CHANNEL`
-- [ ] Primary CTA → `mailto:nielless.acharya@gmail.com` (real address from resume)
+- [ ] Primary CTA → `mailto:nielless.acharya@gmail.com` (real address from `assets/resume-content-superset.md`)
 - [ ] Secondary links: LinkedIn, GitHub, resume PDF with `rel="noopener noreferrer"`, visible focus states
 - [ ] No submit button, no Formspree, no “coming soon” — every control must open a real destination
 

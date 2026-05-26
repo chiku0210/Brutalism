@@ -82,7 +82,7 @@ Footer (already in layout.tsx)
 </section>
 ```
 
-**Note**: Use actual URLs from resume. If exact LinkedIn/GitHub URLs differ, update during implementation.
+**Note**: Use actual URLs from `assets/resume-content-superset.md`. If exact LinkedIn/GitHub URLs differ, update during implementation.
 
 #### Visual Spec
 
