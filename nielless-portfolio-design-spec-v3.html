@@ -178,33 +178,28 @@
   .hero-terminal { font-family: var(--mono); margin-bottom: 36px; }
   .term-line { font-size: 11px; color: var(--muted2); line-height: 2.2; }
   .term-line.ok { color: var(--signal); }
+  /* D7500 viewfinder bottom strip */
+  .term-line.vf-strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    letter-spacing: 0.08em;
+  }
+  .vf-strip .vf-sep { color: var(--muted2); }
+  .vf-strip .vf-mode { color: var(--brass-bright); font-weight: 500; }
+  .vf-strip .vf-meter { color: var(--dust); letter-spacing: 0.04em; }
+  .vf-strip .vf-frames { color: var(--brass); }
+  .vf-strip .vf-battery { display: inline-flex; align-items: center; color: var(--dust); }
   .term-line.meta { color: var(--brass); }
   .hero-headline { font-family: var(--display); font-size: 62px; letter-spacing: 0.04em; color: var(--dust); line-height: 0.95; margin-bottom: 20px; }
   .hero-headline .accent { color: var(--brass); }
   .hero-sub { font-family: var(--serif); font-size: 15px; font-style: italic; color: var(--muted); max-width: 400px; line-height: 1.8; margin-bottom: 36px; }
 
-  /* ── SCROLL-TO-DSLR TRANSFORMATION ── */
-  /* The hero transforms into a top-view DSLR as user scrolls */
-  .scroll-transform-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 150;
-    pointer-events: none;
-    opacity: 0;
-    transform: perspective(1000px) rotateX(0deg);
-    transition: opacity 0.1s linear;
-    margin: 0;
-    padding: 0;
-  }
+  /* ── VIEWFINDER ZOOM-OUT → D7500 REAR → FLASH ── */
+  /* After boot, scroll pulls POV back from eyepiece to reveal the D7500 rear body */
 
-  .scroll-transform-container.visible {
-    opacity: 1;
-  }
-
-  /* Phase 1: Hero content fades and rotates as scroll begins */
+  /* Hero phase: contains viewfinder content, fixed during boot, sticky during zoom */
   .hero-phase {
     position: fixed;
     top: 0;
@@ -220,69 +215,185 @@
     background: var(--void);
     margin: 0;
     padding: 0;
-    transition: transform 0.1s linear, opacity 0.1s linear;
+    transition: opacity 0.3s ease;
   }
 
-  .hero-phase.rotating {
-    transform: perspective(1000px) rotateX(-45deg) scale(0.8);
-    opacity: calc(1 - var(--scroll-progress, 0) * 2);
+  /* D7500 REAR BODY — CSS replica of Nikon D7500 camera rear */
+  .d7500-rear {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    height: 368px; /* aspect-ratio ≈ 136:104 */
+    background: linear-gradient(165deg, #1e1e20 0%, #0e0e10 40%, #161618 100%);
+    border-radius: 8px;
+    border: 1.5px solid rgba(58,58,61,0.6);
+    box-shadow:
+      inset 0 1px 3px rgba(255,255,255,0.03),
+      inset 0 -2px 4px rgba(0,0,0,0.3),
+      0 20px 80px rgba(0,0,0,0.6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
-  /* Ensure hero content stays visible initially */
-  .hero-phase:not(.rotating) {
-    opacity: 1;
-    transform: none;
+  .d7500-rear.visible { opacity: 1; }
+
+  /* Viewfinder eyepiece — raised bump at top center */
+  .d7500-eyepiece {
+    position: absolute;
+    left: 50%;
+    top: -18px;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 38px;
+    background: linear-gradient(to bottom, #1a1a1c, #0e0e10);
+    border: 1.5px solid rgba(46,46,49,0.8);
+    border-radius: 4px 4px 2px 2px;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.4);
   }
 
-  /* Phase 2: DSLR Top View emerges */
-  .dslr-phase {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+  .d7500-eyepiece::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 38px;
+    height: 24px;
+    background: #050507;
+    border: 1px solid rgba(46,46,49,0.5);
+    border-radius: 2px;
+  }
+
+  /* LCD screen — large dark rectangle, center of rear */
+  .d7500-lcd {
+    position: absolute;
+    left: 16%;
+    top: 28%;
+    width: 52%;
+    height: 52%;
+    background: #050507;
+    border: 1.5px solid rgba(46,46,49,0.7);
+    border-radius: 4px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+  }
+
+  /* Nikon logo below LCD */
+  .d7500-logo {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    transform: translateX(-50%);
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 14px;
+    color: rgba(200,169,110,0.4);
+    letter-spacing: 0.15em;
+  }
+
+  /* Left button column */
+  .d7500-left-btns {
+    position: absolute;
+    left: 3%;
+    top: 25%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .d7500-btn {
+    width: 32px;
+    height: 20px;
+    background: linear-gradient(to bottom, #1e1e20, #161618);
+    border: 1px solid rgba(46,46,49,0.6);
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 190;
-    isolation: isolate;
-    background: var(--void);
-    margin: 0;
-    padding: 0;
-    opacity: 0;
-    pointer-events: none;
-    transform: perspective(1000px) rotateX(90deg) translateZ(-200px);
-    transition: transform 0.1s linear, opacity 0.1s linear;
+    font-family: var(--mono);
+    font-size: 6px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
   }
 
-  .dslr-phase.visible {
-    opacity: 1;
-    pointer-events: auto;
-    transform: perspective(1000px) rotateX(0deg) translateZ(0);
-  }
-
-  /* DSLR Top View Body */
-  .dslr-body {
-    position: relative;
-    width: 300px;
-    height: 200px;
-    background: linear-gradient(145deg, #1a1a1c 0%, #0e0e10 50%, #161618 100%);
-    border-radius: 12px;
-    border: 2px solid var(--border2);
-    box-shadow:
-      inset 0 2px 4px rgba(255,255,255,0.02),
-      inset 0 -2px 4px rgba(0,0,0,0.3),
-      0 20px 60px rgba(0,0,0,0.5);
-    transform-style: preserve-3d;
-  }
-
-  /* Grip texture */
-  .dslr-grip {
+  /* Right controls — D-pad, AE-L, i, Lv */
+  .d7500-right-controls {
     position: absolute;
-    right: 20px;
-    top: 30px;
-    width: 60px;
-    height: 140px;
+    right: 14%;
+    top: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .d7500-ael {
+    width: 28px;
+    height: 18px;
+    background: linear-gradient(to bottom, #1e1e20, #161618);
+    border: 1px solid rgba(46,46,49,0.6);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .d7500-dpad {
+    width: 52px;
+    height: 52px;
+    background: radial-gradient(circle, #161618 40%, #1a1a1c 100%);
+    border-radius: 50%;
+    border: 1.5px solid rgba(46,46,49,0.7);
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .d7500-dpad-ok {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(to bottom, #1e1e20, #161618);
+    border-radius: 50%;
+    border: 1px solid rgba(46,46,49,0.8);
+    font-family: var(--mono);
+    font-size: 6px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .d7500-small-btn {
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(to bottom, #1e1e20, #161618);
+    border: 1px solid rgba(46,46,49,0.6);
+    border-radius: 50%;
+    font-family: var(--mono);
+    font-size: 7px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Grip — textured right side */
+  .d7500-grip {
+    position: absolute;
+    right: 0;
+    top: 18%;
+    width: 12%;
+    height: 65%;
     background: repeating-linear-gradient(
       to bottom,
       #161618 0px,
@@ -290,17 +401,17 @@
       #1e1e20 3px,
       #1e1e20 6px
     );
-    border-radius: 4px;
-    border: 1px solid var(--border);
+    border-radius: 0 8px 8px 0;
+    border-left: 1px solid rgba(46,46,49,0.4);
   }
 
-  /* Mode dial */
-  .dslr-mode-dial {
+  /* Mode dial — top left area */
+  .d7500-mode-dial {
     position: absolute;
-    left: 30px;
-    top: 25px;
-    width: 50px;
-    height: 50px;
+    left: 6%;
+    top: -10px;
+    width: 48px;
+    height: 48px;
     background: conic-gradient(
       from 0deg,
       #2e2e31 0deg,
@@ -310,133 +421,69 @@
       #2e2e31 360deg
     );
     border-radius: 50%;
-    border: 3px solid var(--border2);
+    border: 2px solid var(--border2);
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
   }
 
-  .dslr-mode-dial::after {
-    content: '';
+  .d7500-dial-marks {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    background: var(--brass);
-    border-radius: 1px;
-  }
-
-  /* Hot shoe mount */
-  .dslr-hot-shoe {
-    position: absolute;
-    left: 50%;
-    top: 8px;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 12px;
-    background: linear-gradient(to bottom, #2e2e31, #1a1a1c);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-  }
-
-  /* Lens mount (top view) */
-  .dslr-mount {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, #060608 30%, #2e2e31 31%, #2e2e31 35%, #161618 36%);
-    border-radius: 50%;
-    border: 3px solid var(--border2);
-  }
-
-  .dslr-mount::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 50px;
-    height: 50px;
-    background: var(--void);
-    border-radius: 50%;
-    border: 2px solid var(--brass-dim);
-  }
-
-  /* SHUTTER BUTTON - The main interaction element */
-  .dslr-shutter-btn {
-    position: absolute;
-    right: 40px;
-    top: 50px;
-    width: 36px;
-    height: 36px;
-    background: radial-gradient(circle at 30% 30%, #3a3a3d, #1a1a1c);
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    box-shadow:
-      0 4px 8px rgba(0,0,0,0.4),
-      inset 0 1px 2px rgba(255,255,255,0.05);
-    transform-style: preserve-3d;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  /* Shutter button ring (brass accent) */
-  .dslr-shutter-btn::before {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    border: 1px solid var(--brass-dim);
-    opacity: 0.5;
-  }
-
-  /* Shutter button inner detail */
-  .dslr-shutter-btn::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 12px;
-    height: 12px;
-    background: radial-gradient(circle, var(--brass), var(--brass-dim));
-    border-radius: 50%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  }
-
-  /* Shutter button pressed state */
-  .dslr-shutter-btn.pressed {
-    transform: translateZ(-4px) scale(0.95);
-    box-shadow:
-      0 1px 2px rgba(0,0,0,0.4),
-      inset 0 2px 4px rgba(0,0,0,0.3);
-  }
-
-  .dslr-shutter-btn.pressed::after {
-    background: var(--signal);
-    box-shadow: 0 0 8px 2px rgba(57, 255, 20, 0.5);
-  }
-
-  /* Shutter status text */
-  .shutter-status {
-    position: absolute;
-    right: 25px;
-    top: 95px;
+    inset: 0;
     font-family: var(--mono);
-    font-size: 8px;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    text-align: center;
-    width: 70px;
+    font-size: 5px;
+    color: var(--dust);
   }
 
-  .shutter-status.ready {
-    color: var(--signal);
+  .d7500-dial-mark {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 5px;
+    letter-spacing: 0.05em;
   }
 
-  /* FLASH OVERLAY */
+  /* Pop-up flash unit — closed at top center, opens on trigger */
+  .d7500-flash-unit {
+    position: absolute;
+    left: 50%;
+    top: -6px;
+    transform: translateX(-50%);
+    width: 46px;
+    height: 8px;
+    background: linear-gradient(to bottom, #2e2e31, #1a1a1c);
+    border: 1px solid rgba(46,46,49,0.5);
+    border-radius: 2px 2px 0 0;
+    transform-origin: bottom center;
+    z-index: 2;
+  }
+
+  .d7500-flash-head {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 6px;
+    background: rgba(232,226,213,0.15);
+    border: 1px solid rgba(46,46,49,0.4);
+    border-radius: 2px 2px 0 0;
+    opacity: 0;
+  }
+
+  .d7500-flash-unit.open {
+    animation: flashPopUp 300ms ease-out forwards;
+  }
+
+  .d7500-flash-unit.open .d7500-flash-head {
+    opacity: 1;
+  }
+
+  @keyframes flashPopUp {
+    0%   { transform: translateX(-50%) rotateX(0deg); }
+    100% { transform: translateX(-50%) rotateX(-75deg); }
+  }
+
+  /* FLASH OVERLAY — full white screen */
   .flash-overlay {
     position: fixed;
     top: 0;
@@ -452,31 +499,18 @@
   }
 
   .flash-overlay.active {
-    animation: camera-flash 800ms ease-out forwards;
+    animation: heroFlash 800ms ease-out forwards;
   }
 
-  @keyframes camera-flash {
-    0% {
-      opacity: 0;
-    }
-    5% {
-      opacity: 1;
-    }
-    30% {
-      opacity: 0.9;
-    }
-    50% {
-      opacity: 0.3;
-    }
-    70% {
-      opacity: 0.1;
-    }
-    100% {
-      opacity: 0;
-    }
+  @keyframes heroFlash {
+    0%   { opacity: 0; }
+    5%   { opacity: 1; }
+    30%  { opacity: 0.95; }
+    60%  { opacity: 0.4; }
+    100% { opacity: 0; }
   }
 
-  /* Progress indicator for scroll */
+  /* Progress indicator for scroll zoom-out */
   .scroll-progress-bar {
     position: fixed;
     bottom: 40px;
@@ -491,16 +525,8 @@
     transition: opacity 0.3s ease;
   }
 
-  .scroll-progress-bar.visible {
-    opacity: 1;
-  }
-
-  .scroll-progress-fill {
-    height: 100%;
-    background: var(--brass);
-    width: 0%;
-    transition: width 0.1s linear;
-  }
+  .scroll-progress-bar.visible { opacity: 1; }
+  .scroll-progress-fill { height: 100%; background: var(--brass); width: 0%; transition: width 0.1s linear; }
 
   /* Main content (revealed after flash) */
   .main-content {
@@ -523,10 +549,10 @@
 
   /* The headline starts blurry and out of focus, then sharpens */
   .hero-headline.camera-focus {
-    animation: camera-focus-hunt 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: camera-focus-hunt 7.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
-  /* Focus hunting - simulates lens trying to find focus */
+  /* Focus hunting - exactly 2 hunt passes before lock */
   @keyframes camera-focus-hunt {
     0% {
       opacity: 0.3;
@@ -534,32 +560,32 @@
       transform: translateY(4px) scale(0.98);
       letter-spacing: 0.06em;
     }
-    15% {
-      opacity: 0.5;
-      filter: blur(5px);
-      transform: translateY(2px) scale(0.99);
-    }
-    30% {
-      opacity: 0.4;
-      filter: blur(6px);
-      transform: translateY(3px) scale(0.985);
-    }
-    45% {
-      opacity: 0.6;
-      filter: blur(3px);
-      transform: translateY(1px) scale(0.995);
-    }
-    60% {
+    20% {
       opacity: 0.5;
       filter: blur(4px);
       transform: translateY(2px) scale(0.99);
     }
-    75% {
+    35% {
+      opacity: 0.4;
+      filter: blur(6px);
+      transform: translateY(3px) scale(0.985);
+    }
+    55% {
+      opacity: 0.6;
+      filter: blur(2px);
+      transform: translateY(1px) scale(0.995);
+    }
+    70% {
+      opacity: 0.5;
+      filter: blur(3px);
+      transform: translateY(1.5px) scale(0.992);
+    }
+    85% {
       opacity: 0.8;
-      filter: blur(1px);
+      filter: blur(0.8px);
       transform: translateY(0.5px) scale(0.998);
     }
-    90% {
+    95% {
       opacity: 0.95;
       filter: blur(0.5px);
       transform: translateY(0) scale(0.999);
@@ -584,7 +610,7 @@
   }
 
   .focus-brackets-hero.active {
-    animation: focus-brackets-appear 400ms ease-out 2.2s forwards;
+    animation: focus-brackets-appear 1200ms ease-out 6.6s forwards;
   }
 
   @keyframes focus-brackets-appear {
@@ -694,7 +720,7 @@
 
   /* Glows bright when focus is acquired (at end of animation) */
   .focus-brackets-hero.active .focus-dot {
-    animation: focus-dot-acquire 1s ease-out 2.3s forwards;
+    animation: focus-dot-acquire 3s ease-out 6.9s forwards;
   }
 
   @keyframes focus-dot-acquire {
@@ -937,6 +963,199 @@
     .hero-headline { font-size: 32px; word-break: break-word; }
     .screen-body { padding: 20px; }
   }
+
+  /* ── VIEWFINDER MOCK (Section [03] spec only) ── */
+
+  /* Eyepiece vignette — radial dark gradient from the rubber eyecup */
+  .vf-eyepiece {
+    position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    background: radial-gradient(
+      ellipse 72% 68% at 50% 50%,
+      transparent 55%,
+      rgba(6,6,8,0.55) 75%,
+      rgba(6,6,8,0.88) 90%,
+      rgba(6,6,8,0.98) 100%
+    );
+  }
+
+  /* Viewfinder frame — 3:2 ratio rectangle, max 860px */
+  /* Contains: frame corners, glass, data strip */
+  .vf-frame {
+    position: relative;
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Frame corner lines — warm white L-brackets, NOT brass */
+  /* These are the bright frame-line corners of the image boundary */
+  .vf-corner {
+    position: absolute; width: 28px; height: 28px;
+    pointer-events: none; z-index: 2;
+  }
+  .vf-tl { top: 0; left: 0;
+    border-top: 1px solid rgba(232,226,213,0.55);
+    border-left: 1px solid rgba(232,226,213,0.55); }
+  .vf-tr { top: 0; right: 0;
+    border-top: 1px solid rgba(232,226,213,0.55);
+    border-right: 1px solid rgba(232,226,213,0.55); }
+  .vf-bl { bottom: 52px; left: 0; /* offset by data strip height */
+    border-bottom: 1px solid rgba(232,226,213,0.55);
+    border-left: 1px solid rgba(232,226,213,0.55); }
+  .vf-br { bottom: 52px; right: 0;
+    border-bottom: 1px solid rgba(232,226,213,0.55);
+    border-right: 1px solid rgba(232,226,213,0.55); }
+
+  /* Glass — the image area of the viewfinder */
+  .vf-glass {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    background: var(--void);
+    overflow: hidden;
+  }
+
+  /* Top HUD strip — icons painted on the glass, top edge */
+  .vf-top-hud {
+    position: absolute; top: 10px; left: 14px; right: 14px;
+    display: flex; align-items: center; gap: 14px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+    color: rgba(232,226,213,0.45); pointer-events: none; z-index: 2;
+  }
+  .vf-hud-mode { color: rgba(232,226,213,0.75); font-weight: 500; }
+  .vf-hud-icon { opacity: 0.6; }
+
+  /* AF point grid — Nikon D7500 style (only center point red) */
+  .vf-af-grid {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: af-grid-vanish 100ms forwards 7s;
+  }
+
+  @keyframes af-grid-vanish {
+    to { opacity: 0; visibility: hidden; }
+  }
+
+  .af-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .af-row { display: flex; justify-content: center; gap: 28px; }
+  .af-block { display: flex; gap: 18px; }
+
+  .af-pt {
+    width: 22px;
+    height: 15px;
+    border: 2px solid rgba(232,226,213,0.85);
+    border-radius: 4px;
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .af-pt.af-center {
+    border-color: #d86c6c;
+    box-shadow: 0 0 6px rgba(216,108,108,0.45);
+  }
+
+  /* Headline — centered on AF cluster */
+  .vf-headline-wrap {
+    position: absolute;
+    left: 50%;
+    top: 28%;
+    transform: translateX(-50%);
+  }
+
+  /* SHUTTER: ARMED — transient, bottom-right of glass */
+  .vf-shutter-armed {
+    position: absolute; bottom: 14px; right: 14px;
+    font-family: var(--mono); font-size: 9px;
+    color: var(--signal); letter-spacing: 0.12em;
+    pointer-events: none; z-index: 2;
+    opacity: 0.9;
+  }
+
+  /* Focus confirmation dot — bottom-left, green on lock */
+  .vf-focus-confirm {
+    position: absolute; bottom: 14px; left: 14px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted2); z-index: 2; pointer-events: none;
+  }
+  .vf-focus-confirm.acquired {
+    background: var(--signal);
+    box-shadow: 0 0 6px 2px rgba(57,255,20,0.5);
+  }
+
+  /* ── DATA STRIP — below the glass, its own panel ── */
+  /* THIS IS THE KEY LAYOUT DECISION: numbers never overlay the scene */
+  .vf-datastrip {
+    background: rgba(6,6,8,0.97);
+    border-top: 1px solid rgba(46,46,49,0.9);
+    height: 52px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-family: var(--mono); font-size: 13px;
+    color: var(--dust); letter-spacing: 0.06em;
+  }
+
+  .ds-owner { font-size: 9px; color: var(--muted); letter-spacing: 0.14em; }
+  .ds-shutter { font-size: 16px; font-weight: 300; }
+  .ds-aperture { font-size: 15px; }
+
+  /* Exposure meter — graphic bar, not text characters */
+  .ds-meter {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 9px; color: var(--muted);
+  }
+  .ds-meter-sign { opacity: 0.6; }
+  .ds-meter-bar {
+    position: relative;
+    width: 80px; height: 16px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 0 2px;
+  }
+  .ds-tick {
+    width: 1px; height: 5px;
+    background: var(--muted); opacity: 0.5;
+  }
+  .ds-tick-center {
+    height: 11px; opacity: 0.9;
+    background: var(--dust);
+  }
+  /* Needle at center (0 EV = perfectly exposed) */
+  .ds-meter-needle {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px; height: 13px;
+    background: var(--dust);
+  }
+
+  .ds-iso { font-size: 13px; }
+  .ds-iso-label { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; margin-right: 2px; }
+  .ds-frames { font-size: 16px; }
+  .ds-battery {
+    display: inline-flex;
+    align-items: center;
+    color: var(--dust);
+    line-height: 0;
+  }
+  .ds-battery-icon {
+    width: 36px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Caption — below the entire instrument */
+  .vf-caption { max-width: 780px; margin: 24px auto 0; text-align: center; }
 </style>
 </head>
 <body>
@@ -1067,7 +1286,7 @@
         <div class="spacing-item"><div class="spacing-value">50</div><div class="spacing-desc">FILM GRAIN</div></div>
         <div class="spacing-item"><div class="spacing-value">1</div><div class="spacing-desc">PAGE CONTENT</div></div>
       </div>
-      <p style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:12px;line-height:1.7">Grain is passive (<code>pointer-events: none</code>). Never <code>9999</code> — that paints over the modal. Deferred hero flash overlay may use 9999 in this spec HTML only.</p>
+      <p style="font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:12px;line-height:1.7">Grain is passive (<code>pointer-events: none</code>). Never <code>9999</code> — that paints over the modal. Hero flash overlay uses <code>z-index: 9999</code> (fires when zoom-out completes).</p>
     </div>
   </section>
 
@@ -1151,9 +1370,9 @@
   <!-- [03] HERO MOCKUP -->
   <!-- ────────────────────────────────────────── -->
   <section class="spec-section" id="hero">
-    <div class="section-label">[03] HERO — SENSOR CALIBRATION</div>
-    <div class="section-title">BOOT LIKE A CAMERA, NOT A SERVER</div>
-    <p class="section-intro">The hero sequence mimics a cold-start power-on of a professional DSLR. Lines of metadata type in. The sensor self-checks. The shutter arms. Only then is the operator permitted to advance. There is no typed "developer" joke. Only optical engineering.</p>
+    <div class="section-label">[03] HERO — VIEWFINDER ZOOM-OUT → D7500 REAR → FLASH</div>
+    <div class="section-title">LOOK THROUGH THE GLASS, THEN STEP BACK</div>
+    <p class="section-intro">The hero IS the optical viewfinder of a Nikon D7500. The user presses their eye to the eyepiece. The vignette closes in. The frame lines emerge. The AF cluster appears first; half a second later only the center rectangle glows red while the viewfinder stays empty of copy. Another half second later the hero begins to focus. When lock is acquired, the AF cluster vanishes completely and is replaced by L-brackets and crosshair on the headline. Then, on scroll, the POV pulls back from the eyepiece — the viewfinder shrinks to reveal the full rear of the D7500 camera body (CSS replica). When the zoom-out completes, the built-in pop-up flash flips open, fires (full white screen), and the darkroom section appears. The user just took a photo — now they enter the darkroom to develop it.</p>
 
     <!-- Scroll Progress Indicator -->
     <div class="scroll-progress-bar" id="scrollProgress">
@@ -1162,42 +1381,188 @@
 
     <!-- Phase 1: Hero Content with Focus Animation -->
     <div class="hero-phase" id="heroPhase">
-      <!-- Boot terminal -->
-      <div class="hero-terminal">
-        <div class="term-line">NIELLESS OPTICAL SYSTEMS</div>
-        <div class="term-line meta">SENSOR: 35MM FULL-FRAME · MOUNT: AI-NATIVE</div>
-        <div class="term-line meta">APERTURE: f/LOGIC · ISO: MINIMUM</div>
-        <div class="term-line ok">SHUTTER: ARMED</div>
-      </div>
-      <div class="camera-focus-frame">
-        <div class="hero-headline camera-focus">ORDER.<br>LOGIC.<br><span class="accent">AMOR FATI.</span></div>
-        <div class="focus-brackets-hero active">
-          <!-- L-shaped corner brackets -->
-          <div class="bracket-corner tl"></div>
-          <div class="bracket-corner tr"></div>
-          <div class="bracket-corner bl"></div>
-          <div class="bracket-corner br"></div>
-          <!-- Center crosshair -->
-          <div class="crosshair-h"></div>
-          <div class="crosshair-v"></div>
-          <!-- Center focus dot -->
-          <div class="focus-dot"></div>
+      <!-- ── VIEWFINDER MOCK ── -->
+      <!-- Layer 1: Eyepiece vignette (outermost — the rubber cup shadow) -->
+      <div class="vf-eyepiece" aria-hidden="true"></div>
+
+      <!-- Layer 2 + 3 + 4: The viewfinder frame + glass + data strip -->
+      <div class="vf-frame">
+
+        <!-- Frame corner lines (4 L-brackets at image boundary — warm white, not brass) -->
+        <div class="vf-corner vf-tl" aria-hidden="true"></div>
+        <div class="vf-corner vf-tr" aria-hidden="true"></div>
+        <div class="vf-corner vf-bl" aria-hidden="true"></div>
+        <div class="vf-corner vf-br" aria-hidden="true"></div>
+
+        <!-- Layer 3: Everything painted on the glass (overlays on the scene) -->
+        <div class="vf-glass">
+
+          <!-- Top HUD strip — inside frame, top edge -->
+          <!-- Mirrors D7500 top icon row: mode · flash · AF mode · metering · WB -->
+          <div class="vf-top-hud" aria-hidden="true">
+            <span class="vf-hud-mode">M</span>
+            <span class="vf-hud-icon">⚡</span>
+            <span class="vf-hud-icon">AFS</span>
+            <span class="vf-hud-icon">◉</span>
+            <span class="vf-hud-icon">WB</span>
+          </div>
+
+          <!-- AF point grid — Nikon D7500 style -->
+          <!-- 51 rectangles with only the center point red -->
+          <div class="vf-af-grid" aria-hidden="true">
+            <div class="af-cluster">
+              <div class="af-row">
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+              </div>
+              <div class="af-row">
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+              </div>
+              <div class="af-row">
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt af-center"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+              </div>
+              <div class="af-row">
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+              </div>
+              <div class="af-row">
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+                <div class="af-block"><div class="af-pt"></div><div class="af-pt"></div><div class="af-pt"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Headline — centered on AF cluster for lock alignment -->
+          <div class="vf-headline-wrap">
+            <div class="hero-headline camera-focus">ORDER.<br>LOGIC.<br><span class="accent">AMOR FATI.</span></div>
+            <div class="focus-brackets-hero active">
+              <div class="bracket-corner tl"></div>
+              <div class="bracket-corner tr"></div>
+              <div class="bracket-corner bl"></div>
+              <div class="bracket-corner br"></div>
+              <div class="crosshair-h"></div>
+              <div class="crosshair-v"></div>
+              <div class="focus-dot"></div>
+            </div>
+          </div>
+
+          <!-- SHUTTER: ARMED — transient, bottom-right of glass, fades out after 700ms -->
+          <div class="vf-shutter-armed" aria-hidden="true">SHUTTER: ARMED</div>
+
+          <!-- Focus confirmation dot — bottom-left of glass, fires green on lock -->
+          <!-- Mirrors D7500 in-focus green ● indicator -->
+          <div class="vf-focus-confirm acquired" aria-hidden="true"></div>
+
+        </div><!-- end .vf-glass -->
+
+        <!-- Layer 4: Data strip — BELOW the glass, its own panel -->
+        <!-- This is the critical layout difference from the old spec mock -->
+        <!-- Numbers never float in the scene — they live here, below the image boundary -->
+        <div class="vf-datastrip" aria-label="Camera readout">
+          <span class="ds-owner">NIELLESS ACHARYA</span>
+          <span class="ds-shutter">1/∞</span>
+          <span class="ds-aperture">F2.0</span>
+          <!-- Exposure meter: graphic bar with tick marks and centered needle -->
+          <div class="ds-meter" aria-hidden="true">
+            <span class="ds-meter-sign">+</span>
+            <div class="ds-meter-bar">
+              <div class="ds-tick"></div>
+              <div class="ds-tick"></div>
+              <div class="ds-tick"></div>
+              <div class="ds-tick"></div>
+              <div class="ds-tick ds-tick-center"></div><!-- 0 EV mark -->
+              <div class="ds-tick"></div>
+              <div class="ds-tick"></div>
+              <div class="ds-tick"></div>
+              <div class="ds-tick"></div>
+              <div class="ds-meter-needle"></div>
+            </div>
+            <span class="ds-meter-sign">−</span>
+          </div>
+          <span class="ds-iso"><span class="ds-iso-label">ISO</span>3200</span>
+          <span class="ds-frames">08</span>
+          <span class="ds-battery" role="img" aria-label="Battery full">
+            <!-- Nikon D7500 LCD battery — filled / bars, full charge -->
+            <svg class="ds-battery-icon" viewBox="0 0 38 14" fill="none" stroke="currentColor" aria-hidden="true">
+              <defs>
+                <clipPath id="ds-battery-charge">
+                  <rect x="1.25" y="2.25" width="30.5" height="9.5" rx="1"/>
+                </clipPath>
+              </defs>
+              <rect x="0.75" y="1.75" width="31.5" height="10.5" rx="1.75" stroke-width="1"/>
+              <rect x="32.75" y="4.5" width="3.25" height="5" rx="0.85" stroke-width="1"/>
+              <g clip-path="url(#ds-battery-charge)" fill="currentColor" stroke="none">
+                <path d="M-6.625 11.75H0.25L5.25 2.25H-1.625Z"/>
+                <path d="M1.25 11.75H8.125L13.125 2.25H6.25Z"/>
+                <path d="M9.125 11.75H16L21 2.25H14.125Z"/>
+                <path d="M17 11.75H23.875L28.875 2.25H22Z"/>
+                <path d="M24.875 11.75H31.75L36.75 2.25H29.875Z"/>
+              </g>
+            </svg>
+          </span>
         </div>
+
+      </div><!-- end .vf-frame -->
+
+      <!-- Layer 5: Caption — outside the camera entirely -->
+      <!-- Sub-copy and CTA live below the instrument, not inside it -->
+      <div class="vf-caption">
+        <p class="hero-sub">Backend-first engineer. I find order in complex systems and ship things that actually hold. Currently building in the open — one deliberate commit at a time.</p>
+        <div class="hero-cta-text" style="margin-top:24px;font-size:10px;color:var(--muted);letter-spacing:0.1em">[ SCROLL TO DARKROOM ]</div>
       </div>
-      <div class="hero-sub">Full-Stack Engineer. AI-native builder. Backend-first. Systems that hold under load — or are rebuilt until they do.</div>
-      <div class="hero-cta-text" style="margin-top:24px;font-size:10px;color:var(--muted);letter-spacing:0.1em">[ SCROLL TO ACTIVATE ]</div>
     </div>
 
-    <!-- Phase 2: DSLR Top View (emerges on scroll) -->
-    <div class="dslr-phase" id="dslrPhase">
-      <div class="dslr-body">
-        <div class="dslr-hot-shoe"></div>
-        <div class="dslr-mode-dial"></div>
-        <div class="dslr-mount"></div>
-        <div class="dslr-grip"></div>
-        <div class="dslr-shutter-btn" id="shutterBtn"></div>
-        <div class="shutter-status" id="shutterStatus">READY</div>
+    <!-- D7500 Rear Body (CSS replica — fades in during zoom-out) -->
+    <div class="d7500-rear" id="d7500Rear" aria-hidden="true">
+      <!-- Top: mode dial + flash unit + eyepiece -->
+      <div class="d7500-mode-dial">
+        <div class="d7500-dial-marks">
+          <span class="d7500-dial-mark" style="top:2px;left:25%">S</span>
+          <span class="d7500-dial-mark" style="top:2px;left:45%">Cl</span>
+          <span class="d7500-dial-mark" style="top:2px;left:65%">Ch</span>
+        </div>
       </div>
+      <div class="d7500-flash-unit" id="flashUnit">
+        <div class="d7500-flash-head"></div>
+      </div>
+      <div class="d7500-eyepiece"></div>
+
+      <!-- Left buttons -->
+      <div class="d7500-left-btns">
+        <div class="d7500-btn">MENU</div>
+        <div class="d7500-btn">WB</div>
+        <div class="d7500-btn">QUAL</div>
+        <div class="d7500-btn" style="font-size:8px">🔍</div>
+        <div class="d7500-btn">info</div>
+      </div>
+
+      <!-- LCD screen -->
+      <div class="d7500-lcd"></div>
+
+      <!-- Nikon logo -->
+      <div class="d7500-logo">Nikon</div>
+
+      <!-- Right controls -->
+      <div class="d7500-right-controls">
+        <div class="d7500-ael">AE-L<br>AF-L</div>
+        <div class="d7500-dpad">
+          <div class="d7500-dpad-ok">OK</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <div class="d7500-small-btn">i</div>
+          <div class="d7500-small-btn">Lv</div>
+        </div>
+      </div>
+
+      <!-- Grip -->
+      <div class="d7500-grip"></div>
     </div>
 
     <!-- Flash Overlay -->
@@ -1205,9 +1570,8 @@
 
     <!-- Phase 3: Main Content (revealed after flash) -->
     <div class="main-content" id="mainContent" style="display:none">
-      <div class="term-line meta" style="margin-bottom:20px">[03] SYSTEM SCHEMATICS</div>
+      <div class="term-line meta" style="margin-bottom:20px">[04] THE DARKROOM</div>
       <div class="section-title" style="font-size:42px">DARKROOM</div>
-      <!-- Film negative reel renders here (deferred scroll-to-DSLR path) -->
     </div>
 
     <div class="screen-wrap">
@@ -1219,43 +1583,111 @@
       </div>
       <div class="screen-body">
         <div class="hero-mock-inner">
-          <p style="color:var(--muted);font-size:11px;text-align:center;padding:40px">[ Scroll animation preview — hero transforms to DSLR on scroll, flash reveals content ]</p>
+          <p style="color:var(--muted);font-size:11px;text-align:center;padding:40px">[ Scroll animation preview — viewfinder zoom-out reveals D7500 rear, pop-up flash fires, enters darkroom ]</p>
         </div>
       </div>
     </div>
 
     <div class="interaction-note">
-      <div class="interaction-note-label">BOOT SEQUENCE</div>
+      <div class="interaction-note-label">VIEWFINDER LAYER ARCHITECTURE</div>
       <ul class="bullet-list">
-        <li><strong>0ms:</strong> Void. Grain active.</li>
-        <li><strong>200ms:</strong> <code>SENSOR:</code> line types in. Mono, muted.</li>
-        <li><strong>400ms:</strong> <code>APERTURE / ISO</code> line. Brass meta.</li>
-        <li><strong>600ms:</strong> <code>SHUTTER: ARMED</code> in signal green.</li>
-        <li><strong>800ms:</strong> Headline arrives via focus hunt animation: blur oscillates 8px→5px→6px→3px→0px over 2.5s, simulating lens AF hunting before locking.</li>
-        <li><strong>2200ms:</strong> L-brackets and crosshair fade in. Viewfinder focus indicator complete.</li>
-        <li><strong>2300ms:</strong> Center dot flashes signal green with glow - focus confirmation.</li>
-        <li><strong>2500ms:</strong> Boot complete. System ready for scroll interaction.</li>
+        <li><strong>Layer 1 — Eyepiece vignette:</strong> full-viewport radial gradient, dark oval edges (the rubber eyecup shadow). Center 55% fully transparent — the scene shows through.</li>
+        <li><strong>Layer 2 — Frame corners:</strong> four warm-white L-brackets at the image boundary corners. NOT a full border. NOT brass. Color: <code>rgba(232,226,213,0.55)</code>. Width 28px, 1px line.</li>
+        <li><strong>Layer 3 — Glass (inside the frame):</strong> top HUD strip · 51 AF points · headline (centered on AF cluster) · SHUTTER: ARMED transient · focus confirm dot · lock overlay handoff (AF off → brackets + cross on focus).</li>
+        <li><strong>Layer 4 — Data strip:</strong> separate dark panel BELOW the frame. Never overlaid on the scene. Shutter · Aperture · Exposure meter (graphic) · ISO · Frame count · Battery.</li>
+        <li><strong>Layer 5 — Caption:</strong> sub-copy and CTA live below the entire instrument in normal document flow.</li>
+      </ul>
+    </div>
+
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">AF POINT SYSTEM</div>
+      <ul class="bullet-list">
+        <li><strong>51 points total</strong>, hardcoded positions mimicking the D7500's actual AF array: dense center cluster (7 columns × 7 rows), sparser outer band, 3-point far-outer strip.</li>
+        <li><strong>Point shape and size:</strong> rectangular D7500-style markers, spec baseline <code>22px × 15px</code> with increased row/column spacing.</li>
+        <li><strong>Neutral points:</strong> all non-center rectangles are neutral (no red): <code>border: 2px solid rgba(232,226,213,0.8)</code>.</li>
+        <li><strong>Center point only:</strong> exactly one center rectangle is red (<code>.af-center</code>) with a subtle glow, activated 500ms after AF grid appears.</li>
+        <li><strong>No red scatter:</strong> no random red hunting points; the reference lock point remains singular and centered.</li>
+        <li><strong>Focus handoff rule:</strong> once focus is acquired, the entire AF cluster is removed from screen — <code>opacity: 0</code>, <code>visibility: hidden</code>, no pointer events — completely invisible. Lock overlay (<code>.focus-brackets-hero</code> + crosshair) replaces it on the headline.</li>
+        <li><code>prefers-reduced-motion</code>: AF pattern remains static; no interval logic is required for the AF grid.</li>
+      </ul>
+    </div>
+
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">BOOT SEQUENCE TIMING (D7500 POWER-ON)</div>
+      <ul class="bullet-list">
+        <li><strong>0ms</strong> — Empty viewfinder. Grain on. AF grid hidden. Lock overlay hidden.</li>
+        <li><strong>600ms</strong> — Frame corner brackets fade in (the viewfinder window opens).</li>
+        <li><strong>800ms</strong> — AF grid fades in (neutral points only).</li>
+        <li><strong>1300ms</strong> — Center AF rectangle turns red and glows (<code>.af-center</code>) exactly 500ms after AF appears. Hero content remains hidden — this half-second beat showcases the lock point alone.</li>
+        <li><strong>1500ms</strong> — Data strip + top HUD strip populate in ONE BEAT, all-at-once.</li>
+        <li><strong>1700ms</strong> — <code>SHUTTER: ARMED</code> appears bottom-right of glass (--signal green).</li>
+        <li><strong>1800ms</strong> — Hero focus animation starts (500ms after center red glow, so the red rectangle is readable before copy enters).</li>
+        <li><strong>2400ms</strong> — <code>SHUTTER: ARMED</code> fades out.</li>
+        <li><strong>9300ms</strong> — Focus lock acquired (1800ms + 7.5s hunt): AF cluster becomes completely invisible; L-brackets + crosshair replace it on the headline.</li>
+        <li><strong>9600ms</strong> — Focus confirm dot fires <code>.acquired</code> (green glow) — D7500 lock confirmation beat.</li>
+        <li><strong>10000ms</strong> — Sub-copy + CTA fade in below the instrument.</li>
+      </ul>
+    </div>
+
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">DATA STRIP — D7500 BOTTOM READOUT (locked values)</div>
+      <ul class="bullet-list">
+        <li><strong>Layout (left → right):</strong> owner tag · shutter speed · aperture · exposure meter · ISO · frame count · battery.</li>
+        <li><strong>Owner tag</strong> <code>NIELLESS ACHARYA</code> — 9px mono, <code>--muted</code>. Analog to writing your name on the camera strap.</li>
+        <li><strong>Shutter</strong> <code>1/∞</code> — always building, never done. 16px, font-weight 300.</li>
+        <li><strong>Aperture</strong> <code>F2.0</code> — wide open. Broad systems perspective.</li>
+        <li><strong>Exposure meter</strong> — graphic only: 9-tick bar with 2px needle at center (0 EV). NOT the <code>━━━━●━━━━</code> text characters from the previous spec version. The needle is at dead center = perfectly exposed.</li>
+        <li><strong>ISO</strong> <code>ISO 3200</code> — high sensitivity; operates in complex/dark environments.</li>
+        <li><strong>Frame count</strong> <code>08</code> — 8 projects loaded in The Darkroom. Shown in <code>--dust</code>, 16px.</li>
+        <li><strong>Battery</strong> — graphic icon: rounded shell + terminal nub, four filled <code>/</code> parallelograms with thin slanted gaps (full charge). <code>--dust</code>, no glow.</li>
+        <li><strong>NOT in the data strip:</strong> <code>SHUTTER: ARMED</code> (lives in the glass as a transient), sub-copy, CTA, or any philosophical copy.</li>
+      </ul>
+    </div>
+
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">HEADLINE COMPOSITION — CENTER LOCK</div>
+      <ul class="bullet-list">
+        <li>The headline is positioned at approximately <strong>left 50%, top 28%</strong> with <code>transform: translateX(-50%)</code>, so lock acquisition happens at the visual center.</li>
+        <li>The AF array geometry stays centered; only the center AF rectangle is red as the lock target, held for 500ms before hero copy animates in.</li>
+        <li>This keeps the Nikon-like AF behavior legible in the spec preview and matches the operator expectation that lock resolves in the middle of the glass.</li>
+      </ul>
+    </div>
+
+    <div class="interaction-note" style="margin-top:8px">
+      <div class="interaction-note-label">VIEWFINDER ZOOM-OUT → D7500 REAR REVEAL</div>
+      <ul class="bullet-list">
+        <li><strong>Concept:</strong> After boot completes (t=10s), the user scrolls. The POV pulls back from the viewfinder. The viewfinder — displayed at its natural boot size (860px, 3:2 frame) — shrinks to reveal the D7500 camera body around it. <strong>No crop-in:</strong> the zoom starts from exactly what the user sees after boot. It does NOT first scale up to fill the viewport. Pure pull-back only.</li>
+        <li><strong>Scroll track:</strong> <code>4 × window.innerHeight</code>. Progress maps 0→1 as user scrolls.</li>
+        <li><strong>Progress 0.00→0.10:</strong> Caption (sub-copy + CTA) fades out. Data strip fades out (0.05→0.15).</li>
+        <li><strong>Progress 0.10→0.85:</strong> Viewfinder shrinks from boot size (<code>scale(1)</code>) to eyepiece size (<code>scale(minScale)</code>). Simultaneously translates from its boot position to the eyepiece location on the camera body.</li>
+        <li><strong>Progress 0.15→0.50:</strong> D7500 rear body fades in (<code>opacity 0→1</code>), centered in viewport.</li>
+        <li><strong>Progress 0.85→0.90:</strong> Viewfinder content reaches natural eyepiece size and locks into position.</li>
+        <li><strong>Progress 0.90:</strong> Full D7500 rear visible. <strong>Pop-up flash triggers.</strong></li>
       </ul>
     </div>
     <div class="interaction-note" style="margin-top:8px">
-      <div class="interaction-note-label">SCROLL-TO-DSLR TRANSFORMATION</div>
+      <div class="interaction-note-label">D7500 REAR BODY — CSS REPLICA (must be faithful to reference photos)</div>
       <ul class="bullet-list">
-        <li><strong>Scroll 0-33% (Phase 1):</strong> Hero content rotates in 3D space with <code>perspective(1000px) rotateX(-45deg)</code>, opacity fades to 0.2. Progress bar fills to 33%.</li>
-        <li><strong>Scroll 33-66% (Phase 2):</strong> DSLR top view emerges from rotation <code>rotateX(90deg) → rotateX(0deg)</code>. 300px body with grip texture, mode dial, hot shoe, and lens mount. Shutter button glows increasingly as scroll approaches 66%.</li>
-        <li><strong>Scroll 66-100% (Phase 3):</strong> Shutter button press animation triggers (translateZ(-4px), scale 0.95). Button illuminates signal green. 150ms mechanical delay.</li>
-        <li><strong>Flash Trigger:</strong> Full-screen white flash (800ms) simulates xenon flash tube discharge. DSLR body fades during flash peak.</li>
-        <li><strong>Content Reveal:</strong> Flash clears to reveal DARKROOM section with project negatives (legacy docs may say ENGINE). Scroll position resets to 0. Total scroll distance: 3x viewport height.</li>
+        <li><strong>Body:</strong> 480×368px (aspect-ratio ≈ 136:104), dark matte gradient <code>#1e1e20 → #0e0e10 → #161618</code>. Rounded corners, beveled edges via <code>box-shadow</code> insets.</li>
+        <li><strong>LCD Screen:</strong> Large dark rectangle, center area (~52% width × 52% height). <code>#050507</code>, subtle inner shadow.</li>
+        <li><strong>Viewfinder Eyepiece:</strong> Raised rectangular bump at top-center. Dark gradient with rubber surround texture. The zoomed-out viewfinder content lands here.</li>
+        <li><strong>Left Buttons:</strong> MENU, WB, QUAL, magnify, info — small labeled rectangles in a vertical column.</li>
+        <li><strong>Right Controls:</strong> AE-L/AF-L button, D-pad with OK center, <code>i</code> button, <code>Lv</code> button.</li>
+        <li><strong>Mode Dial:</strong> 48px conic gradient circle at top-left with S/Cl/Ch markings.</li>
+        <li><strong>Grip:</strong> Textured right side (repeating-linear-gradient 3px stripes).</li>
+        <li><strong>Nikon Logo:</strong> Below LCD, serif italic, <code>--brass-dim</code> at 40% opacity.</li>
+        <li><strong>Pop-up Flash Unit:</strong> 46×8px strip flush with top of body. Opens on trigger via CSS <code>rotateX(-75deg)</code> with <code>transform-origin: bottom</code>.</li>
       </ul>
     </div>
     <div class="interaction-note" style="margin-top:8px">
-      <div class="interaction-note-label">DSLR TOP VIEW SPECIFICATION</div>
+      <div class="interaction-note-label">POP-UP FLASH + FIRE SEQUENCE</div>
       <ul class="bullet-list">
-        <li><strong>Body:</strong> 300×200px rounded rectangle with gradient <code>#1a1a1c → #0e0e10 → #161618</code>. Beveled edges via <code>box-shadow</code> insets.</li>
-        <li><strong>Grip:</strong> 60×140px repeating linear gradient texture (3px stripes), right side.</li>
-        <li><strong>Mode Dial:</strong> 50px conic gradient circle with 8px brass indicator square.</li>
-        <li><strong>Hot Shoe:</strong> 40×12px centered mount at top edge.</li>
-        <li><strong>Lens Mount:</strong> 120px radial gradient - void center, brass-dim ring, dark outer.</li>
-        <li><strong>Shutter Button:</strong> 36px raised button with brass ring accent. Radial gradient highlight. Press state: depressed with signal green center glow.</li>
+        <li><strong>Flash pop-up (progress ≈ 0.90):</strong> The D7500's built-in flash unit rotates open from closed (flush with body) to raised (<code>rotateX(-75deg)</code>). 300ms CSS animation, <code>ease-out</code>. This is a spring-loaded mechanical action.</li>
+        <li><strong>Charge pause:</strong> 200ms delay after flash opens — the flash capacitor is charging.</li>
+        <li><strong>Flash fires (progress ≈ 0.95):</strong> Full-viewport white overlay, <code>z-index: 9999</code>. Simulates xenon flash tube discharge. Animation: <code>heroFlash 800ms ease-out</code> — instant peak (5%), sustain (30%), fade (60→100%).</li>
+        <li><strong>During flash peak:</strong> D7500 body fades to <code>opacity: 0</code> behind the white.</li>
+        <li><strong>Content reveal:</strong> Flash clears to reveal <code>#darkroom</code> section. Scroll position normalizes. The user just "took a photo" — now they enter the darkroom to develop it.</li>
+        <li><strong>Reduced motion:</strong> Skip entire zoom-out + flash. CTA scrolls directly to <code>#darkroom</code>.</li>
       </ul>
     </div>
   </section>
@@ -1613,11 +2045,11 @@
       <div class="ds-label">TECH STACK</div>
       <div class="arch-code"><span class="hl">Framework:</span>   <span class="norm">Next.js 16 (App Router — existing project version)</span>
 <span class="hl">Language:</span>    <span class="norm">TypeScript (strict mode)</span>
-<span class="hl">Animation:</span>   <span class="norm">CSS @keyframes (hero boot, brass gate wipe); JS scroll scrub (Darkroom)</span>
-<span class="hl">Scroll:</span>      <span class="norm">Native scroll + rAF-throttled useFilmScroll (desktop Darkroom)</span>
+<span class="hl">Animation:</span>   <span class="norm">CSS @keyframes (hero boot, flash, brass gate wipe); JS scroll scrub (Darkroom, Hero zoom-out)</span>
+<span class="hl">Scroll:</span>      <span class="norm">Native scroll + rAF-throttled useFilmScroll (Darkroom) + useHeroZoom (Hero zoom-out)</span>
 <span class="hl">Styling:</span>     <span class="norm">CSS Modules + CSS Custom Properties</span>
 <span class="hl">Texture:</span>     <span class="norm">SVG feTurbulence via body::after (static, z-index 50)</span>
-<span class="hl">Deferred:</span>    <span class="norm">Scroll-to-DSLR, flash, aperture ring, shutter overlay, Web Audio, custom cursor</span>
+<span class="hl">Deferred:</span>    <span class="norm">Aperture ring, shutter overlay, Web Audio, custom cursor</span>
 <span class="hl">Fonts:</span>       <span class="norm">Self-hosted WOFF2 (Google Fonts subset)</span>
 <span class="hl">Deploy:</span>      <span class="norm">Vercel</span>
 <span class="hl">Performance:</span> <span class="norm">Target Lighthouse ≥ 90 (stretch 95)</span></div>
@@ -1633,7 +2065,9 @@
 ├── <span class="dim">components/</span>
 │   ├── <span class="norm">SiteHeader.tsx</span>        <span class="comment">← Text mark + DARKROOM · BLUEPRINT · CONTACT</span>
 │   ├── <span class="norm">SectionShell.tsx</span>      <span class="comment">← Shared section header</span>
-│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera boot sequence</span>
+│   ├── <span class="norm">HeroBoot.tsx</span>          <span class="comment">← Camera boot + zoom-out orchestration</span>
+│   ├── <span class="norm">D7500Rear.tsx</span>         <span class="comment">← CSS replica of D7500 camera rear</span>
+│   ├── <span class="norm">useHeroZoom.ts</span>        <span class="comment">← Scroll-driven zoom-out + flash trigger</span>
 │   ├── <span class="norm">ScrollHint.tsx</span>        <span class="comment">← Sitewide scroll / swipe hint</span>
 │   ├── <span class="dim">projects/</span>
 │   │   ├── <span class="norm">DarkroomSection.tsx</span> <span class="comment">← #darkroom shell + scroll track</span>
@@ -1669,7 +2103,8 @@
 <span class="hl">Scroll hint:</span>        <span class="norm">90</span>
 <span class="hl">Film grain:</span>         <span class="norm">50</span> <span class="comment">← pointer-events: none; never 9999</span>
 <span class="hl">Page content:</span>       <span class="norm">1</span>
-<span class="hl">Deferred (spec):</span>    <span class="norm">Scroll progress 250, DSLR phases 190–200, flash 9999</span></div>
+<span class="hl">Hero flash overlay:</span> <span class="norm">9999</span> <span class="comment">← full white; fires when zoom-out completes</span>
+<span class="hl">Hero zoom container:</span><span class="norm">200</span> <span class="comment">← sticky container during zoom-out phase</span></div>
     </div>
 
     <div class="arch-block">
@@ -1687,13 +2122,13 @@
       <ol class="order-list">
         <li class="order-item"><span class="order-num">M0</span><div><strong>Baseline</strong> — <span>Remove banned deps, legacy routes → <code>/#darkroom</code>, <code>npm run build</code> clean.</span></div></li>
         <li class="order-item"><span class="order-num">M1</span><div><strong>Design system + shell</strong> — <span><code>globals.css</code> tokens + grain (z-index 50); <code>layout.tsx</code> SEO metadata; <code>SiteHeader</code>, <code>SectionShell</code>, skip link.</span></div></li>
-        <li class="order-item"><span class="order-num">M2</span><div><strong>Hero boot</strong> — <span><code>HeroBoot.tsx</code> focus hunt + reduced-motion fallback; CTA → <code>#darkroom</code>. <strong>DEFERRED:</strong> ScrollTransform, DslrTopView, flash.</span></div></li>
+        <li class="order-item"><span class="order-num">M2</span><div><strong>Hero boot → zoom-out → D7500 → flash</strong> — <span><code>HeroBoot.tsx</code> viewfinder boot; <code>D7500Rear.tsx</code> CSS camera replica; <code>useHeroZoom.ts</code> scroll-driven zoom-out; pop-up flash fires → full white → darkroom entry.</span></div></li>
         <li class="order-item"><span class="order-num">M3</span><div><strong>The Darkroom</strong> — <span><code>projects.ts</code>, film strip, <code>useFilmScroll</code>, <code>PositivePrintModal</code> brass wipe, <code>ScrollHint</code>.</span></div></li>
         <li class="order-item"><span class="order-num">M4</span><div><strong>Blueprint</strong> — <span><code>timeline.ts</code>, <code>ContactSheet</code>, <code>StackPanel</code> (bracketed tags → brass).</span></div></li>
         <li class="order-item"><span class="order-num">M5</span><div><strong>Contact + footer</strong> — <span>mailto + links only; full single-page wire-up.</span></div></li>
         <li class="order-item"><span class="order-num">M6</span><div><strong>Release hardening</strong> — <span>a11y, mobile, Lighthouse ≥ 90, tag <code>v3.3.0</code>.</span></div></li>
       </ol>
-      <p style="font-size:9px;color:var(--muted2);margin-top:12px"><strong>DEFERRED v3.4+:</strong> DslrTopView, ScrollTransform, useScrollPhase, useFlashTrigger, ApertureRing, ExposureMeter, ViewfinderCard, SchematicGrid, mode-dial nav, shutter overlay, custom cursor, mechanical audio.</p>
+      <p style="font-size:9px;color:var(--muted2);margin-top:12px"><strong>DEFERRED v3.4+:</strong> ApertureRing, ExposureMeter, ViewfinderCard, SchematicGrid, mode-dial nav, shutter overlay, custom cursor, mechanical audio.</p>
     </div>
   </section>
 
@@ -1708,28 +2143,23 @@
 </div>
 
 <script>
-  // SCROLL-BASED DSLR TRANSFORMATION - SPEC ONLY (Needs realistic implementation)
-  (function initScrollTransform() {
+  // VIEWFINDER ZOOM-OUT → D7500 REAR → FLASH — SPEC ONLY
+  (function initZoomOut() {
     const heroPhase = document.getElementById('heroPhase');
-    const dslrPhase = document.getElementById('dslrPhase');
-    const shutterBtn = document.getElementById('shutterBtn');
-    const shutterStatus = document.getElementById('shutterStatus');
+    const d7500Rear = document.getElementById('d7500Rear');
+    const flashUnit = document.getElementById('flashUnit');
     const flashOverlay = document.getElementById('flashOverlay');
     const scrollProgress = document.getElementById('scrollProgress');
     const scrollProgressFill = document.getElementById('scrollProgressFill');
     const mainContent = document.getElementById('mainContent');
 
-    if (!heroPhase || !dslrPhase) return;
+    if (!heroPhase || !d7500Rear) return;
 
     let hasFlashed = false;
-    let isInDslrPhase = false;
 
-    // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
-      // Skip animation, show content directly
       heroPhase.style.display = 'none';
-      dslrPhase.style.display = 'none';
       if (mainContent) {
         mainContent.style.display = 'block';
         mainContent.classList.add('revealed');
@@ -1737,137 +2167,108 @@
       return;
     }
 
-    // Create a scrollable container for the transformation
     const scrollContainer = document.createElement('div');
-    scrollContainer.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 300vh;
-      z-index: 80;
-      pointer-events: none;
-    `;
+    scrollContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:400vh;z-index:80;pointer-events:none;';
     document.body.appendChild(scrollContainer);
 
-    // Ensure hero is visible on load
-    if (heroPhase) {
-      heroPhase.style.opacity = '1';
-      heroPhase.style.transform = 'none';
-    }
+    heroPhase.style.opacity = '1';
 
-    function updateScrollTransform() {
+    function updateZoomOut() {
       if (hasFlashed) return;
 
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
-      const scrollPercent = Math.min(scrollY / windowHeight, 3); // 3x window height for full sequence
+      const scrubRange = 3 * windowHeight;
+      const progress = Math.min(1, Math.max(0, scrollY / scrubRange));
 
-      // Show progress bar after user starts scrolling
       if (scrollProgress && scrollY > 10) {
         scrollProgress.classList.add('visible');
       }
-
-      // Phase 1: 0-100% scroll - Hero rotates away (0-1.0 scrollPercent)
-      if (scrollPercent < 1 && scrollPercent > 0) {
-        const phase1Progress = scrollPercent;
-        heroPhase.style.opacity = 1 - (phase1Progress * 0.8);
-        heroPhase.style.transform = `perspective(1000px) rotateX(${-phase1Progress * 45}deg) scale(${1 - phase1Progress * 0.2})`;
-
-        // Update progress bar
-        if (scrollProgressFill) {
-          scrollProgressFill.style.width = `${phase1Progress * 33}%`;
-        }
-      } else if (scrollPercent <= 0) {
-        // Reset hero to fully visible when at top
-        heroPhase.style.opacity = '1';
-        heroPhase.style.transform = 'none';
+      if (scrollProgressFill) {
+        scrollProgressFill.style.width = `${progress * 100}%`;
       }
 
-      // Phase 2: 100-200% scroll - DSLR emerges (1.0-2.0 scrollPercent)
-      if (scrollPercent >= 0.8 && scrollPercent < 2) {
-        const phase2Progress = Math.min((scrollPercent - 0.8) / 1.2, 1);
-        dslrPhase.classList.add('visible');
-        isInDslrPhase = true;
-
-        // Shutter button glows brighter as we approach trigger point
-        if (shutterBtn && phase2Progress > 0.7) {
-          const glowIntensity = (phase2Progress - 0.7) / 0.3;
-          shutterBtn.style.boxShadow = `
-            0 4px 8px rgba(0,0,0,0.4),
-            inset 0 1px 2px rgba(255,255,255,0.05),
-            0 0 ${20 * glowIntensity}px ${5 * glowIntensity}px rgba(57, 255, 20, ${0.3 * glowIntensity})
-          `;
-        }
-
-        if (scrollProgressFill) {
-          scrollProgressFill.style.width = `${33 + phase2Progress * 33}%`;
-        }
+      // Caption fade-out (0→0.10)
+      const vfCaption = heroPhase.querySelector('.vf-caption');
+      if (vfCaption) {
+        vfCaption.style.opacity = progress < 0.10 ? 1 - (progress / 0.10) : 0;
       }
 
-      // Phase 3: 200%+ scroll - Shutter press and flash trigger (2.0+ scrollPercent)
-      if (scrollPercent >= 2 && !hasFlashed) {
+      // Data strip fade-out (0.05→0.15)
+      const dataStrip = heroPhase.querySelector('.vf-datastrip');
+      if (dataStrip) {
+        const dsProgress = Math.min(1, Math.max(0, (progress - 0.05) / 0.10));
+        dataStrip.style.opacity = 1 - dsProgress;
+      }
+
+      // Viewfinder shrinks from boot size to eyepiece size (0.10→0.85)
+      // No crop-in: starts at scale(1) = current boot size, shrinks to minScale
+      const minScale = 0.06; // eyepiece ~50px / boot ~860px
+      if (progress > 0.10) {
+        const zoomProgress = Math.min(1, (progress - 0.10) / 0.75);
+        const currentScale = 1 - (zoomProgress * (1 - minScale));
+        const vfFrame = heroPhase.querySelector('.vf-frame');
+        if (vfFrame) {
+          vfFrame.style.transform = `scale(${currentScale})`;
+          vfFrame.style.transformOrigin = 'center 30%';
+        }
+        // Hide eyepiece vignette during zoom
+        const eyepiece = heroPhase.querySelector('.vf-eyepiece');
+        if (eyepiece) eyepiece.style.opacity = Math.max(0, 1 - zoomProgress * 2);
+      }
+
+      // Camera body fade-in (0.15→0.50)
+      if (progress > 0.15) {
+        const cameraOpacity = Math.min(1, (progress - 0.15) / 0.35);
+        d7500Rear.style.opacity = cameraOpacity;
+        d7500Rear.classList.toggle('visible', cameraOpacity > 0);
+      } else {
+        d7500Rear.style.opacity = 0;
+      }
+
+      // Flash trigger at progress ≥ 0.90
+      if (progress >= 0.90 && !hasFlashed) {
         hasFlashed = true;
 
-        // Press shutter button
-        if (shutterBtn) {
-          shutterBtn.classList.add('pressed');
-        }
-        if (shutterStatus) {
-          shutterStatus.textContent = 'CAPTURE';
-          shutterStatus.classList.add('ready');
-        }
+        // Pop-up flash opens
+        if (flashUnit) flashUnit.classList.add('open');
 
-        // Trigger flash after brief delay (mechanical shutter delay)
+        // Flash fires after delay
         setTimeout(() => {
-          if (flashOverlay) {
-            flashOverlay.classList.add('active');
-          }
+          if (flashOverlay) flashOverlay.classList.add('active');
+          d7500Rear.style.opacity = '0';
 
-          // Hide DSLR phase during flash
-          if (dslrPhase) {
-            dslrPhase.style.opacity = '0';
-          }
-
-          // Show main content after flash peak
           setTimeout(() => {
             heroPhase.style.display = 'none';
-            dslrPhase.style.display = 'none';
-            scrollProgress.style.display = 'none';
+            if (scrollProgress) scrollProgress.style.display = 'none';
 
             if (mainContent) {
               mainContent.style.display = 'block';
-              // Small delay for flash to still be visible
-              setTimeout(() => {
-                mainContent.classList.add('revealed');
-              }, 100);
+              setTimeout(() => mainContent.classList.add('revealed'), 100);
             }
 
-            // Remove scroll container after transition
             scrollContainer.remove();
             window.scrollTo(0, 0);
-          }, 150);
-        }, 150);
+          }, 200);
+        }, 500);
       }
     }
 
-    // Throttled scroll listener
     let ticking = false;
     window.addEventListener('scroll', () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          updateScrollTransform();
+          updateZoomOut();
           ticking = false;
         });
         ticking = true;
       }
     }, { passive: true });
 
-    // Initial call
-    updateScrollTransform();
+    updateZoomOut();
   })();
 
-  // Minimal demo: activate shutter wipe on hero CTA click for the spec page itself
+  // Minimal demo: activate shutter wipe on hero CTA click
   document.querySelector('.hero-cta')?.addEventListener('click', () => {
     const shutter = document.getElementById('shutterDemo');
     if (shutter) {

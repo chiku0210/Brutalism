@@ -5,7 +5,7 @@
 **Target release**: `v3.3.0` — one URL, every section works, no placeholder mechanics  
 
 **Permanent docs (only these two)**: this file + `nielless-portfolio-design-spec-v3.html`.  
-`cursor-plan.md` is an **ephemeral handoff** for the next coding session — not ground truth; do not treat gaps there as authoritative.
+`plan/` directory contains execution-ready breakdown for agent development — milestone-per-file structure with ready-to-paste prompts.
 
 ---
 
@@ -15,7 +15,7 @@
 |------|------|
 | **This file** | Single source of truth for *what ships* in v3.3, build order (M0–M6), scroll math, data models, SEO copy, z-index |
 | **`nielless-portfolio-design-spec-v3.html`** | Visual + interaction reference (Rev 3.3) — do not implement deferred items because they appear in the spec |
-| **`cursor-plan.md`** | Optional session handoff only; superseded by this file + spec HTML for formulas, DoD, and copy |
+| **`plan/`** | Execution-ready breakdown for agent development; milestone-per-file structure |
 | **Agents / contributors** | Finish the current milestone’s **Definition of Done** before starting the next. No parallel “half features” |
 
 **Release philosophy**: Ship a **narrow, finished** page. Depth beats breadth. If a mechanic cannot be completed and tested in one milestone, it moves to **Deferred**, not into the active step list.
@@ -32,6 +32,7 @@
 - **Single route** (`/`) with four sections: **Hero → Darkroom → Blueprint → Contact**  
 - Minimal site chrome: text mark + skip link + anchor `DARKROOM` (**no mode-dial navigation** — deferred)  
 - Hero boot sequence (focus hunt + viewfinder brackets) with instant fallback when `prefers-reduced-motion`  
+- **Viewfinder zoom-out → D7500 rear reveal → pop-up flash → full white screen → darkroom entry** (scroll-driven transition between hero and darkroom)  
 - **The Darkroom**: horizontal camera-negative film strip — vertical scroll scrubs strip (desktop); `[ DEVELOP ]` opens positive print modal; `ScrollHint` sitewide  
 - Blueprint: contact-sheet timeline + `$ current --stack` panel driven by `src/data/timeline.ts`  
 - Contact: **mailto + LinkedIn/GitHub/resume links** (no backend form in v3.3)  
@@ -44,7 +45,7 @@
 |------|--------|
 | Mode-dial nav (P / A / M / ISO) | Replaced later with a proper section nav; anchor jump links only for v3.3 |
 | Viewfinder schematic cards (2-col Engine grid) | **Superseded** by film negative reel (Section [04] Darkroom) |
-| Scroll-to-DSLR 3D sequence + flash reveal | High complexity; easy to ship broken; not required for a credible portfolio |
+| ~~Scroll-to-DSLR 3D sequence + flash reveal~~ | **MOVED INTO v3.3** — reimagined as viewfinder zoom-out → D7500 rear reveal → pop-up flash → darkroom entry (see M2) |
 | `ApertureRing` / `ExposureMeter` | Decorative scroll chrome; defer until single-page core is stable |
 | `ShutterOverlay` section wipes | Defer with mode dial / section transitions |
 | Custom reticle cursor | Desktop polish only; defer |
@@ -62,12 +63,12 @@ Reference deferred designs in spec sections 02–03, 06–07 when planning v3.2+
 Framework:     Next.js App Router (existing project version)
 Language:      TypeScript strict
 Styling:       CSS Modules + CSS custom properties only
-Animation:     CSS @keyframes (boot, brass gate wipe); JS scroll scrub (useFilmScroll)
+Animation:     CSS @keyframes (boot, flash, brass gate wipe); JS scroll scrub (useFilmScroll); JS scroll zoom-out (useHeroZoom)
 Data:          src/data/projects.ts (negativeSummary + printDetails), src/data/timeline.ts
 Deploy:        Vercel
 ```
 
-**Banned**: Tailwind, Framer Motion, GSAP, Lenis, Three.js, inline `style={{}}` (except setting CSS variables on `documentElement` if ever needed).
+**Banned**: Tailwind, Framer Motion, GSAP, Lenis, Three.js, inline `style={{}}` (except setting CSS variables on `documentElement` if ever needed, and `transform` writes from scroll hooks).
 
 **Scroll scrub (desktop)** — canonical formulas (copy verbatim into `useFilmScroll.ts`; also in spec Section [04]):
 
@@ -141,7 +142,8 @@ On `[ DEVELOP ]`, the modal **does not slide in**. The overlay mounts at full si
 | Film grain (`body::after`) | **50** | Decorative; `pointer-events: none`; above page content, below chrome + modal |
 | Scroll hint | 90 | Fixed bottom-right |
 | Page content | 1 | `.page-wrap`, sections |
-| Deferred hero flash | 9999 | Specimen only — not shipped in v3.3 |
+| Hero flash overlay | 9999 | Full white screen; fires when zoom-out completes |
+| Hero zoom-out container | 200 | Sticky container during zoom-out scroll phase |
 
 Spec HTML `body::after` was `9999` (blocked modals). **Ship grain at 50** in `globals.css` — passive texture over content, always under modal (500) and header (100). Do not rely on `isolation: isolate` on the modal for grain stacking.
 
@@ -156,6 +158,8 @@ src/
 ├── components/
 │   ├── SiteHeader.tsx      # DARKROOM · BLUEPRINT · CONTACT anchors
 │   ├── HeroBoot.tsx
+│   ├── D7500Rear.tsx          # CSS replica of camera rear
+│   ├── useHeroZoom.ts         # Scroll-driven zoom-out + flash
 │   ├── SectionShell.tsx
 │   ├── ScrollHint.tsx
 │   ├── projects/
@@ -294,52 +298,213 @@ Shared section header for Darkroom, Blueprint, and Contact.
 
 ---
 
-## Milestone M2 — Hero boot (finished)
+## Milestone M2 — Hero boot → viewfinder zoom-out → flash → darkroom entry
 
-**Spec ref**: Section 03 (boot + focus hunt only — **not** scroll-to-DSLR)
+**Spec ref**: Section [03] (boot + viewfinder zoom-out + D7500 rear + pop-up flash)
 
-### M2.1 `HeroBoot.tsx` + module
+**Concept**: The user looks through the D7500 optical viewfinder. The camera boots. Focus is acquired. Then, on scroll, the POV pulls back from the eyepiece — the viewfinder shrinks to reveal the full rear of the D7500 camera body (CSS replica). When the zoom-out completes, the built-in pop-up flash flips open, fires (full white screen), and the darkroom section appears. The user just "took a photo" — now they enter the darkroom to develop it.
+
+### M2.1 `HeroBoot.tsx` + module (Viewfinder boot — auto-plays on load)
 
 **Boot timing** (use CSS animation delays or a single `useEffect` timer chain — no Framer):
+**Speed lock**: timings are intentionally slowed to ~3x for readability and presence.
 
 | Tick | Event |
 |------|-------|
-| 0ms | Void, grain on |
-| 200ms | `NIELLESS OPTICAL SYSTEMS` visible |
-| 400ms | `SENSOR: 35MM FULL-FRAME · MOUNT: AI-NATIVE` |
-| 600ms | `APERTURE: f/LOGIC · ISO: MINIMUM` |
-| 600ms | `SHUTTER: ARMED` in `--signal` |
-| 800ms | Headline focus hunt starts |
-| 2200ms | L-brackets + crosshair |
-| 2300ms | Center dot signal flash |
-| 2500ms | Boot complete |
+| 0ms | Empty viewfinder. Grain on. AF grid hidden. Lock overlay hidden. |
+| 600ms | Frame corner brackets fade in — the viewfinder window opens |
+| 800ms | AF grid fades in (neutral points only) |
+| 1300ms | Center AF rectangle glows red (`.af-center`) — exactly 500ms after AF appears; hero still hidden |
+| 1500ms | Data strip + top HUD strip populate **all-at-once** — one beat, like the real D7500 power-on |
+| 1700ms | `SHUTTER: ARMED` appears bottom-right of glass (`--signal`) |
+| 1800ms | Hero focus animation starts — 500ms after center red glow (showcase beat) |
+| 2400ms | `SHUTTER: ARMED` fades out |
+| 9300ms | Focus lock (1800ms + 7.5s hunt): AF cluster completely invisible; L-brackets + crosshair on headline |
+| 9600ms | Focus confirm dot fires `.acquired` — green glow, bottom-left of glass |
+| 10000ms | Sub-copy + CTA fade in below the instrument. **Zoom-out scroll now enabled.** |
 
-**Content** (from spec):
+**Content** (from spec — D7500 optical viewfinder, 5 layers):
 
-- Headline: `ORDER.` / `LOGIC.` / `AMOR FATI.` (accent on last line)
-- Sub: *Full-Stack Engineer. AI-native builder…* (Crimson Pro italic)
-- CTA: `[ SCROLL TO DARKROOM ]` (or scroll down) — smooth-scroll to `#darkroom` (working link, not decorative)
+**Layer 1 — Eyepiece vignette**
+- Radial gradient: `ellipse 72% 68% at 50% 50%`, transparent centre 55%, fades to near-black at edges
+- Simulates the rubber eyecup shadow when pressing eye to the camera
 
-**Styles**:
+**Layer 2 — Frame corners**
+- Four warm-white L-brackets at the image boundary: `rgba(232,226,213,0.55)`, 28px, 1px line
+- NOT brass. NOT a full border. Just the corners — exactly like a real DSLR viewfinder frame line
 
-- Headline: 62px desktop → 40px tablet → 28px at 320px
-- Focus hunt: `blur` 8px→0 over 2.5s; brackets 20px; crosshair 40px; center dot flash
-- `prefers-reduced-motion`: all lines + headline visible immediately, no blur, no bracket animation
+**Layer 3 — Glass (overlays on the scene)**
+- Top HUD strip (absolute, top-left of glass, 9px mono, dim white): `M · ⚡ · AFS · ◉ · WB`
+- 51 AF points across the frame (hardcoded positions matching D7500 layout): neutral white rectangles with only the center point red
+- Headline `ORDER. / LOGIC. / AMOR FATI.` centered on AF cluster at `left: 50%`, `top: 28%`, `transform: translateX(-50%)`
+- `SHUTTER: ARMED` — transient overlay, bottom-right of glass, appears t=1700ms, gone at t=2400ms
+- Focus confirm dot — 8px circle, bottom-left of glass, `var(--muted2)` idle → `var(--signal)` + glow on `.acquired` at t=9600ms
 
-### M2.2 `page.tsx` — hero section only
+**Layer 4 — Data strip (BELOW the glass, its own panel)**
+- `background: rgba(6,6,8,0.97)` · `border-top: 1px solid rgba(46,46,49,0.9)` · `height: 52px`
+- Layout left → right: `NIELLESS ACHARYA` (9px muted) · `1/∞` (16px) · `F2.0` (15px) · exposure meter (graphic bar, 9 ticks, centered needle) · `ISO 3200` · `08` (16px) · battery icon
+- Exposure meter is a graphic element — NOT text characters. A 80px bar with 9 tick marks (center tick taller) and a 2px needle at dead center (0 EV)
+- `08` frame count maps to 8 Darkroom projects
 
-- [ ] `<section id="hero" aria-label="Introduction">` wrapping `HeroBoot`
-- [ ] After boot, user can scroll to `#darkroom` anchor without JS errors
+**Layer 5 — Caption (outside the instrument entirely)**
+- Sub-copy: *Backend-first engineer. I find order in complex systems and ship things that actually hold. Currently building in the open — one deliberate commit at a time.* (Crimson Pro italic, `--muted`)
+- CTA: `[ SCROLL TO DARKROOM ]` → triggers zoom-out scroll, ultimately reaches `#darkroom`
+- Fades in at t=10000ms (boot complete)
+
+**Styles** (production — `HeroBoot.module.css`):
+
+- Viewfinder frame: `aspect-ratio: 3 / 2`, `max-width: 860px`, centred, `flex-direction: column`
+- Glass: `position: relative`, `overflow: hidden`, fills frame above data strip
+- Headline: `font-family: var(--display)`, `62px` desktop → `40px` tablet → `28px` 320px
+- Focus hunt: `blur` 8px→0 over 7.5s, exactly 2 hunt passes (no third loop)
+- AF points: `width: 22px`, `height: 15px`, `border: 2px solid rgba(232,226,213,0.85)`, `border-radius: 4px`; row gap `18px`, block gap `18px`, row spacing `28px`; only `.af-center` is red with subtle glow
+- AF grid only — no side enclosure braces/rails in v3.3 hero boot
+- AF sequence states: `afHidden` → `afVisible` → `afCenterGlow` (500ms showcase) → `heroFocusStart` → `afInvisible` (`opacity: 0; visibility: hidden`) + `lockOverlayVisible`
+- Data strip: `display: flex`, `justify-content: space-between`, `align-items: center`
+- Meter needle: `position: absolute`, `left: 50%`, `transform: translate(-50%,-50%)`, `width: 2px`, `height: 13px`
+- `prefers-reduced-motion`: all elements immediately visible; AF pattern remains static; no interval behavior required
+
+**Mobile (≤768px):**
+- Frame: `aspect-ratio: 4 / 3`; eyepiece vignette hidden (too claustrophobic on small screens)
+- Data strip: `font-size: 11px`; meter hidden (`display: none`); owner tag hidden
+- Headline: `40px`
+
+**Mobile (≤360px):** headline `28px`, data strip `10px`
+
+### M2.2 D7500 rear body (CSS replica)
+
+CSS-only replica of the Nikon D7500 rear, built from reference images. No raster images — pure CSS art. **Implementation must be faithful to the reference photos** (see project assets) — LCD, viewfinder eyepiece, button clusters, grip texture, mode dial, and flash unit should all be recognizable.
+
+**Camera body** (`D7500Rear.tsx` + `D7500Rear.module.css`):
+- Body: `max-width: 560px`, `aspect-ratio: 136 / 104` (real D7500 proportions), dark matte gradient
+- LCD screen: large dark rectangle, centre-bottom area (~60% of body width), `border-radius: 4px`, subtle inner shadow
+- Viewfinder eyepiece: raised rectangular bump at top-center, rubber surround texture (dark gradient + subtle border), this is where the viewfinder content zooms INTO
+- Left button column: MENU, WB, ?/On, QUAL, magnify/trash, info — small rounded rectangles with mono labels
+- Right controls: multi-selector D-pad with OK center, AE-L/AF-L button, `i` button, Lv button
+- Mode dial: top-left area, circular with knurled edge (conic-gradient), S/Cl/Ch/D markings
+- Grip: textured rubber area on right side (repeating-linear-gradient stripes)
+- Nikon logo: below LCD, `font-style: italic`, `color: var(--brass-dim)`
+- Pop-up flash unit: closed position at top-center (flush with camera body), hinged — animates open
+
+**Pop-up flash unit**:
+- Closed: narrow rectangular strip flush with the pentaprism housing, `height: ~8px`
+- Open: rotates upward around bottom hinge, `transform-origin: bottom`, `rotateX(-75deg)`, reveals flash head
+- Flash head: small white/light rectangle at the tip of the opened unit
+
+### M2.3 Zoom-out scroll sequence (`useHeroZoom.ts`)
+
+After boot completes (t=10000ms), scroll-driven zoom-out begins. The viewfinder content was filling the viewport — now it scales down to reveal the D7500 rear body around it.
+
+**Key principle — no crop-in**: The zoom-out starts from exactly what the user sees after boot. The viewfinder is already displayed at its natural boot size (max-width 860px, 3:2 frame). The zoom ONLY shrinks — it does not first scale up to fill the viewport. The effect is a pure pull-back from the current view.
+
+**Scroll math** (canonical — copy verbatim into `useHeroZoom.ts`):
+
+| Token | Formula / value |
+|-------|-----------------|
+| `scrollTrackHeight` | `4 × window.innerHeight` — total height of hero scroll track |
+| `scrubRange` | `scrollTrackHeight − window.innerHeight` — vertical scroll distance for 0→1 progress |
+| `bootWidth` | measured width of `.vf-frame` at boot completion (the viewfinder's current rendered size) |
+| `eyepieceWidth` | measured width of `.camera-eyepiece-window` on the D7500 body (~50px) |
+| `minScale` | `eyepieceWidth / bootWidth` — the final scale when viewfinder reaches eyepiece size |
+
+While hero scroll track is in view (sticky viewport active):
+
+```text
+trackTop      = heroTrack.getBoundingClientRect().top
+progress      = clamp(0, 1, (-trackTop) / scrubRange)
+```
+
+**Phase mapping** (progress 0→1):
+
+| Progress | Event |
+|----------|-------|
+| 0.00→0.10 | Caption (sub-copy + CTA) fades out (`opacity 1→0`) |
+| 0.05→0.15 | Data strip fades out (`opacity 1→0`) |
+| 0.10→0.85 | Viewfinder shrinks from boot size to eyepiece size: `scale(1 → minScale)`. Simultaneously translates from its boot position to the eyepiece position on the D7500 body |
+| 0.15→0.50 | Camera body fades in (`opacity 0→1`), centered in viewport |
+| 0.85→0.90 | Viewfinder reaches eyepiece size and locks into position on the camera |
+| 0.90 | Full D7500 rear visible with viewfinder nested in eyepiece. **Pop-up flash triggers.** |
+| 0.90→0.95 | Flash unit rotates open (300ms CSS animation, `transform-origin: bottom`) |
+| 0.95 | Flash fires: full white overlay (`z-index: 9999`, 800ms) |
+| 0.95→1.00 | White screen holds, camera body fades out behind it |
+| 1.00 | Flash clears. Darkroom section below is now visible. Scroll position normalizes. |
+
+**Apply:** `viewfinderContent.style.transform = \`scale(${currentScale}) translate(${tx}px, ${ty}px)\`` — rAF-throttled scroll listener.
+**Resize:** `ResizeObserver` recalculates `bootWidth`, `eyepieceWidth`, `minScale`, positions.
+**Banned:** CSS `animation-timeline: scroll()` as primary.
+
+**DOM structure:**
+
+```html
+<div class="hero-track" style="min-height: {scrollTrackHeight}px">
+  <div class="hero-viewport">  <!-- position: sticky; top: 0; height: 100vh -->
+    <div class="camera-body">  <!-- D7500 rear, opacity 0→1 -->
+      <div class="camera-eyepiece">  <!-- where viewfinder lands -->
+      <div class="camera-lcd"></div>
+      <div class="camera-buttons-left">...</div>
+      <div class="camera-controls-right">...</div>
+      <div class="camera-grip"></div>
+      <div class="camera-flash-unit"></div>  <!-- pop-up, rotates open -->
+    </div>
+    <div class="viewfinder-zoom-content">  <!-- scales from maxScale→1 -->
+      <!-- All 5 viewfinder layers from boot -->
+    </div>
+  </div>
+  <div class="flash-overlay"></div>  <!-- z-index: 9999, full white -->
+</div>
+```
+
+### M2.4 Flash pop-up + fire → darkroom entry
+
+At progress ≈ 0.90 (zoom-out complete):
+
+1. **Pop-up flash opens** (300ms): flash unit rotates from closed (flush with body) to open (angled up). `transform-origin: bottom center`, `rotateX(0 → -75deg)`. CSS `@keyframes flashPopUp`.
+2. **200ms pause**: mechanical delay — the flash capacitor is charging.
+3. **Flash fires**: full-viewport white overlay animates in. `z-index: 9999`.
+
+```css
+@keyframes heroFlash {
+  0%   { opacity: 0; }
+  5%   { opacity: 1; }
+  30%  { opacity: 0.95; }
+  60%  { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+```
+
+4. During flash peak: camera body fades to `opacity: 0`.
+5. Flash clears → `#darkroom` section is visible below in normal scroll flow.
+6. Hero scroll track collapses or scroll normalizes so user continues into darkroom naturally.
+
+**Reduced motion**: skip zoom-out entirely. After boot completes, user scrolls directly to `#darkroom`. No flash, no zoom, no camera body. CTA `[ SCROLL TO DARKROOM ]` works as a simple anchor.
+
+**Mobile (≤768px)**: zoom-out still works but camera body scales to fit mobile viewport. Scroll track reduces to `3 × window.innerHeight`. Flash sequence unchanged. On very small screens (≤360px), consider simplifying camera body detail (hide some buttons).
+
+### M2.5 `page.tsx` — hero section
+
+- [ ] `<section id="hero" aria-label="Introduction">` wrapping entire boot + zoom sequence
+- [ ] Hero scroll track div provides the `min-height` for zoom-out progress
+- [ ] After flash clears, user can scroll to `#darkroom` anchor naturally
 - [ ] Remove `body { overflow: hidden }` lock and router push to `/engine`
+- [ ] No scroll lock during boot — user can scroll early but zoom-out begins from boot state
 
 ### Definition of Done
 
-- [ ] Cold load → boot plays → CTA scrolls to `#darkroom`  
-- [ ] Reduced motion → static hero, CTA still works  
-- [ ] Mobile 320px: no horizontal scroll, headline readable  
-- [ ] Lighthouse run on hero-only page: no layout shift from boot (reserve min-height)
+- [ ] Cold load → empty VF → AF appears → center red glow → hero focus starts → AF invisible at lock → brackets/cross replace AF → focus dot green → caption fades in
+- [ ] Data strip is BELOW the frame line, in its own dark panel
+- [ ] Headline is center-locked inside the glass (`left: 50%`, `top: 28%`, `transform: translateX(-50%)`)
+- [ ] AF pattern matches D7500 reference: only center AF rectangle is red
+- [ ] AF-to-lock handoff strict: AF invisible before lock brackets appear
+- [ ] `SHUTTER: ARMED` appears and disappears (never permanent)
+- [ ] **Zoom-out**: scroll after boot → viewfinder scales down → D7500 rear body fades in around it
+- [ ] **D7500 rear** is recognizable: LCD, viewfinder eyepiece, button clusters, grip, mode dial, Nikon logo
+- [ ] **Pop-up flash**: unit flips open at zoom-out completion, visible mechanical animation
+- [ ] **Flash fire**: full white screen, 800ms, clears to reveal `#darkroom`
+- [ ] Reduced motion: all layers immediately visible; no zoom-out; no flash; simple scroll to `#darkroom`
+- [ ] Mobile 320px: no horizontal scroll, headline readable, camera body fits viewport
+- [ ] Lighthouse: no layout shift from boot (reserve `min-height` on frame + scroll track)
 
-**Commit**: `feat(v3.1): hero boot sequence with reduced-motion fallback`
+**Commit**: `feat(v3.3): hero boot + viewfinder zoom-out + D7500 rear + flash → darkroom`
 
 ---
 
@@ -587,18 +752,23 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6
 Track here; do not start until v3.3.0 is tagged:
 
 1. Mode-dial navigation with considered IA (replace text anchors)  
-2. Scroll-to-DSLR + flash + scroll reset (Section 03 hero — deferred)  
-3. Aperture ring + exposure meter (Section 02)  
+2. Aperture ring + exposure meter (Section 02)  
 4. Shutter overlay transitions (Section 02 / 06)  
 5. Custom cursor (Section 06)  
 6. Mechanical audio toggle (Section 02)  
-7. Hot-shoe CTA with two-stage shutter (Section 06)  
-8. Per-negative custom illustrations; sound on develop; `?print=slug` deep-link  
-9. CSS `animation-timeline: scroll()` as primary scrub (only if sticky conflict solved)  
+6. Hot-shoe CTA with two-stage shutter (Section 06)  
+7. Per-negative custom illustrations; sound on develop; `?print=slug` deep-link  
+8. CSS `animation-timeline: scroll()` as primary scrub (only if sticky conflict solved)  
 
 ---
 
 ## SESSION LOG
+
+### Session: 2026-05-26 — Hero zoom-out redesign
+**Completed**: Rewrote M2 to include viewfinder zoom-out → D7500 rear (CSS replica) → pop-up flash → full white screen → darkroom entry. Moved scroll-to-DSLR + flash from deferred to active scope (reimagined as zoom-out, not rotation). Added `D7500Rear.tsx`, `useHeroZoom.ts` to file structure. Updated z-index stack (flash 9999, zoom container 200). Removed `cursor-plan.md` (redundant with `plan/` directory). Updated all plan files, spec HTML, and roadmap.  
+**Blocks**: None  
+**Next action**: M2 implementation (viewfinder boot + zoom-out + D7500 rear + flash)  
+**Commit**: N/A (docs)
 
 ### Session: 2026-05-17 — M3 blocker lock (scroll / z-index / wipe)
 **Completed**: Canonical scroll scrub (`maxTravel` vs `scrollTrackHeight`, `scrubRange`, `trackTop` formula); grain **z-index 50** (not 9999); brass gate wipe behavior paragraph + keyframes; spec HTML `body::after` fixed  
